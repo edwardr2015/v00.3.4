@@ -1,3 +1,109 @@
+diff --git a/btc-prophet/prophet/corrective.py b/btc-prophet/prophet/corrective.py
+index 0cfcd41..93c457c 100644
+--- a/btc-prophet/prophet/corrective.py
++++ b/btc-prophet/prophet/corrective.py
+@@ -16,7 +16,7 @@ from .models import BASE_PARTICIPANTS, Models, feature_sequence
+ from .pattern_odds import VERSION as PATTERN_VERSION, forecast_from_snapshot
+ from .providers import number, timestamp, validate_market
+ from .v2risk import CHECKPOINTS
+-from . import forecast_metrics, late_exit_research, trade_quality
++from . import forecast_metrics, late_exit_research, settlement_model, trade_quality
+ 
+ STAKE = 5
+ GRACE = 8
+@@ -95,6 +95,33 @@ def choice(book, terms, side, probability, band, edge, stress=False):
+     return fill,"ELIGIBLE"
+ 
+ 
++# Frozen, pre-declared policies from research/feature_research.py and safeguards_sim.py
++# (2026-11-26, 94 markets). Absolute edge: probability - all-in price per contract >= edge.
++RESEARCH_POLICIES = {
++    "late_gap_180s_abs10": dict(model="gap", start=180, edge=.10),
++    "settle_avg_180s_abs10": dict(model="settle", start=180, edge=.10),
++    "settle_mid_blend_90s_abs05": dict(model="blend", start=90, edge=.05),
++}
++
++
++def absolute_choice(book, terms, side, probability, edge, stress=False):
++    terms = dict(terms)
++    if stress:
++        terms.update(theta=min(1, terms["theta"]+.02),slippage_ticks=2)
++    fill,reason = paper_buy(book,side,STAKE,**terms)
++    if not fill:
++        return None,reason
++    if probability - fill["total"]/fill["quantity"] < edge:
++        return None,"EDGE_TOO_SMALL"
++    return fill,"ELIGIBLE"
++
++
++def window_values(db, end, now):
++    """BRTI one-second closes already inside the closing average window (end-60, now]."""
++    return [r[0] for r in db.execute("""SELECT close FROM candles WHERE source='BRTI'
++        AND time>=? AND time<=? ORDER BY time""",(end-settlement_model.WINDOW,now))]
++
++
+ def prior_panels(db, checkpoint, now):
+     return [(json.loads(r["payload"]),r["outcome"]) for r in db.execute("""
+         SELECT p.payload,v.outcome FROM corrective_panels p
+@@ -388,6 +415,10 @@ class Research:
+             info["seconds_left"],midpoint)["volatility_reference_gap"]
+         p,n = calibrate_gap(db,slug,raw,midpoint,now)
+         probabilities["reference_gap"] = p
++        settle = settlement_model.probability(info["reference_price"],info["opening"],vol,
++            info["seconds_left"],window_values(db,now+info["seconds_left"],now))
++        if settle is not None:
++            probabilities["settlement_average"] = settle
+         components = list(panel["components"].values())
+         disagreement = (max(x["up"] for x in components)-min(x["up"] for x in components)) if components else .5
+         side = "UP" if p>.5 else "DOWN"
+@@ -433,6 +464,11 @@ class Research:
+         adjusted,n = calibrate_gap(db,slug,p,midpoint,info["decision"])
+         db.execute("INSERT OR IGNORE INTO corrective_gap_forecasts VALUES (?,?,?)",(slug,info["decision"],p))
+         info.update(gap_calibrated_up=adjusted,gap_calibration_markets=n)
++        self.research_policy_trials(db,slug,p,midpoint,features,book,terms,info)
++        label = "primary_rule_edge0_40_70"   # safeguards_sim variant C: primary rule, min edge 0
++        side = "UP" if adjusted>=.5 else "DOWN"
++        info["rejections"][label] = self.record(db,slug,label,side,adjusted if side=="UP" else 1-adjusted,
++                                              book,terms,info,(.40,.70),0)
+         # Preserve the original rule as one comparison and score calibration separately.
+         for name,(confidence,edge) in AGREEMENT.items():
+             if p==.5 or midpoint==.5 or (p>.5)!=(midpoint>.5):
+@@ -453,6 +489,35 @@ class Research:
+             info["rejections"][label] = self.record(db,slug,label,side,max(prob,1-prob),
+                                                    book,terms,info,(.02,.99),-1)
+ 
++    def research_policy_trials(self, db, slug, gap_p, midpoint, features, book, terms, info):
++        elapsed = 300 - info["seconds_left"]
++        settle = settlement_model.probability(info["reference_price"],info["opening"],
++            features["volatility"],info["seconds_left"],
++            window_values(db,info["decision"]+info["seconds_left"],info["decision"]))
++        info["settlement_average_up"] = settle
++        probs = dict(gap=gap_p,settle=settle,blend=None if settle is None else .5*settle+.5*midpoint)
++        for name,rule in RESEARCH_POLICIES.items():
++            p = probs[rule["model"]]
++            if p is None:
++                info["rejections"][name] = "FORECAST_UNAVAILABLE"
++                continue
++            if elapsed < rule["start"]:
++                info["rejections"][name] = "BEFORE_START"
++                continue
++            reasons = {}
++            for case in ("standard","higher"):
++                # INSERT OR IGNORE keeps the first qualifying entry per market, as record() does,
++                # so repeated identical ticks produce identical evidence.
++                for side,ps in (("UP",p),("DOWN",1-p)):
++                    fill,why = absolute_choice(book,terms,side,ps,rule["edge"],stress=case=="higher")
++                    if fill:
++                        db.execute("INSERT OR IGNORE INTO corrective_trials VALUES (?,?,?,?,?,?,?,?)",
++                            (slug,name,case,info["decision"],side,fill["quantity"],fill["total"],
++                             json.dumps(dict(info,fill=fill,probability=ps,model=rule["model"]))))
++                        break
++                reasons[case] = why
++            info["rejections"][name] = reasons
++
+     def panel_trials(self, db, slug, checkpoint, panel, prior, book, terms, info):
+         reasons = {}
+         for rule in ("vote6","vote7","vote8","weighted65","weighted75","weighted90","highconfidence90"):
 diff --git a/btc-prophet/prophet/learning.py b/btc-prophet/prophet/learning.py
 index c88d586..c67fc07 100644
 --- a/btc-prophet/prophet/learning.py
@@ -119,6 +225,50 @@ index 3ceb03a..6c15f42 100644
      # Preprocessing sees training data only. Fixed hyperparameters: no test-set search.
      means = [statistics.mean(r["x"][j] for r in train) for j in range(3)]
      scales = [max(statistics.pstdev(r["x"][j] for r in train), 1e-8) for j in range(3)]
+diff --git a/btc-prophet/prophet/settlement_model.py b/btc-prophet/prophet/settlement_model.py
+new file mode 100644
+index 0000000..d4479f2
+--- /dev/null
++++ b/btc-prophet/prophet/settlement_model.py
+@@ -0,0 +1,38 @@
++"""Settlement-average probability for Polymarket US BTC Up/Down five-minute contracts.
++
++The contract settles UP when the arithmetic mean of the 60 one-second BRTI values strictly before
++the closing boundary is >= the same average before the opening boundary (Polymarket US crypto
++FAQ). The existing Reference Gap formula treats the close as a single spot print. Here the close
++is an average, approximated with Brownian motion:
++
++  seconds_left > 60:   mean = current reference
++                       var  = s1^2 * ((seconds_left - 60) + 60/3)
++  seconds_left <= 60:  part of the averaging window is already fixed
++                       mean = ((60 - s) * fixed_average + s * current) / 60
++                       var  = s1^2 * (s / 60)^2 * s / 3
++
++s1^2 is the per-second log variance: (vol_15s * VOL_SCALE)^2 / 15. VOL_SCALE = 1.5 was the best
++walk-forward choice on the 94 recorded markets (research/feature_research.py); it is fixed here,
++not refitted live. Research shadow only.
++"""
++import math
++
++WINDOW = 60
++VOL_SCALE = 1.5
++VERSION = "settlement-average-v1"
++
++
++def probability(reference, opening, vol_15s, seconds_left, window_values=(), *, vol_scale=VOL_SCALE):
++    if not (reference and opening and reference > 0 and opening > 0) or vol_15s is None:
++        return None
++    s = max(float(seconds_left), 1e-3)
++    s1 = max(float(vol_15s), 1e-6) * vol_scale / math.sqrt(15)
++    if s > WINDOW:
++        mean, var = reference, s1 ** 2 * ((s - WINDOW) + WINDOW / 3)
++    else:
++        values = [v for v in window_values if v and v > 0]
++        fixed = sum(values) / len(values) if values else reference
++        mean = ((WINDOW - s) * fixed + s * reference) / WINDOW
++        var = s1 ** 2 * (s / WINDOW) ** 2 * s / 3
++    z = math.log(mean / opening) / math.sqrt(max(var, 1e-14))
++    return min(.99, max(.01, .5 * (1 + math.erf(z / math.sqrt(2)))))
 diff --git a/btc-prophet/prophet/training_limits.py b/btc-prophet/prophet/training_limits.py
 new file mode 100644
 index 0000000..faec173
@@ -252,6 +402,86 @@ index 7fb9732..ac1362d 100644
 +    learner.train()
 +    status = s.get("learning_status")
 +    assert status["status"] == "WAITING" and status["optional_challenger_shortage"] == 90
+diff --git a/btc-prophet/tests/test_research_policies.py b/btc-prophet/tests/test_research_policies.py
+new file mode 100644
+index 0000000..263ae00
+--- /dev/null
++++ b/btc-prophet/tests/test_research_policies.py
+@@ -0,0 +1,74 @@
++"""Settlement-average model and frozen research policies (fixtures only)."""
++import json
++
++from prophet import corrective, settlement_model as sm
++from prophet.app import create_app
++from test_timing_update import market_inputs
++from test_v2 import setup
++
++TERMS = dict(theta=.095, tick=.01, quantum=.01)
++
++
++def test_settlement_average_probability_shape():
++    assert abs(sm.probability(100, 100, .001, 200) - .5) < 1e-9
++    early, late = sm.probability(100.05, 100, .001, 200), sm.probability(100.05, 100, .001, 30)
++    assert .5 < early < late
++    # Inside the window the fixed part dominates: a fixed average above the open is near-certain UP
++    assert sm.probability(99.99, 100, .001, 2, [100.2] * 58) > .95
++    assert sm.probability(100.01, 100, .001, 2, [99.8] * 58) < .05
++    # Averaging narrows the distribution versus the single-print gap formula at equal volatility
++    assert sm.probability(100.05, 100, .001, 200, vol_scale=1) > .5 + 1e-6
++    assert sm.probability(None, 100, .001, 200) is None
++
++
++def _info(now, left, ref=101, opening=100):
++    return dict(decision=now, seconds_left=left, reference_price=ref, opening=opening,
++                volatility=.001, rejections={})
++
++
++def test_research_policies_wait_for_start_then_enter_once_without_ledger_writes(tmp_path):
++    s, _, now = setup(tmp_path)
++    app = create_app(s.path, collect=False, auth_required=False)
++    research = corrective.Research(s, app.state.paper)
++    book = dict(bids=[dict(price=.55, quantity=500)], asks=[dict(price=.57, quantity=500)])
++    with s.connect() as db:
++        early = _info(now, 250)
++        research.research_policy_trials(db, "fixture-round", .97, .56, dict(volatility=.001), book, TERMS, early)
++        assert early["rejections"]["late_gap_180s_abs10"] == "BEFORE_START"
++        late = _info(now + 100, 100)
++        research.research_policy_trials(db, "fixture-round", .97, .56, dict(volatility=.001), book, TERMS, late)
++        assert late["rejections"]["late_gap_180s_abs10"] == dict(standard="ELIGIBLE", higher="ELIGIBLE")
++        again = _info(now + 101, 99)
++        research.research_policy_trials(db, "fixture-round", .97, .56, dict(volatility=.001), book, TERMS, again)
++        rows = db.execute("SELECT policy,cost_case,side,evidence FROM corrective_trials").fetchall()
++        assert sum(r["policy"] == "late_gap_180s_abs10" for r in rows) == 2   # still one per cost case
++        assert {(r["policy"], r["cost_case"]) for r in rows} >= {("late_gap_180s_abs10", "standard"),
++                                                                ("late_gap_180s_abs10", "higher")}
++        assert all(r["side"] == "UP" for r in rows)
++        assert json.loads(rows[0]["evidence"])["probability"] > .9
++        assert db.execute("SELECT count(*) FROM unified_trades").fetchone()[0] == 0
++        assert db.execute("SELECT count(*) FROM v2_orders").fetchone()[0] == 0
++
++
++def test_absolute_edge_rejects_when_price_is_too_close():
++    book = dict(bids=[dict(price=.88, quantity=500)], asks=[dict(price=.90, quantity=500)])
++    assert corrective.absolute_choice(book, TERMS, "UP", .95, .10)[1] == "EDGE_TOO_SMALL"
++    assert corrective.absolute_choice(book, TERMS, "UP", .99, .05)[1] == "ELIGIBLE"
++
++
++def test_real_tick_lists_new_policies_and_records_settlement_challenger(tmp_path, monkeypatch):
++    s, _, now = setup(tmp_path)
++    app = create_app(s.path, collect=False, auth_required=False)
++    p = app.state.paper
++    p.mode("SIMULATE", now)
++    research = corrective.Research(s, p)
++    monkeypatch.setattr(p, "probability", lambda *_a, **_k: (.85, dict(momentum_60=.005, trend_300=.004, volatility=.001)))
++    market_inputs(s, now + 2, bid=.51, ask=.53)
++    s.put("reference", dict(s.get("reference"), price=101))
++    research.tick(now + 2)
++    with s.connect() as db:
++        evidence = json.loads(db.execute("SELECT evidence FROM corrective_observations ORDER BY id DESC")
++                              .fetchone()[0])
++    for name in (*corrective.RESEARCH_POLICIES, "primary_rule_edge0_40_70"):
++        assert name in evidence["rejections"]
++    assert evidence["settlement_average_up"] is not None
 diff --git a/btc-prophet/tests/test_unified_v321.py b/btc-prophet/tests/test_unified_v321.py
 index 5db6140..9623a97 100644
 --- a/btc-prophet/tests/test_unified_v321.py
