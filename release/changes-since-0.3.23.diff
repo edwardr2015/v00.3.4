@@ -1,3 +1,134 @@
+diff --git a/btc-prophet/prophet/adaptive_entry.py b/btc-prophet/prophet/adaptive_entry.py
+index a3e2848..77e4057 100644
+--- a/btc-prophet/prophet/adaptive_entry.py
++++ b/btc-prophet/prophet/adaptive_entry.py
+@@ -227,6 +227,7 @@ class AdaptiveEntry:
+                            ask_depth=sum(x["quantity"] for x in book["asks"]))
+             if self.paper.unified_enabled and up is not None and features.get("volatility") is not None:
+                 from .model_paper import FORMULA_VERSIONS, REFERENCE_GAP, probabilities_from_market
++                context["momentum_up"] = up      # formula challengers need the pre-gap momentum input
+ 
+                 midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
+                 raw = probabilities_from_market(midpoint,context["reference_price"],opening,
+diff --git a/btc-prophet/prophet/autonomous.py b/btc-prophet/prophet/autonomous.py
+index 0b04e6e..e50fb3e 100644
+--- a/btc-prophet/prophet/autonomous.py
++++ b/btc-prophet/prophet/autonomous.py
+@@ -7,6 +7,13 @@ from .execution import execute, paper_buy
+ 
+ MIN_MATCHED = 20
+ VOLATILE = .001
++# Incumbent-based selection for the primary account (0.3.23-dev). A challenger must beat the
++# model that actually trades the account, on the same settled markets, held to settlement.
++INCUMBENT_LOOKBACK = 100        # most recent matched markets used as evidence
++REDUNDANT_AGREEMENT = .90       # challengers that pick the incumbent's side this often add nothing
++MIN_IMPROVEMENT_SE = 1.0        # mean improvement must exceed one standard error
++BRIER_TOLERANCE = .01           # challenger calibration may not be worse than incumbent + tolerance
++NOT_SELECTABLE = {"model_vote", "reference_gap_agreement"}   # derived consensus / rule on incumbent
+ MODEL_ERRORS = (ValueError, ImportError, OSError, TypeError, RuntimeError, EOFError, pickle.UnpicklingError)
+ 
+ 
+@@ -33,6 +40,63 @@ class Selection:
+                 );
+             """)
+ 
++    def rank_incumbent(self, slug, volatility, now, incumbent):
++        """Rank challengers against the incumbent on matched, settled, held-to-settlement markets."""
++        from .model_paper import FORMULA_VERSIONS, ModelPaper
++
++        regime = "higher volatility" if volatility >= VOLATILE else "lower volatility"
++        family_of = {v: k for k, v in FORMULA_VERSIONS.items()}
++        home = family_of.get(incumbent)
++        with self.store.connect() as db:
++            if home is None or not db.execute(
++                    "SELECT 1 FROM sqlite_master WHERE name='model_paper_positions'").fetchone():
++                return regime, []
++            current = ModelPaper.versions(db, now)
++            rows = db.execute("""
++                SELECT c.family, c.version, c.slug, c.side, c.quantity, c.cost, c.outcome,
++                       i.side AS i_side, i.quantity AS i_quantity, i.cost AS i_cost,
++                       (SELECT up FROM model_paper_decisions d WHERE d.family=c.family AND d.slug=c.slug
++                          AND d.time=c.entered AND d.action=c.side LIMIT 1) AS up,
++                       (SELECT up FROM model_paper_decisions d WHERE d.family=i.family AND d.slug=i.slug
++                          AND d.time=i.entered AND d.action=i.side LIMIT 1) AS i_up
++                FROM model_paper_positions c
++                JOIN model_paper_positions i ON i.slug=c.slug AND i.family=?
++                JOIN model_paper_windows w ON w.slug=c.slug
++                JOIN verified_markets v ON v.slug=c.slug AND v.end=w.end
++                WHERE c.family<>? AND c.slug<>? AND c.outcome IS NOT NULL AND i.outcome IS NOT NULL
++                  AND v.end<=? AND v.verified_at<=? AND c.entered<? AND i.entered<?
++                ORDER BY v.end DESC""", (home, home, slug, now, now, now, now)).fetchall()
++        by = {}
++        for r in rows:
++            if r["family"] in NOT_SELECTABLE:
++                continue
++            bucket = by.setdefault(r["family"], [])
++            if len(bucket) < INCUMBENT_LOOKBACK:
++                bucket.append(r)
++        ranked = []
++        for family, matched in by.items():
++            version = current.get(family)
++            n = len(matched)
++            if not version or version.startswith("UNAVAILABLE") or n < MIN_MATCHED:
++                continue
++            cand = [(r["side"] == r["outcome"]) * r["quantity"] - r["cost"] for r in matched]
++            inc = [(r["i_side"] == r["outcome"]) * r["i_quantity"] - r["i_cost"] for r in matched]
++            diff = [a - b for a, b in zip(cand, inc)]
++            mean = sum(diff) / n
++            se = (sum((d - mean) ** 2 for d in diff) / (n - 1)) ** .5 / n ** .5 if n > 1 else float("inf")
++            agreement = sum(r["side"] == r["i_side"] for r in matched) / n
++            scored = [r for r in matched if r["up"] is not None and r["i_up"] is not None]
++            brier = (sum((r["up"] - (r["outcome"] == "UP")) ** 2 for r in scored) / len(scored)) if scored else None
++            i_brier = (sum((r["i_up"] - (r["outcome"] == "UP")) ** 2 for r in scored) / len(scored)) if scored else None
++            evidence = dict(family=family, version=version, matched=n, pnl=sum(cand), incumbent_pnl=sum(inc),
++                            improvement=mean, improvement_se=se, agreement=agreement, brier=brier,
++                            incumbent_brier=i_brier, compared_with=incumbent, basis="hold-to-settlement")
++            if (sum(cand) > 0 and mean > MIN_IMPROVEMENT_SE * se and agreement < REDUNDANT_AGREEMENT
++                    and brier is not None and brier <= i_brier + BRIER_TOLERANCE):
++                ranked.append(evidence)
++        ranked.sort(key=lambda e: (-e["improvement"], -e["matched"], e["version"]))
++        return regime, ranked
++
+     def rank(self, slug, volatility, now):
+         regime = "higher volatility" if volatility >= VOLATILE else "lower volatility"
+         with self.store.connect() as db:
+@@ -61,9 +125,23 @@ class Selection:
+         return regime, [dict(row) for row in rows]
+ 
+     def estimate(self, version, slug, now, features, pattern_context=None):
++        from .model_paper import FORMULA_VERSIONS, probabilities_from_market
+         from .models import Models, feature_sequence
+         from .pattern_odds import VERSION,forecast_from_snapshot
+ 
++        formula = {v: k for k, v in FORMULA_VERSIONS.items()}.get(version)
++        if formula:
++            if not pattern_context:
++                return None
++            context, book, opening = pattern_context
++            if not book.get("bids") or not book.get("asks") or not opening:
++                return None
++            midpoint = (book["bids"][0]["price"] + book["asks"][0]["price"]) / 2
++            raw = probabilities_from_market(midpoint, context["reference_price"], opening,
++                                            features["volatility"], context["window_end"] - now,
++                                            context.get("momentum_up", .5))
++            return raw.get(formula)
++
+         if version==VERSION and pattern_context:
+             p,_=forecast_from_snapshot(self.store,slug,now,*pattern_context)
+             return p
+@@ -91,7 +169,11 @@ class Selection:
+                 estimate = None
+             return pinned_model,estimate,dict(regime=regime,reason="OPEN_POSITION_MODEL_LOCK"
+                         if estimate is not None else "OPEN_POSITION_MODEL_UNAVAILABLE")
+-        regime, rows = self.rank(slug,volatility,now)
++        from .model_paper import FORMULA_VERSIONS
++        if default_model in FORMULA_VERSIONS.values():
++            regime, rows = self.rank_incumbent(slug,volatility,now,default_model)
++        else:
++            regime, rows = self.rank(slug,volatility,now)
+         errors=[]
+         for candidate in rows:
+             try:
 diff --git a/btc-prophet/prophet/corrective.py b/btc-prophet/prophet/corrective.py
 index 0cfcd41..529e24f 100644
 --- a/btc-prophet/prophet/corrective.py
@@ -326,10 +457,37 @@ index 0000000..faec173
 +                min_fit_examples=min_fit_examples(), retrain_seconds=retrain_seconds(),
 +                original=ORIGINAL, small_sample=n < SMALL_SAMPLE_BELOW, examples=n)
 diff --git a/btc-prophet/prophet/unified.py b/btc-prophet/prophet/unified.py
-index 2effab5..1dcf640 100644
+index 2effab5..3ecd72b 100644
 --- a/btc-prophet/prophet/unified.py
 +++ b/btc-prophet/prophet/unified.py
-@@ -148,6 +148,7 @@ def premium_trial(db, slug, start, now, book, terms, audit, commit_time):
+@@ -11,6 +11,15 @@ BASE_STAKE = 5
+ LARGE_STAKE = 100
+ MIN_EDGE = .10
+ EXIT_MARGIN = .03
++STOP_LOSS_SHADOW = .50   # shadow only: a full sale at or below 50% of cost
++
++
++def primary_exit():
++    """'hold' (default since 0.3.23-dev): hold every primary position to official settlement.
++    'probability' restores the original early exit. Matched research (2,211 pairs) found every
++    early-exit policy below holding."""
++    import os
++    return "probability" if os.getenv("PROPHET_PRIMARY_EXIT", "hold").lower() == "probability" else "hold"
+ STRESS_EDGE = .03
+ LARGE_MIN_ROUNDS = 100
+ LARGE_MAX_DRAWDOWN = 250
+@@ -37,6 +46,10 @@ def initialize(db):
+             status TEXT NOT NULL CHECK(status IN ('OPEN','SOLD','SETTLED')),
+             closed REAL, proceeds REAL, pnl REAL, details TEXT NOT NULL, exit_details TEXT);
+         CREATE UNIQUE INDEX IF NOT EXISTS unified_one_open ON unified_trades(status) WHERE status='OPEN';
++        CREATE TABLE IF NOT EXISTS unified_exit_shadows (
++            slug TEXT NOT NULL REFERENCES unified_trades(slug), policy TEXT NOT NULL,
++            time REAL NOT NULL, proceeds REAL NOT NULL, details TEXT NOT NULL,
++            PRIMARY KEY(slug,policy));
+         CREATE TABLE IF NOT EXISTS unified_large_trials (
+             slug TEXT PRIMARY KEY REFERENCES unified_rounds(slug), time REAL NOT NULL,
+             side TEXT NOT NULL, quantity REAL NOT NULL, cost REAL NOT NULL,
+@@ -148,6 +161,7 @@ def premium_trial(db, slug, start, now, book, terms, audit, commit_time):
  def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, commit_time):
      """Evaluate one current observation on the caller's verified book transaction."""
      end, start = details["window_end"], details["window_start"]
@@ -337,7 +495,7 @@ index 2effab5..1dcf640 100644
      now = commit_time()
      if now is None or not start <= now < end:
          return
-@@ -159,6 +160,8 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
+@@ -159,6 +173,8 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
                                           "volatility","elapsed","reference_price","opening_price",
                                           "model_evidence")}
      audit["raw_up"] = raw_up
@@ -346,7 +504,37 @@ index 2effab5..1dcf640 100644
      if not reason:
          midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
          up, labels = calibrate(db,slug,model,raw_up,midpoint,now)
-@@ -218,6 +221,13 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
+@@ -177,11 +193,24 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
+             return
+         held = up if order["side"]=="UP" else 1-up
+         sale = execute(book,order["side"],quantity=order["quantity"],buying=False,**terms)
+-        if (sale["quantity"]+1e-9 >= order["quantity"]
+-                and sale["total"] >= held*order["quantity"]+EXIT_MARGIN*order["cost"]):
+-            checked = commit_time()
+-            if checked is not None:
+-                close(db,order,checked,sale["total"],"SOLD",dict(audit,fill=sale,hold_probability=held))
++        if sale["quantity"]+1e-9 < order["quantity"]:
++            return
++        triggered = []
++        if sale["total"] >= held*order["quantity"]+EXIT_MARGIN*order["cost"]:
++            triggered.append("probability_exit")
++        if sale["total"] <= STOP_LOSS_SHADOW*order["cost"]:
++            triggered.append("stop_loss_50")
++        if not triggered:
++            return
++        checked = commit_time()
++        if checked is None:
++            return
++        evidence = json.dumps(dict(audit,fill=sale,hold_probability=held))
++        for policy in triggered:
++            db.execute("INSERT OR IGNORE INTO unified_exit_shadows VALUES (?,?,?,?,?)",
++                       (order["slug"],policy,checked,sale["total"],evidence))
++        if "probability_exit" in triggered and primary_exit() == "probability":
++            close(db,order,checked,sale["total"],"SOLD",dict(audit,fill=sale,hold_probability=held))
+         return
+ 
+     entry = None
+@@ -218,10 +247,39 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
          if debit.rowcount!=1:
              raise ValueError("Unified paper debit failed")
          now, reason = checked, "ENTERED"
@@ -360,6 +548,188 @@ index 2effab5..1dcf640 100644
      db.execute("""UPDATE unified_rounds SET observed=?,reason=?,model=?,up=?,details=? WHERE slug=?""",
                 (now,reason,model,up,json.dumps(audit),slug))
  
+ 
++def exit_comparison(db):
++    """Settled primary trades: actual P&L vs each shadow exit policy (first trigger, full sale)."""
++    trades = db.execute("""SELECT t.slug,t.side,t.quantity,t.cost,t.pnl,v.outcome FROM unified_trades t
++        JOIN unified_rounds r ON r.slug=t.slug JOIN verified_markets v ON v.slug=t.slug AND v.end=r.end
++        WHERE t.status<>'OPEN'""").fetchall()
++    shadows = {}
++    for r in db.execute("SELECT slug,policy,proceeds FROM unified_exit_shadows"):
++        shadows.setdefault(r["policy"], {})[r["slug"]] = r["proceeds"]
++    rows = []
++    hold = [(t["side"]==t["outcome"])*t["quantity"]-t["cost"] for t in trades]
++    rows.append(dict(policy="hold_to_settlement", trades=len(trades), exits=0,
++                     wins=sum(v>0 for v in hold), pnl=round(sum(hold),4)))
++    rows.append(dict(policy="actual", trades=len(trades), exits=None,
++                     wins=sum(t["pnl"]>0 for t in trades), pnl=round(sum(t["pnl"] for t in trades),4)))
++    for policy in ("probability_exit", "stop_loss_50"):
++        fired = shadows.get(policy, {})
++        values = [(fired[t["slug"]]-t["cost"]) if t["slug"] in fired else h for t,h in zip(trades,hold)]
++        rows.append(dict(policy=policy, trades=len(trades), exits=sum(t["slug"] in fired for t in trades),
++                         wins=sum(v>0 for v in values), pnl=round(sum(values),4)))
++    return rows
++
++
+ def history(db, limit=-1):
+     return db.execute("""SELECT t.*,r.end,v.outcome,
+         CASE WHEN v.outcome IS NOT NULL THEN (t.side=v.outcome)*t.quantity-t.cost END AS hold_pnl
+diff --git a/btc-prophet/prophet/v2reporting.py b/btc-prophet/prophet/v2reporting.py
+index 8eb161f..c3c7a45 100644
+--- a/btc-prophet/prophet/v2reporting.py
++++ b/btc-prophet/prophet/v2reporting.py
+@@ -41,6 +41,17 @@ TIMESTAMPS = {
+ }
+ 
+ 
++# Sheets of retired or superseded features (flips, smart exits, old adaptive accounts, roulette).
++# They are omitted from the Full audit only when they have no rows; core sheets always appear.
++LEGACY_OPTIONAL = {
++    "Roulette Pick History", "Smart Flip Research", "Smart Flip Actions", "Adaptive Selections",
++    "Adaptive Decisions", "Adaptive Market Windows", "Adaptive Labeled Observations",
++    "Later Entry Comparison", "Hold vs Flip Rounds", "Paper Flips", "Unfunded Adaptive Flips",
++    "Paired Shadow Stakes", "Approved Configurations", "Experiment History", "Trend Analyses",
++    "Human Review", "Research Runs", "Adaptive vs Fixed Timing",
++}
++
++
+ class Sheets:
+     def __init__(self, wb):
+         self.wb = wb
+@@ -77,6 +88,20 @@ class Sheets:
+         ws.append(row)
+         self.counts[ws.title] += 1
+ 
++    def prune_empty(self):
++        """Drop empty legacy sheets and list them on one sheet (PROPHET_REPORT_KEEP_EMPTY=1 keeps all)."""
++        import os
++        if os.getenv("PROPHET_REPORT_KEEP_EMPTY") == "1":
++            return []
++        empty = [ws for ws in self.wb._sheets if self.counts.get(ws.title) == 1 and ws.title in LEGACY_OPTIONAL]
++        for ws in empty:
++            ws.close()                   # finish the write-only stream before dropping the sheet
++            self.wb._sheets.remove(ws)
++        if empty:
++            self.table("Omitted Empty Sheets", ["Sheet", "Reason"],
++                       ([ws.title, "No rows in this database"] for ws in empty))
++        return [ws.title for ws in empty]
++
+     def table(self, name, headers, rows):
+         ws = self.create(name, headers)
+         first = ws
+@@ -129,6 +154,13 @@ def add_unified(sheets, db, *, quick):
+         [r["slug"],utc(r["observed"]), "SKIP: "+r["reason"] if r["end"]<=now and r["reason"]!="ENTERED"
+          else r["reason"],r["model"],r["up"],r["details"]]
+         for r in db.execute("SELECT * FROM unified_rounds ORDER BY start DESC LIMIT ?",(limit,))))
++    sheets.table("Exit Shadow Comparison", ["Exit policy","Settled trades","Shadow exits","Wins","Net P&L",
++        "Primary exit setting"], (
++        [r["policy"],r["trades"],r["exits"],r["wins"],r["pnl"],unified.primary_exit()]
++        for r in unified.exit_comparison(db)))
++    sheets.table("Model Selection Evidence", ["Market","Regime","UTC","Model","Evidence"], (
++        [r["slug"],r["regime"],utc(r["time"]),r["model"],r["evidence"]]
++        for r in db.execute("SELECT * FROM paper_model_choices ORDER BY time DESC LIMIT ?",(limit,))))
+     if not quick:
+         sheets.table("Unified Large Shadows", ["Market","Quote UTC","Side","Cost","Stress cost","Outcome",
+             "P&L","Stress P&L","Evidence"], (
+@@ -1204,6 +1236,7 @@ def write_workbook(database, output, *, include_account_equity=True):
+             titles_from_data=True,
+         )
+         dash.add_chart(chart, "D2")
++    sheets.prune_empty()
+     wb.save(output)
+ 
+ 
+diff --git a/btc-prophet/tests/test_incumbent_selection.py b/btc-prophet/tests/test_incumbent_selection.py
+new file mode 100644
+index 0000000..4774e4e
+--- /dev/null
++++ b/btc-prophet/tests/test_incumbent_selection.py
+@@ -0,0 +1,85 @@
++"""Primary-account selection against the incumbent (fixtures only)."""
++import json
++
++from prophet.app import create_app
++from prophet.model_paper import FORMULA_VERSIONS, ModelPaper
++from test_v2 import setup
++
++INCUMBENT = FORMULA_VERSIONS["volatility_reference_gap"]
++
++
++def market(db, k, now, outcome="UP", verified_delay=20):
++    slug = f"fixture-{k:03d}"
++    start = now - 400 - k * 300
++    db.execute("INSERT INTO model_paper_windows VALUES (?,?,?,?,?)", (slug, start, start + 300, "{}", start + 300))
++    db.execute("INSERT INTO verified_markets VALUES (?,?,?,?,?,?,?,?,?)",
++               (slug, start, start + 300, outcome, 100, 101, start + 300 + verified_delay, "fixture", "{}"))
++    return slug, start
++
++
++def position(db, family, version, slug, start, side, up, outcome, quantity=10, cost=5):
++    t = start + 90
++    db.execute("""INSERT INTO model_paper_positions VALUES (?,?,?,?,?,?,?,?,?,'SETTLED',?,?,?,0,?)""",
++               (family, slug, version, side, t, quantity, cost, "{}", .1, t + 210, outcome,
++                quantity * (side == outcome), quantity * (side == outcome) - cost))
++    db.execute("""INSERT INTO model_paper_decisions(family,slug,time,version,up,action,reason,observation,evidence)
++                  VALUES (?,?,?,?,?,?,?,?,?)""", (family, slug, t, version, up, side, "fixture", f"{family}{slug}", "{}"))
++
++
++def build(tmp_path, n=24):
++    s, _, now = setup(tmp_path)
++    app = create_app(s.path, collect=False, auth_required=False)
++    selection = app.state.paper.continuous.selection
++    with s.connect() as db:
++        current = ModelPaper.versions(db, now)
++        for k in range(n):
++            slug, start = market(db, k, now)
++            # Incumbent wrong every time; challenger right every time but disagrees with it.
++            position(db, "volatility_reference_gap", INCUMBENT, slug, start, "DOWN", .40, "UP")
++            position(db, "market_odds_adjustment", current["market_odds_adjustment"], slug, start, "UP", .70, "UP")
++            # Copycat: always the incumbent's side (redundant), and Model Vote (derived, never selectable)
++            position(db, "pattern_odds", current.get("pattern_odds", "pattern-odds-v1"), slug, start, "DOWN", .45, "UP")
++            position(db, "model_vote", "model-vote-v1", slug, start, "UP", .90, "UP")
++    return s, selection, now, current
++
++
++def test_selects_challenger_that_beats_incumbent_and_rejects_copies_and_vote(tmp_path):
++    s, selection, now, current = build(tmp_path)
++    _, ranked = selection.rank_incumbent("live", .0005, now, INCUMBENT)
++    assert [r["family"] for r in ranked] == ["market_odds_adjustment"]
++    best = ranked[0]
++    assert best["matched"] == 24 and best["compared_with"] == INCUMBENT
++    assert best["improvement"] > 0 and best["agreement"] == 0 and best["brier"] < best["incumbent_brier"]
++
++
++def test_needs_enough_settled_markets_and_ignores_unverified(tmp_path):
++    s, selection, now, _ = build(tmp_path, n=19)
++    assert selection.rank_incumbent("live", .0005, now, INCUMBENT)[1] == []
++    s, selection, now, _ = build(tmp_path / "late", n=24)
++    # Evaluated before any market was verified: nothing counts yet.
++    assert selection.rank_incumbent("live", .0005, now - 24 * 300 - 400, INCUMBENT)[1] == []
++
++
++def test_losing_challenger_is_not_selected(tmp_path):
++    s, _, now = setup(tmp_path)
++    app = create_app(s.path, collect=False, auth_required=False)
++    selection = app.state.paper.continuous.selection
++    with s.connect() as db:
++        current = ModelPaper.versions(db, now)
++        for k in range(24):
++            slug, start = market(db, k, now)
++            position(db, "volatility_reference_gap", INCUMBENT, slug, start, "UP", .70, "UP")
++            position(db, "market_odds_adjustment", current["market_odds_adjustment"], slug, start, "DOWN", .40, "UP")
++    assert selection.rank_incumbent("live", .0005, now, INCUMBENT)[1] == []
++
++
++def test_predict_uses_winner_formula_and_logs_evidence(tmp_path):
++    s, selection, now, current = build(tmp_path)
++    features = dict(momentum_60=.1, trend_300=.1, volatility=.001)
++    book = dict(bids=[dict(price=.55, quantity=100)], asks=[dict(price=.57, quantity=100)])
++    context = dict(features, reference_price=100.2, window_end=now + 120, momentum_up=.6)
++    model, up, evidence = selection.predict("live", now, .62, features, INCUMBENT,
++                                            pattern_context=(context, book, 100.0))
++    assert model == current["market_odds_adjustment"]
++    assert 0 < up < 1 and evidence["family"] == "market_odds_adjustment"
++    assert json.dumps(evidence)   # serialisable for paper_model_choices
 diff --git a/btc-prophet/tests/test_learning_smart.py b/btc-prophet/tests/test_learning_smart.py
 index 7fb9732..ac1362d 100644
 --- a/btc-prophet/tests/test_learning_smart.py
@@ -407,6 +777,44 @@ index 7fb9732..ac1362d 100644
 +    learner.train()
 +    status = s.get("learning_status")
 +    assert status["status"] == "WAITING" and status["optional_challenger_shortage"] == 90
+diff --git a/btc-prophet/tests/test_report_simplify.py b/btc-prophet/tests/test_report_simplify.py
+new file mode 100644
+index 0000000..2464991
+--- /dev/null
++++ b/btc-prophet/tests/test_report_simplify.py
+@@ -0,0 +1,32 @@
++import io
++
++from openpyxl import load_workbook
++
++from prophet.app import create_app
++from prophet.v2reporting import LEGACY_OPTIONAL, write_workbook
++from test_v2 import setup
++
++
++def test_full_audit_omits_only_empty_legacy_sheets_and_lists_them(tmp_path, monkeypatch):
++    monkeypatch.delenv("PROPHET_REPORT_KEEP_EMPTY", raising=False)
++    s, _, _ = setup(tmp_path)
++    create_app(s.path, collect=False, auth_required=False).state.paper.recover_startup(1000)
++    out = io.BytesIO()
++    write_workbook(s.path, out)
++    wb = load_workbook(io.BytesIO(out.getvalue()), read_only=True)
++    names = set(wb.sheetnames)
++    assert not names & LEGACY_OPTIONAL
++    assert {"Bug Log", "Unified Trades", "Exit Shadow Comparison", "Model Selection Evidence",
++            "Omitted Empty Sheets"} <= names
++    listed = {r[0] for r in list(wb["Omitted Empty Sheets"].iter_rows(values_only=True))[1:]}
++    assert listed and listed <= LEGACY_OPTIONAL
++
++
++def test_keep_empty_setting_restores_every_sheet(tmp_path, monkeypatch):
++    monkeypatch.setenv("PROPHET_REPORT_KEEP_EMPTY", "1")
++    s, _, _ = setup(tmp_path)
++    create_app(s.path, collect=False, auth_required=False)
++    out = io.BytesIO()
++    write_workbook(s.path, out)
++    names = set(load_workbook(io.BytesIO(out.getvalue()), read_only=True).sheetnames)
++    assert "Omitted Empty Sheets" not in names and "Roulette Pick History" in names
 diff --git a/btc-prophet/tests/test_research_policies.py b/btc-prophet/tests/test_research_policies.py
 new file mode 100644
 index 0000000..263ae00
@@ -488,10 +896,20 @@ index 0000000..263ae00
 +        assert name in evidence["rejections"]
 +    assert evidence["settlement_average_up"] is not None
 diff --git a/btc-prophet/tests/test_unified_v321.py b/btc-prophet/tests/test_unified_v321.py
-index 5db6140..9623a97 100644
+index 5db6140..e6c49bc 100644
 --- a/btc-prophet/tests/test_unified_v321.py
 +++ b/btc-prophet/tests/test_unified_v321.py
-@@ -216,3 +216,26 @@ def test_actual_engine_entry_uses_fresh_book_and_preserves_old_ledgers(tmp_path)
+@@ -84,7 +84,8 @@ def test_wait_then_adaptive_fill_once_at_any_eligible_time_and_settle(tmp_path):
+         assert abs(result["balance"]-(1000+order["quantity"]-order["cost"]))<1e-8
+ 
+ 
+-def test_probability_exit_requires_new_full_quote_and_records_hold(tmp_path):
++def test_probability_exit_requires_new_full_quote_and_records_hold(tmp_path, monkeypatch):
++    monkeypatch.setenv("PROPHET_PRIMARY_EXIT", "probability")   # original early-exit behaviour
+     store,engine = initialize(tmp_path)
+     with store.connect() as db:
+         observe(db)
+@@ -216,3 +217,54 @@ def test_actual_engine_entry_uses_fresh_book_and_preserves_old_ledgers(tmp_path)
      with store.connect() as db:
          assert unified.summary(db,now+1)["position"]["side"]=="UP"
          assert db.execute("SELECT count(*) FROM v2_orders").fetchone()[0]==0
@@ -518,3 +936,31 @@ index 5db6140..9623a97 100644
 +        observe(db,1100,block="STALE_BOOK")
 +        observe(db,1200,block="NO_LIQUIDITY")
 +        assert db.execute("SELECT reason FROM unified_rounds").fetchone()[0]=="NO_LIQUIDITY"
++
++
++def test_default_holds_to_settlement_and_records_shadow_exits(tmp_path, monkeypatch):
++    monkeypatch.delenv("PROPHET_PRIMARY_EXIT", raising=False)
++    store,engine = initialize(tmp_path)
++    with store.connect() as db:
++        observe(db)                                           # enters UP
++        observe(db,1101,raw=.15,level=book(.72,.75,1))        # thin book: no full sale, no shadow
++        assert not db.execute("SELECT 1 FROM unified_exit_shadows").fetchone()
++        observe(db,1103,raw=.15,level=book(.72,.75))          # early-exit rule fires: shadow only
++        observe(db,1104,raw=.15,level=book(.10,.12))          # price collapses: stop-loss shadow
++        trade = db.execute("SELECT * FROM unified_trades").fetchone()
++        assert trade["status"]=="OPEN"
++        assert {r[0] for r in db.execute("SELECT policy FROM unified_exit_shadows")} == {
++            "probability_exit","stop_loss_50"}
++        balance = db.execute("SELECT balance FROM unified_account").fetchone()[0]
++        observe(db,1105,raw=.15,level=book(.72,.75))          # repeated triggers do not duplicate
++        assert db.execute("SELECT count(*) FROM unified_exit_shadows").fetchone()[0]==2
++        assert db.execute("SELECT balance FROM unified_account").fetchone()[0]==balance
++        verify(db,"round",1000,"UP",1305)
++    engine.settle(1310)
++    with store.connect() as db:
++        trade = db.execute("SELECT * FROM unified_trades").fetchone()
++        assert trade["status"]=="SETTLED" and trade["proceeds"]==trade["quantity"]
++        rows = {r["policy"]: r for r in unified.exit_comparison(db)}
++        assert rows["actual"]["pnl"]==rows["hold_to_settlement"]["pnl"]==round(trade["pnl"],4)
++        assert rows["probability_exit"]["exits"]==1 and rows["probability_exit"]["pnl"]<rows["actual"]["pnl"]
++        assert rows["stop_loss_50"]["exits"]==1
