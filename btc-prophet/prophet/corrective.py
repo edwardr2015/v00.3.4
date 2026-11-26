@@ -16,7 +16,7 @@ from .models import BASE_PARTICIPANTS, Models, feature_sequence
 from .pattern_odds import VERSION as PATTERN_VERSION, forecast_from_snapshot
 from .providers import number, timestamp, validate_market
 from .v2risk import CHECKPOINTS
-from . import forecast_metrics, late_exit_research, trade_quality
+from . import forecast_metrics, late_exit_research, settlement_model, trade_quality
 
 STAKE = 5
 GRACE = 8
@@ -93,6 +93,33 @@ def choice(book, terms, side, probability, band, edge, stress=False):
     if probability*fill["quantity"]-fill["total"] < edge*fill["total"]:
         return None,"EDGE_TOO_SMALL"
     return fill,"ELIGIBLE"
+
+
+# Frozen, pre-declared policies from research/feature_research.py and safeguards_sim.py
+# (2026-11-26, 94 markets). Absolute edge: probability - all-in price per contract >= edge.
+RESEARCH_POLICIES = {
+    "late_gap_180s_abs10": dict(model="gap", start=180, edge=.10),
+    "settle_avg_180s_abs10": dict(model="settle", start=180, edge=.10),
+    "settle_mid_blend_90s_abs05": dict(model="blend", start=90, edge=.05),
+}
+
+
+def absolute_choice(book, terms, side, probability, edge, stress=False):
+    terms = dict(terms)
+    if stress:
+        terms.update(theta=min(1, terms["theta"]+.02),slippage_ticks=2)
+    fill,reason = paper_buy(book,side,STAKE,**terms)
+    if not fill:
+        return None,reason
+    if probability - fill["total"]/fill["quantity"] < edge:
+        return None,"EDGE_TOO_SMALL"
+    return fill,"ELIGIBLE"
+
+
+def window_values(db, end, now):
+    """BRTI one-second closes already inside the closing average window (end-60, now]."""
+    return [r[0] for r in db.execute("""SELECT close FROM candles WHERE source='BRTI'
+        AND time>=? AND time<=? ORDER BY time""",(end-settlement_model.WINDOW,now))]
 
 
 def prior_panels(db, checkpoint, now):
@@ -388,6 +415,10 @@ class Research:
             info["seconds_left"],midpoint)["volatility_reference_gap"]
         p,n = calibrate_gap(db,slug,raw,midpoint,now)
         probabilities["reference_gap"] = p
+        settle = settlement_model.probability(info["reference_price"],info["opening"],vol,
+            info["seconds_left"],window_values(db,now+info["seconds_left"],now))
+        if settle is not None:
+            probabilities["settlement_average"] = settle
         components = list(panel["components"].values())
         disagreement = (max(x["up"] for x in components)-min(x["up"] for x in components)) if components else .5
         side = "UP" if p>.5 else "DOWN"
@@ -433,6 +464,11 @@ class Research:
         adjusted,n = calibrate_gap(db,slug,p,midpoint,info["decision"])
         db.execute("INSERT OR IGNORE INTO corrective_gap_forecasts VALUES (?,?,?)",(slug,info["decision"],p))
         info.update(gap_calibrated_up=adjusted,gap_calibration_markets=n)
+        self.research_policy_trials(db,slug,p,midpoint,features,book,terms,info)
+        label = "primary_rule_edge0_40_70"   # safeguards_sim variant C: primary rule, min edge 0
+        side = "UP" if adjusted>=.5 else "DOWN"
+        info["rejections"][label] = self.record(db,slug,label,side,adjusted if side=="UP" else 1-adjusted,
+                                              book,terms,info,(.40,.70),0)
         # Preserve the original rule as one comparison and score calibration separately.
         for name,(confidence,edge) in AGREEMENT.items():
             if p==.5 or midpoint==.5 or (p>.5)!=(midpoint>.5):
@@ -452,6 +488,35 @@ class Research:
             label = f"{family}_eligible_control"
             info["rejections"][label] = self.record(db,slug,label,side,max(prob,1-prob),
                                                    book,terms,info,(.02,.99),-1)
+
+    def research_policy_trials(self, db, slug, gap_p, midpoint, features, book, terms, info):
+        elapsed = 300 - info["seconds_left"]
+        settle = settlement_model.probability(info["reference_price"],info["opening"],
+            features["volatility"],info["seconds_left"],
+            window_values(db,info["decision"]+info["seconds_left"],info["decision"]))
+        info["settlement_average_up"] = settle
+        probs = dict(gap=gap_p,settle=settle,blend=None if settle is None else .5*settle+.5*midpoint)
+        for name,rule in RESEARCH_POLICIES.items():
+            p = probs[rule["model"]]
+            if p is None:
+                info["rejections"][name] = "FORECAST_UNAVAILABLE"
+                continue
+            if elapsed < rule["start"]:
+                info["rejections"][name] = "BEFORE_START"
+                continue
+            reasons = {}
+            for case in ("standard","higher"):
+                # INSERT OR IGNORE keeps the first qualifying entry per market, as record() does,
+                # so repeated identical ticks produce identical evidence.
+                for side,ps in (("UP",p),("DOWN",1-p)):
+                    fill,why = absolute_choice(book,terms,side,ps,rule["edge"],stress=case=="higher")
+                    if fill:
+                        db.execute("INSERT OR IGNORE INTO corrective_trials VALUES (?,?,?,?,?,?,?,?)",
+                            (slug,name,case,info["decision"],side,fill["quantity"],fill["total"],
+                             json.dumps(dict(info,fill=fill,probability=ps,model=rule["model"]))))
+                        break
+                reasons[case] = why
+            info["rejections"][name] = reasons
 
     def panel_trials(self, db, slug, checkpoint, panel, prior, book, terms, info):
         reasons = {}

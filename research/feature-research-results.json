@@ -1,0 +1,1251 @@
+{
+  "markets": 94,
+  "quotes": 8985,
+  "brier": {
+    "0-60s": {
+      "markets": 92,
+      "gap": 0.2557,
+      "settle": 0.2574,
+      "micro": 0.2425,
+      "mid": 0.2418,
+      "recal": 0.2832,
+      "settle_mid_blend": 0.2471
+    },
+    "60-120s": {
+      "markets": 92,
+      "gap": 0.2262,
+      "settle": 0.2296,
+      "micro": 0.1923,
+      "mid": 0.1926,
+      "recal": 0.2068,
+      "settle_mid_blend": 0.2041
+    },
+    "120-180s": {
+      "markets": 92,
+      "gap": 0.1725,
+      "settle": 0.1768,
+      "micro": 0.1613,
+      "mid": 0.1621,
+      "recal": 0.1746,
+      "settle_mid_blend": 0.1612
+    },
+    "180-240s": {
+      "markets": 86,
+      "gap": 0.1199,
+      "settle": 0.1224,
+      "micro": 0.1151,
+      "mid": 0.1141,
+      "recal": 0.1221,
+      "settle_mid_blend": 0.111
+    },
+    "240-300s": {
+      "markets": 59,
+      "gap": 0.0765,
+      "settle": 0.0818,
+      "micro": 0.0664,
+      "mid": 0.0663,
+      "recal": 0.0617,
+      "settle_mid_blend": 0.065
+    }
+  },
+  "trading": {
+    "gap": {
+      "edge0.03_from0s": {
+        "trades": 94,
+        "wins": 47,
+        "win_rate": 0.5,
+        "win_ci95": [
+          0.401,
+          0.599
+        ],
+        "pnl": -59.02,
+        "per_dollar": -0.1257,
+        "first_half_pnl": -55.76,
+        "second_half_pnl": -3.26
+      },
+      "edge0.03_from90s": {
+        "trades": 93,
+        "wins": 65,
+        "win_rate": 0.699,
+        "win_ci95": [
+          0.599,
+          0.783
+        ],
+        "pnl": 2.53,
+        "per_dollar": 0.0054,
+        "first_half_pnl": -1.82,
+        "second_half_pnl": 4.35
+      },
+      "edge0.03_from180s": {
+        "trades": 61,
+        "wins": 49,
+        "win_rate": 0.803,
+        "win_ci95": [
+          0.687,
+          0.884
+        ],
+        "pnl": 29.85,
+        "per_dollar": 0.098,
+        "first_half_pnl": 14.86,
+        "second_half_pnl": 14.99
+      },
+      "edge0.05_from0s": {
+        "trades": 94,
+        "wins": 53,
+        "win_rate": 0.564,
+        "win_ci95": [
+          0.463,
+          0.66
+        ],
+        "pnl": -13.29,
+        "per_dollar": -0.0283,
+        "first_half_pnl": -11.23,
+        "second_half_pnl": -2.05
+      },
+      "edge0.05_from90s": {
+        "trades": 91,
+        "wins": 62,
+        "win_rate": 0.681,
+        "win_ci95": [
+          0.58,
+          0.768
+        ],
+        "pnl": -9.09,
+        "per_dollar": -0.02,
+        "first_half_pnl": -3.47,
+        "second_half_pnl": -5.62
+      },
+      "edge0.05_from180s": {
+        "trades": 58,
+        "wins": 46,
+        "win_rate": 0.793,
+        "win_ci95": [
+          0.672,
+          0.877
+        ],
+        "pnl": 29.4,
+        "per_dollar": 0.1015,
+        "first_half_pnl": 15.03,
+        "second_half_pnl": 14.37
+      },
+      "edge0.08_from0s": {
+        "trades": 92,
+        "wins": 54,
+        "win_rate": 0.587,
+        "win_ci95": [
+          0.485,
+          0.682
+        ],
+        "pnl": -13.51,
+        "per_dollar": -0.0294,
+        "first_half_pnl": 2.76,
+        "second_half_pnl": -16.27
+      },
+      "edge0.08_from90s": {
+        "trades": 85,
+        "wins": 59,
+        "win_rate": 0.694,
+        "win_ci95": [
+          0.59,
+          0.782
+        ],
+        "pnl": 4.72,
+        "per_dollar": 0.0111,
+        "first_half_pnl": 14.02,
+        "second_half_pnl": -9.3
+      },
+      "edge0.08_from180s": {
+        "trades": 43,
+        "wins": 34,
+        "win_rate": 0.791,
+        "win_ci95": [
+          0.648,
+          0.886
+        ],
+        "pnl": 30.55,
+        "per_dollar": 0.1422,
+        "first_half_pnl": 22.41,
+        "second_half_pnl": 8.14
+      },
+      "edge0.1_from0s": {
+        "trades": 90,
+        "wins": 53,
+        "win_rate": 0.589,
+        "win_ci95": [
+          0.486,
+          0.685
+        ],
+        "pnl": -26.84,
+        "per_dollar": -0.0597,
+        "first_half_pnl": -10.33,
+        "second_half_pnl": -16.51
+      },
+      "edge0.1_from90s": {
+        "trades": 79,
+        "wins": 56,
+        "win_rate": 0.709,
+        "win_ci95": [
+          0.601,
+          0.797
+        ],
+        "pnl": 23.48,
+        "per_dollar": 0.0595,
+        "first_half_pnl": 15.96,
+        "second_half_pnl": 7.52
+      },
+      "edge0.1_from180s": {
+        "trades": 39,
+        "wins": 31,
+        "win_rate": 0.795,
+        "win_ci95": [
+          0.645,
+          0.892
+        ],
+        "pnl": 33.84,
+        "per_dollar": 0.1737,
+        "first_half_pnl": 20.7,
+        "second_half_pnl": 13.14
+      },
+      "edge0.15_from0s": {
+        "trades": 70,
+        "wins": 38,
+        "win_rate": 0.543,
+        "win_ci95": [
+          0.427,
+          0.654
+        ],
+        "pnl": -50.83,
+        "per_dollar": -0.1453,
+        "first_half_pnl": -11.08,
+        "second_half_pnl": -39.74
+      },
+      "edge0.15_from90s": {
+        "trades": 58,
+        "wins": 37,
+        "win_rate": 0.638,
+        "win_ci95": [
+          0.509,
+          0.749
+        ],
+        "pnl": 0.45,
+        "per_dollar": 0.0015,
+        "first_half_pnl": 7.7,
+        "second_half_pnl": -7.26
+      },
+      "edge0.15_from180s": {
+        "trades": 27,
+        "wins": 19,
+        "win_rate": 0.704,
+        "win_ci95": [
+          0.515,
+          0.841
+        ],
+        "pnl": 11.44,
+        "per_dollar": 0.0848,
+        "first_half_pnl": 13.37,
+        "second_half_pnl": -1.93
+      },
+      "edge0.2_from0s": {
+        "trades": 55,
+        "wins": 29,
+        "win_rate": 0.527,
+        "win_ci95": [
+          0.398,
+          0.653
+        ],
+        "pnl": -33.7,
+        "per_dollar": -0.1226,
+        "first_half_pnl": -20.32,
+        "second_half_pnl": -13.37
+      },
+      "edge0.2_from90s": {
+        "trades": 46,
+        "wins": 25,
+        "win_rate": 0.543,
+        "win_ci95": [
+          0.402,
+          0.678
+        ],
+        "pnl": -19.7,
+        "per_dollar": -0.0857,
+        "first_half_pnl": -7.44,
+        "second_half_pnl": -12.26
+      },
+      "edge0.2_from180s": {
+        "trades": 16,
+        "wins": 9,
+        "win_rate": 0.562,
+        "win_ci95": [
+          0.332,
+          0.769
+        ],
+        "pnl": -5.84,
+        "per_dollar": -0.073,
+        "first_half_pnl": -3.46,
+        "second_half_pnl": -2.37
+      }
+    },
+    "settle": {
+      "edge0.03_from0s": {
+        "trades": 94,
+        "wins": 49,
+        "win_rate": 0.521,
+        "win_ci95": [
+          0.421,
+          0.619
+        ],
+        "pnl": -49.23,
+        "per_dollar": -0.1048,
+        "first_half_pnl": -52.97,
+        "second_half_pnl": 3.74
+      },
+      "edge0.03_from90s": {
+        "trades": 94,
+        "wins": 65,
+        "win_rate": 0.691,
+        "win_ci95": [
+          0.592,
+          0.776
+        ],
+        "pnl": -2.61,
+        "per_dollar": -0.0056,
+        "first_half_pnl": -7.19,
+        "second_half_pnl": 4.58
+      },
+      "edge0.03_from180s": {
+        "trades": 67,
+        "wins": 56,
+        "win_rate": 0.836,
+        "win_ci95": [
+          0.729,
+          0.906
+        ],
+        "pnl": 36.5,
+        "per_dollar": 0.109,
+        "first_half_pnl": 30.46,
+        "second_half_pnl": 6.04
+      },
+      "edge0.05_from0s": {
+        "trades": 94,
+        "wins": 53,
+        "win_rate": 0.564,
+        "win_ci95": [
+          0.463,
+          0.66
+        ],
+        "pnl": -23.17,
+        "per_dollar": -0.0493,
+        "first_half_pnl": -20.36,
+        "second_half_pnl": -2.8
+      },
+      "edge0.05_from90s": {
+        "trades": 93,
+        "wins": 66,
+        "win_rate": 0.71,
+        "win_ci95": [
+          0.611,
+          0.792
+        ],
+        "pnl": 3.63,
+        "per_dollar": 0.0078,
+        "first_half_pnl": 2.81,
+        "second_half_pnl": 0.82
+      },
+      "edge0.05_from180s": {
+        "trades": 59,
+        "wins": 49,
+        "win_rate": 0.831,
+        "win_ci95": [
+          0.715,
+          0.905
+        ],
+        "pnl": 41.2,
+        "per_dollar": 0.1398,
+        "first_half_pnl": 25.83,
+        "second_half_pnl": 15.37
+      },
+      "edge0.08_from0s": {
+        "trades": 94,
+        "wins": 58,
+        "win_rate": 0.617,
+        "win_ci95": [
+          0.516,
+          0.709
+        ],
+        "pnl": -5.95,
+        "per_dollar": -0.0127,
+        "first_half_pnl": -15.26,
+        "second_half_pnl": 9.31
+      },
+      "edge0.08_from90s": {
+        "trades": 88,
+        "wins": 63,
+        "win_rate": 0.716,
+        "win_ci95": [
+          0.614,
+          0.8
+        ],
+        "pnl": 15.33,
+        "per_dollar": 0.0349,
+        "first_half_pnl": 10.44,
+        "second_half_pnl": 4.89
+      },
+      "edge0.08_from180s": {
+        "trades": 54,
+        "wins": 44,
+        "win_rate": 0.815,
+        "win_ci95": [
+          0.692,
+          0.896
+        ],
+        "pnl": 38.97,
+        "per_dollar": 0.1444,
+        "first_half_pnl": 23.93,
+        "second_half_pnl": 15.03
+      },
+      "edge0.1_from0s": {
+        "trades": 93,
+        "wins": 56,
+        "win_rate": 0.602,
+        "win_ci95": [
+          0.501,
+          0.696
+        ],
+        "pnl": -22.7,
+        "per_dollar": -0.0488,
+        "first_half_pnl": -14.99,
+        "second_half_pnl": -7.71
+      },
+      "edge0.1_from90s": {
+        "trades": 84,
+        "wins": 59,
+        "win_rate": 0.702,
+        "win_ci95": [
+          0.598,
+          0.79
+        ],
+        "pnl": 10.51,
+        "per_dollar": 0.0251,
+        "first_half_pnl": 8.54,
+        "second_half_pnl": 1.98
+      },
+      "edge0.1_from180s": {
+        "trades": 46,
+        "wins": 37,
+        "win_rate": 0.804,
+        "win_ci95": [
+          0.668,
+          0.893
+        ],
+        "pnl": 33.68,
+        "per_dollar": 0.1466,
+        "first_half_pnl": 22.13,
+        "second_half_pnl": 11.55
+      },
+      "edge0.15_from0s": {
+        "trades": 81,
+        "wins": 49,
+        "win_rate": 0.605,
+        "win_ci95": [
+          0.496,
+          0.704
+        ],
+        "pnl": -28.64,
+        "per_dollar": -0.0708,
+        "first_half_pnl": -8.51,
+        "second_half_pnl": -20.13
+      },
+      "edge0.15_from90s": {
+        "trades": 72,
+        "wins": 50,
+        "win_rate": 0.694,
+        "win_ci95": [
+          0.58,
+          0.789
+        ],
+        "pnl": 16.41,
+        "per_dollar": 0.0456,
+        "first_half_pnl": 14.63,
+        "second_half_pnl": 1.78
+      },
+      "edge0.15_from180s": {
+        "trades": 36,
+        "wins": 26,
+        "win_rate": 0.722,
+        "win_ci95": [
+          0.56,
+          0.842
+        ],
+        "pnl": 12.74,
+        "per_dollar": 0.0708,
+        "first_half_pnl": 8.41,
+        "second_half_pnl": 4.33
+      },
+      "edge0.2_from0s": {
+        "trades": 61,
+        "wins": 36,
+        "win_rate": 0.59,
+        "win_ci95": [
+          0.465,
+          0.705
+        ],
+        "pnl": -16.46,
+        "per_dollar": -0.054,
+        "first_half_pnl": -10.15,
+        "second_half_pnl": -6.31
+      },
+      "edge0.2_from90s": {
+        "trades": 52,
+        "wins": 32,
+        "win_rate": 0.615,
+        "win_ci95": [
+          0.48,
+          0.735
+        ],
+        "pnl": -0.98,
+        "per_dollar": -0.0038,
+        "first_half_pnl": 4.22,
+        "second_half_pnl": -5.2
+      },
+      "edge0.2_from180s": {
+        "trades": 25,
+        "wins": 19,
+        "win_rate": 0.76,
+        "win_ci95": [
+          0.566,
+          0.885
+        ],
+        "pnl": 22.73,
+        "per_dollar": 0.182,
+        "first_half_pnl": 17.32,
+        "second_half_pnl": 5.41
+      }
+    },
+    "micro": {
+      "edge0.03_from0s": {
+        "trades": 0
+      },
+      "edge0.03_from90s": {
+        "trades": 0
+      },
+      "edge0.03_from180s": {
+        "trades": 0
+      },
+      "edge0.05_from0s": {
+        "trades": 0
+      },
+      "edge0.05_from90s": {
+        "trades": 0
+      },
+      "edge0.05_from180s": {
+        "trades": 0
+      },
+      "edge0.08_from0s": {
+        "trades": 0
+      },
+      "edge0.08_from90s": {
+        "trades": 0
+      },
+      "edge0.08_from180s": {
+        "trades": 0
+      },
+      "edge0.1_from0s": {
+        "trades": 0
+      },
+      "edge0.1_from90s": {
+        "trades": 0
+      },
+      "edge0.1_from180s": {
+        "trades": 0
+      },
+      "edge0.15_from0s": {
+        "trades": 0
+      },
+      "edge0.15_from90s": {
+        "trades": 0
+      },
+      "edge0.15_from180s": {
+        "trades": 0
+      },
+      "edge0.2_from0s": {
+        "trades": 0
+      },
+      "edge0.2_from90s": {
+        "trades": 0
+      },
+      "edge0.2_from180s": {
+        "trades": 0
+      }
+    },
+    "mid": {
+      "edge0.03_from0s": {
+        "trades": 0
+      },
+      "edge0.03_from90s": {
+        "trades": 0
+      },
+      "edge0.03_from180s": {
+        "trades": 0
+      },
+      "edge0.05_from0s": {
+        "trades": 0
+      },
+      "edge0.05_from90s": {
+        "trades": 0
+      },
+      "edge0.05_from180s": {
+        "trades": 0
+      },
+      "edge0.08_from0s": {
+        "trades": 0
+      },
+      "edge0.08_from90s": {
+        "trades": 0
+      },
+      "edge0.08_from180s": {
+        "trades": 0
+      },
+      "edge0.1_from0s": {
+        "trades": 0
+      },
+      "edge0.1_from90s": {
+        "trades": 0
+      },
+      "edge0.1_from180s": {
+        "trades": 0
+      },
+      "edge0.15_from0s": {
+        "trades": 0
+      },
+      "edge0.15_from90s": {
+        "trades": 0
+      },
+      "edge0.15_from180s": {
+        "trades": 0
+      },
+      "edge0.2_from0s": {
+        "trades": 0
+      },
+      "edge0.2_from90s": {
+        "trades": 0
+      },
+      "edge0.2_from180s": {
+        "trades": 0
+      }
+    },
+    "recal": {
+      "edge0.03_from0s": {
+        "trades": 83,
+        "wins": 56,
+        "win_rate": 0.675,
+        "win_ci95": [
+          0.568,
+          0.766
+        ],
+        "pnl": -39.26,
+        "per_dollar": -0.0947,
+        "first_half_pnl": -6.43,
+        "second_half_pnl": -32.82
+      },
+      "edge0.03_from90s": {
+        "trades": 80,
+        "wins": 61,
+        "win_rate": 0.762,
+        "win_ci95": [
+          0.659,
+          0.842
+        ],
+        "pnl": -8.36,
+        "per_dollar": -0.0209,
+        "first_half_pnl": 5.73,
+        "second_half_pnl": -14.09
+      },
+      "edge0.03_from180s": {
+        "trades": 55,
+        "wins": 49,
+        "win_rate": 0.891,
+        "win_ci95": [
+          0.782,
+          0.949
+        ],
+        "pnl": 25.37,
+        "per_dollar": 0.0923,
+        "first_half_pnl": 6.37,
+        "second_half_pnl": 19.0
+      },
+      "edge0.05_from0s": {
+        "trades": 81,
+        "wins": 58,
+        "win_rate": 0.716,
+        "win_ci95": [
+          0.61,
+          0.803
+        ],
+        "pnl": -23.62,
+        "per_dollar": -0.0584,
+        "first_half_pnl": -6.43,
+        "second_half_pnl": -17.18
+      },
+      "edge0.05_from90s": {
+        "trades": 75,
+        "wins": 59,
+        "win_rate": 0.787,
+        "win_ci95": [
+          0.681,
+          0.864
+        ],
+        "pnl": -0.23,
+        "per_dollar": -0.0006,
+        "first_half_pnl": 4.84,
+        "second_half_pnl": -5.07
+      },
+      "edge0.05_from180s": {
+        "trades": 47,
+        "wins": 41,
+        "win_rate": 0.872,
+        "win_ci95": [
+          0.748,
+          0.94
+        ],
+        "pnl": 14.97,
+        "per_dollar": 0.0638,
+        "first_half_pnl": 5.85,
+        "second_half_pnl": 9.12
+      },
+      "edge0.08_from0s": {
+        "trades": 62,
+        "wins": 45,
+        "win_rate": 0.726,
+        "win_ci95": [
+          0.604,
+          0.821
+        ],
+        "pnl": -15.15,
+        "per_dollar": -0.0489,
+        "first_half_pnl": -1.97,
+        "second_half_pnl": -13.18
+      },
+      "edge0.08_from90s": {
+        "trades": 55,
+        "wins": 43,
+        "win_rate": 0.782,
+        "win_ci95": [
+          0.656,
+          0.871
+        ],
+        "pnl": -0.38,
+        "per_dollar": -0.0014,
+        "first_half_pnl": 6.38,
+        "second_half_pnl": -6.76
+      },
+      "edge0.08_from180s": {
+        "trades": 32,
+        "wins": 28,
+        "win_rate": 0.875,
+        "win_ci95": [
+          0.719,
+          0.95
+        ],
+        "pnl": 12.94,
+        "per_dollar": 0.081,
+        "first_half_pnl": 3.5,
+        "second_half_pnl": 9.44
+      },
+      "edge0.1_from0s": {
+        "trades": 53,
+        "wins": 38,
+        "win_rate": 0.717,
+        "win_ci95": [
+          0.584,
+          0.82
+        ],
+        "pnl": -10.92,
+        "per_dollar": -0.0412,
+        "first_half_pnl": 3.61,
+        "second_half_pnl": -14.53
+      },
+      "edge0.1_from90s": {
+        "trades": 43,
+        "wins": 32,
+        "win_rate": 0.744,
+        "win_ci95": [
+          0.598,
+          0.851
+        ],
+        "pnl": -6.51,
+        "per_dollar": -0.0303,
+        "first_half_pnl": 1.62,
+        "second_half_pnl": -8.13
+      },
+      "edge0.1_from180s": {
+        "trades": 20,
+        "wins": 17,
+        "win_rate": 0.85,
+        "win_ci95": [
+          0.64,
+          0.948
+        ],
+        "pnl": 7.34,
+        "per_dollar": 0.0734,
+        "first_half_pnl": -0.7,
+        "second_half_pnl": 8.03
+      },
+      "edge0.15_from0s": {
+        "trades": 24,
+        "wins": 18,
+        "win_rate": 0.75,
+        "win_ci95": [
+          0.551,
+          0.88
+        ],
+        "pnl": 5.14,
+        "per_dollar": 0.0429,
+        "first_half_pnl": 10.14,
+        "second_half_pnl": -4.99
+      },
+      "edge0.15_from90s": {
+        "trades": 16,
+        "wins": 11,
+        "win_rate": 0.688,
+        "win_ci95": [
+          0.444,
+          0.858
+        ],
+        "pnl": -6.67,
+        "per_dollar": -0.0835,
+        "first_half_pnl": -6.67,
+        "second_half_pnl": 0
+      },
+      "edge0.15_from180s": {
+        "trades": 8,
+        "wins": 7,
+        "win_rate": 0.875,
+        "win_ci95": [
+          0.529,
+          0.978
+        ],
+        "pnl": 4.38,
+        "per_dollar": 0.1095,
+        "first_half_pnl": 4.38,
+        "second_half_pnl": 0
+      },
+      "edge0.2_from0s": {
+        "trades": 9,
+        "wins": 7,
+        "win_rate": 0.778,
+        "win_ci95": [
+          0.453,
+          0.937
+        ],
+        "pnl": 4.53,
+        "per_dollar": 0.1007,
+        "first_half_pnl": 4.53,
+        "second_half_pnl": 0
+      },
+      "edge0.2_from90s": {
+        "trades": 5,
+        "wins": 4,
+        "win_rate": 0.8,
+        "win_ci95": [
+          0.376,
+          0.964
+        ],
+        "pnl": 3.15,
+        "per_dollar": 0.1263,
+        "first_half_pnl": 3.15,
+        "second_half_pnl": 0
+      },
+      "edge0.2_from180s": {
+        "trades": 1,
+        "wins": 1,
+        "win_rate": 1.0,
+        "win_ci95": [
+          0.207,
+          1.0
+        ],
+        "pnl": 1.66,
+        "per_dollar": 0.3315,
+        "first_half_pnl": 1.66,
+        "second_half_pnl": 0
+      }
+    },
+    "settle_mid_blend": {
+      "edge0.03_from0s": {
+        "trades": 94,
+        "wins": 57,
+        "win_rate": 0.606,
+        "win_ci95": [
+          0.505,
+          0.699
+        ],
+        "pnl": -23.05,
+        "per_dollar": -0.0491,
+        "first_half_pnl": -14.39,
+        "second_half_pnl": -8.66
+      },
+      "edge0.03_from90s": {
+        "trades": 87,
+        "wins": 62,
+        "win_rate": 0.713,
+        "win_ci95": [
+          0.61,
+          0.797
+        ],
+        "pnl": 11.95,
+        "per_dollar": 0.0275,
+        "first_half_pnl": 10.29,
+        "second_half_pnl": 1.66
+      },
+      "edge0.03_from180s": {
+        "trades": 49,
+        "wins": 40,
+        "win_rate": 0.816,
+        "win_ci95": [
+          0.686,
+          0.9
+        ],
+        "pnl": 35.88,
+        "per_dollar": 0.1466,
+        "first_half_pnl": 24.33,
+        "second_half_pnl": 11.55
+      },
+      "edge0.05_from0s": {
+        "trades": 86,
+        "wins": 52,
+        "win_rate": 0.605,
+        "win_ci95": [
+          0.499,
+          0.701
+        ],
+        "pnl": -40.34,
+        "per_dollar": -0.0939,
+        "first_half_pnl": -17.68,
+        "second_half_pnl": -22.66
+      },
+      "edge0.05_from90s": {
+        "trades": 78,
+        "wins": 56,
+        "win_rate": 0.718,
+        "win_ci95": [
+          0.61,
+          0.806
+        ],
+        "pnl": 22.86,
+        "per_dollar": 0.0587,
+        "first_half_pnl": 18.43,
+        "second_half_pnl": 4.43
+      },
+      "edge0.05_from180s": {
+        "trades": 39,
+        "wins": 30,
+        "win_rate": 0.769,
+        "win_ci95": [
+          0.617,
+          0.874
+        ],
+        "pnl": 22.27,
+        "per_dollar": 0.1143,
+        "first_half_pnl": 11.62,
+        "second_half_pnl": 10.65
+      },
+      "edge0.08_from0s": {
+        "trades": 62,
+        "wins": 37,
+        "win_rate": 0.597,
+        "win_ci95": [
+          0.473,
+          0.71
+        ],
+        "pnl": -14.97,
+        "per_dollar": -0.0483,
+        "first_half_pnl": -10.15,
+        "second_half_pnl": -4.82
+      },
+      "edge0.08_from90s": {
+        "trades": 52,
+        "wins": 32,
+        "win_rate": 0.615,
+        "win_ci95": [
+          0.48,
+          0.735
+        ],
+        "pnl": -1.88,
+        "per_dollar": -0.0072,
+        "first_half_pnl": 3.32,
+        "second_half_pnl": -5.2
+      },
+      "edge0.08_from180s": {
+        "trades": 24,
+        "wins": 19,
+        "win_rate": 0.792,
+        "win_ci95": [
+          0.595,
+          0.908
+        ],
+        "pnl": 28.06,
+        "per_dollar": 0.234,
+        "first_half_pnl": 17.32,
+        "second_half_pnl": 10.74
+      },
+      "edge0.1_from0s": {
+        "trades": 48,
+        "wins": 26,
+        "win_rate": 0.542,
+        "win_ci95": [
+          0.403,
+          0.674
+        ],
+        "pnl": -26.0,
+        "per_dollar": -0.1084,
+        "first_half_pnl": -16.44,
+        "second_half_pnl": -9.56
+      },
+      "edge0.1_from90s": {
+        "trades": 39,
+        "wins": 22,
+        "win_rate": 0.564,
+        "win_ci95": [
+          0.41,
+          0.707
+        ],
+        "pnl": -12.3,
+        "per_dollar": -0.0631,
+        "first_half_pnl": -2.13,
+        "second_half_pnl": -10.16
+      },
+      "edge0.1_from180s": {
+        "trades": 14,
+        "wins": 9,
+        "win_rate": 0.643,
+        "win_ci95": [
+          0.388,
+          0.837
+        ],
+        "pnl": 7.12,
+        "per_dollar": 0.1019,
+        "first_half_pnl": 4.5,
+        "second_half_pnl": 2.62
+      },
+      "edge0.15_from0s": {
+        "trades": 18,
+        "wins": 5,
+        "win_rate": 0.278,
+        "win_ci95": [
+          0.125,
+          0.509
+        ],
+        "pnl": -36.66,
+        "per_dollar": -0.4075,
+        "first_half_pnl": -20.86,
+        "second_half_pnl": -15.8
+      },
+      "edge0.15_from90s": {
+        "trades": 15,
+        "wins": 5,
+        "win_rate": 0.333,
+        "win_ci95": [
+          0.152,
+          0.583
+        ],
+        "pnl": -21.48,
+        "per_dollar": -0.2865,
+        "first_half_pnl": -15.86,
+        "second_half_pnl": -5.62
+      },
+      "edge0.15_from180s": {
+        "trades": 3,
+        "wins": 2,
+        "win_rate": 0.667,
+        "win_ci95": [
+          0.208,
+          0.939
+        ],
+        "pnl": 3.51,
+        "per_dollar": 0.2339,
+        "first_half_pnl": 0,
+        "second_half_pnl": 3.51
+      },
+      "edge0.2_from0s": {
+        "trades": 6,
+        "wins": 2,
+        "win_rate": 0.333,
+        "win_ci95": [
+          0.097,
+          0.7
+        ],
+        "pnl": -5.15,
+        "per_dollar": -0.1716,
+        "first_half_pnl": 0,
+        "second_half_pnl": -5.15
+      },
+      "edge0.2_from90s": {
+        "trades": 4,
+        "wins": 2,
+        "win_rate": 0.5,
+        "win_ci95": [
+          0.15,
+          0.85
+        ],
+        "pnl": 4.85,
+        "per_dollar": 0.2426,
+        "first_half_pnl": 0,
+        "second_half_pnl": 4.85
+      },
+      "edge0.2_from180s": {
+        "trades": 2,
+        "wins": 1,
+        "win_rate": 0.5,
+        "win_ci95": [
+          0.095,
+          0.905
+        ],
+        "pnl": -0.15,
+        "per_dollar": -0.0146,
+        "first_half_pnl": 0,
+        "second_half_pnl": -0.15
+      }
+    }
+  },
+  "walk_forward": {
+    "gap": {
+      "chosen_edge": 0.08,
+      "chosen_start": 180,
+      "train": {
+        "trades": 20,
+        "wins": 18,
+        "win_rate": 0.9,
+        "win_ci95": [
+          0.699,
+          0.972
+        ],
+        "pnl": 22.41,
+        "per_dollar": 0.2243,
+        "first_half_pnl": 22.41,
+        "second_half_pnl": 0
+      },
+      "test": {
+        "trades": 23,
+        "wins": 16,
+        "win_rate": 0.696,
+        "win_ci95": [
+          0.491,
+          0.844
+        ],
+        "pnl": 8.14,
+        "per_dollar": 0.0709,
+        "first_half_pnl": 0,
+        "second_half_pnl": 8.14
+      }
+    },
+    "settle": {
+      "chosen_edge": 0.03,
+      "chosen_start": 180,
+      "train": {
+        "trades": 33,
+        "wins": 31,
+        "win_rate": 0.939,
+        "win_ci95": [
+          0.804,
+          0.983
+        ],
+        "pnl": 30.46,
+        "per_dollar": 0.1848,
+        "first_half_pnl": 30.46,
+        "second_half_pnl": 0
+      },
+      "test": {
+        "trades": 34,
+        "wins": 25,
+        "win_rate": 0.735,
+        "win_ci95": [
+          0.569,
+          0.854
+        ],
+        "pnl": 6.04,
+        "per_dollar": 0.0355,
+        "first_half_pnl": 0,
+        "second_half_pnl": 6.04
+      }
+    },
+    "micro": {
+      "chosen_edge": 0.03,
+      "chosen_start": 0,
+      "train": {
+        "trades": 0
+      },
+      "test": {
+        "trades": 0
+      }
+    },
+    "mid": {
+      "chosen_edge": 0.03,
+      "chosen_start": 0,
+      "train": {
+        "trades": 0
+      },
+      "test": {
+        "trades": 0
+      }
+    },
+    "recal": {
+      "chosen_edge": 0.15,
+      "chosen_start": 0,
+      "train": {
+        "trades": 23,
+        "wins": 18,
+        "win_rate": 0.783,
+        "win_ci95": [
+          0.581,
+          0.903
+        ],
+        "pnl": 10.14,
+        "per_dollar": 0.0882,
+        "first_half_pnl": 10.14,
+        "second_half_pnl": 0
+      },
+      "test": {
+        "trades": 1,
+        "wins": 0,
+        "win_rate": 0.0,
+        "win_ci95": [
+          0.0,
+          0.793
+        ],
+        "pnl": -4.99,
+        "per_dollar": -1.0,
+        "first_half_pnl": 0,
+        "second_half_pnl": -4.99
+      }
+    },
+    "settle_mid_blend": {
+      "chosen_edge": 0.03,
+      "chosen_start": 180,
+      "train": {
+        "trades": 23,
+        "wins": 21,
+        "win_rate": 0.913,
+        "win_ci95": [
+          0.732,
+          0.976
+        ],
+        "pnl": 24.33,
+        "per_dollar": 0.2118,
+        "first_half_pnl": 24.33,
+        "second_half_pnl": 0
+      },
+      "test": {
+        "trades": 26,
+        "wins": 19,
+        "win_rate": 0.731,
+        "win_ci95": [
+          0.539,
+          0.863
+        ],
+        "pnl": 11.55,
+        "per_dollar": 0.0889,
+        "first_half_pnl": 0,
+        "second_half_pnl": 11.55
+      }
+    }
+  }
+}
