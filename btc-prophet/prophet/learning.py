@@ -9,7 +9,7 @@ from pathlib import Path
 
 from .history import History
 
-CHALLENGER_MINIMUM = 300  # prophet.models.Models.train; the 200 gate covers only the logistic challenger
+from .training_limits import describe, min_training_markets, retrain_seconds
 from .research import (
     baseline_probability,
     challenger_probability,
@@ -126,12 +126,15 @@ class Learning:
                     )
                 )
         rows = sorted(rows, key=lambda r: r["decision_time"])
-        if len(rows) < 200:
+        minimum = min_training_markets()
+        if len(rows) < minimum:
             self.store.put(
                 "learning_status",
-                dict(status="WAITING", examples=len(rows), message="Need 200 labelled examples",
-                     minimum=200, optional_challenger_minimum=CHALLENGER_MINIMUM,
-                     optional_challenger_shortage=max(0, CHALLENGER_MINIMUM - len(rows))),
+                dict(status="WAITING", examples=len(rows),
+                     message=f"Need {minimum} labelled examples",
+                     minimum=minimum, optional_challenger_minimum=minimum,
+                     optional_challenger_shortage=max(0, minimum - len(rows)),
+                     training_limits=describe(len(rows))),
             )
             return
         cut = rows[int(len(rows) * 0.8)]["decision_time"]
@@ -202,8 +205,9 @@ class Learning:
                 examples=len(rows),
                 brier=score["brier_score"],
                 active_model_unchanged=True,
-                optional_challenger_minimum=CHALLENGER_MINIMUM,
+                optional_challenger_minimum=min_training_markets(),
                 optional_challengers=challengers,
+                training_limits=describe(len(rows)),
             ),
         )
 
@@ -282,7 +286,7 @@ class Learning:
                 self.collect_labels()
                 if self.store.get("mode") in ("LEARN", "SIMULATE"):
                     status = self.store.get("learning_status") or {}
-                    interval = 300 if status.get("status") == "WAITING" else 12 * 3600
+                    interval = 300 if status.get("status") == "WAITING" else retrain_seconds()
                     if time.time() - self.store.get("learning_last_attempt", 0) >= interval:
                         self.store.put("learning_last_attempt", time.time())
                         await asyncio.to_thread(self.train)

@@ -1,0 +1,602 @@
+{
+  "A baseline (current primary rule)": {
+    "all": {
+      "trades": 49,
+      "skips": 45,
+      "wins": 29,
+      "win_rate": 0.592,
+      "win_ci95": [
+        0.452,
+        0.718
+      ],
+      "net_pnl": 15.4,
+      "per_dollar": 0.0629,
+      "max_drawdown": 26.19,
+      "early_exits": 17,
+      "flips": 0,
+      "hold_instead_pnl": -9.38
+    },
+    "first_half": {
+      "trades": 22,
+      "skips": 25,
+      "wins": 14,
+      "win_rate": 0.636,
+      "win_ci95": [
+        0.43,
+        0.803
+      ],
+      "net_pnl": 15.84,
+      "per_dollar": 0.1441,
+      "max_drawdown": 9.48,
+      "early_exits": 7,
+      "flips": 0,
+      "hold_instead_pnl": -0.98
+    },
+    "second_half": {
+      "trades": 27,
+      "skips": 20,
+      "wins": 15,
+      "win_rate": 0.556,
+      "win_ci95": [
+        0.373,
+        0.724
+      ],
+      "net_pnl": -0.43,
+      "per_dollar": -0.0032,
+      "max_drawdown": 22.46,
+      "early_exits": 10,
+      "flips": 0,
+      "hold_instead_pnl": -8.4
+    }
+  },
+  "B no price band": {
+    "all": {
+      "trades": 67,
+      "skips": 27,
+      "wins": 31,
+      "win_rate": 0.463,
+      "win_ci95": [
+        0.349,
+        0.581
+      ],
+      "net_pnl": -9.43,
+      "per_dollar": -0.0282,
+      "max_drawdown": 36.63,
+      "early_exits": 31,
+      "flips": 0,
+      "hold_instead_pnl": -70.75
+    },
+    "first_half": {
+      "trades": 31,
+      "skips": 16,
+      "wins": 15,
+      "win_rate": 0.484,
+      "win_ci95": [
+        0.32,
+        0.652
+      ],
+      "net_pnl": -6.18,
+      "per_dollar": -0.0399,
+      "max_drawdown": 23.56,
+      "early_exits": 12,
+      "flips": 0,
+      "hold_instead_pnl": -27.05
+    },
+    "second_half": {
+      "trades": 36,
+      "skips": 11,
+      "wins": 16,
+      "win_rate": 0.444,
+      "win_ci95": [
+        0.295,
+        0.604
+      ],
+      "net_pnl": -3.25,
+      "per_dollar": -0.0181,
+      "max_drawdown": 18.62,
+      "early_exits": 19,
+      "flips": 0,
+      "hold_instead_pnl": -43.7
+    }
+  },
+  "C no minimum edge (EV >= 0)": {
+    "all": {
+      "trades": 72,
+      "skips": 22,
+      "wins": 41,
+      "win_rate": 0.569,
+      "win_ci95": [
+        0.454,
+        0.677
+      ],
+      "net_pnl": 25.6,
+      "per_dollar": 0.0712,
+      "max_drawdown": 16.53,
+      "early_exits": 30,
+      "flips": 0,
+      "hold_instead_pnl": -15.38
+    },
+    "first_half": {
+      "trades": 33,
+      "skips": 14,
+      "wins": 19,
+      "win_rate": 0.576,
+      "win_ci95": [
+        0.408,
+        0.728
+      ],
+      "net_pnl": 12.04,
+      "per_dollar": 0.073,
+      "max_drawdown": 8.54,
+      "early_exits": 14,
+      "flips": 0,
+      "hold_instead_pnl": -39.73
+    },
+    "second_half": {
+      "trades": 39,
+      "skips": 8,
+      "wins": 22,
+      "win_rate": 0.564,
+      "win_ci95": [
+        0.41,
+        0.707
+      ],
+      "net_pnl": 13.57,
+      "per_dollar": 0.0696,
+      "max_drawdown": 16.53,
+      "early_exits": 16,
+      "flips": 0,
+      "hold_instead_pnl": 24.35
+    }
+  },
+  "D no edge at all (best side always)": {
+    "all": {
+      "trades": 81,
+      "skips": 13,
+      "wins": 35,
+      "win_rate": 0.432,
+      "win_ci95": [
+        0.33,
+        0.541
+      ],
+      "net_pnl": -28.8,
+      "per_dollar": -0.0712,
+      "max_drawdown": 49.42,
+      "early_exits": 54,
+      "flips": 0,
+      "hold_instead_pnl": -43.91
+    },
+    "first_half": {
+      "trades": 39,
+      "skips": 8,
+      "wins": 17,
+      "win_rate": 0.436,
+      "win_ci95": [
+        0.293,
+        0.59
+      ],
+      "net_pnl": -9.82,
+      "per_dollar": -0.0504,
+      "max_drawdown": 17.92,
+      "early_exits": 27,
+      "flips": 0,
+      "hold_instead_pnl": -50.11
+    },
+    "second_half": {
+      "trades": 42,
+      "skips": 5,
+      "wins": 18,
+      "win_rate": 0.429,
+      "win_ci95": [
+        0.291,
+        0.578
+      ],
+      "net_pnl": -18.98,
+      "per_dollar": -0.0904,
+      "max_drawdown": 42.16,
+      "early_exits": 27,
+      "flips": 0,
+      "hold_instead_pnl": 6.19
+    }
+  },
+  "E raw model, no market shrink": {
+    "all": {
+      "trades": 71,
+      "skips": 23,
+      "wins": 37,
+      "win_rate": 0.521,
+      "win_ci95": [
+        0.407,
+        0.633
+      ],
+      "net_pnl": -2.09,
+      "per_dollar": -0.0059,
+      "max_drawdown": 31.06,
+      "early_exits": 38,
+      "flips": 0,
+      "hold_instead_pnl": -21.3
+    },
+    "first_half": {
+      "trades": 32,
+      "skips": 15,
+      "wins": 17,
+      "win_rate": 0.531,
+      "win_ci95": [
+        0.364,
+        0.691
+      ],
+      "net_pnl": -2.0,
+      "per_dollar": -0.0125,
+      "max_drawdown": 16.18,
+      "early_exits": 16,
+      "flips": 0,
+      "hold_instead_pnl": -42.58
+    },
+    "second_half": {
+      "trades": 39,
+      "skips": 8,
+      "wins": 20,
+      "win_rate": 0.513,
+      "win_ci95": [
+        0.362,
+        0.661
+      ],
+      "net_pnl": -0.09,
+      "per_dollar": -0.0005,
+      "max_drawdown": 22.52,
+      "early_exits": 22,
+      "flips": 0,
+      "hold_instead_pnl": 21.28
+    }
+  },
+  "F hold to settlement (no early exit)": {
+    "all": {
+      "trades": 49,
+      "skips": 45,
+      "wins": 30,
+      "win_rate": 0.612,
+      "win_ci95": [
+        0.472,
+        0.736
+      ],
+      "net_pnl": -9.38,
+      "per_dollar": -0.0383,
+      "max_drawdown": 44.1,
+      "early_exits": 0,
+      "flips": 0,
+      "hold_instead_pnl": -9.38
+    },
+    "first_half": {
+      "trades": 22,
+      "skips": 25,
+      "wins": 14,
+      "win_rate": 0.636,
+      "win_ci95": [
+        0.43,
+        0.803
+      ],
+      "net_pnl": -0.98,
+      "per_dollar": -0.0089,
+      "max_drawdown": 21.79,
+      "early_exits": 0,
+      "flips": 0,
+      "hold_instead_pnl": -0.98
+    },
+    "second_half": {
+      "trades": 27,
+      "skips": 20,
+      "wins": 16,
+      "win_rate": 0.593,
+      "win_ci95": [
+        0.407,
+        0.755
+      ],
+      "net_pnl": -8.4,
+      "per_dollar": -0.0622,
+      "max_drawdown": 26.81,
+      "early_exits": 0,
+      "flips": 0,
+      "hold_instead_pnl": -8.4
+    }
+  },
+  "G flips allowed": {
+    "all": {
+      "trades": 49,
+      "skips": 45,
+      "wins": 29,
+      "win_rate": 0.592,
+      "win_ci95": [
+        0.452,
+        0.718
+      ],
+      "net_pnl": 15.4,
+      "per_dollar": 0.0629,
+      "max_drawdown": 26.19,
+      "early_exits": 17,
+      "flips": 0,
+      "hold_instead_pnl": -9.38
+    },
+    "first_half": {
+      "trades": 22,
+      "skips": 25,
+      "wins": 14,
+      "win_rate": 0.636,
+      "win_ci95": [
+        0.43,
+        0.803
+      ],
+      "net_pnl": 15.84,
+      "per_dollar": 0.1441,
+      "max_drawdown": 9.48,
+      "early_exits": 7,
+      "flips": 0,
+      "hold_instead_pnl": -0.98
+    },
+    "second_half": {
+      "trades": 27,
+      "skips": 20,
+      "wins": 15,
+      "win_rate": 0.556,
+      "win_ci95": [
+        0.373,
+        0.724
+      ],
+      "net_pnl": -0.43,
+      "per_dollar": -0.0032,
+      "max_drawdown": 22.46,
+      "early_exits": 10,
+      "flips": 0,
+      "hold_instead_pnl": -8.4
+    }
+  },
+  "H entries only before 90 s": {
+    "all": {
+      "trades": 30,
+      "skips": 64,
+      "wins": 17,
+      "win_rate": 0.567,
+      "win_ci95": [
+        0.392,
+        0.726
+      ],
+      "net_pnl": 10.1,
+      "per_dollar": 0.0674,
+      "max_drawdown": 16.43,
+      "early_exits": 12,
+      "flips": 0,
+      "hold_instead_pnl": -10.59
+    },
+    "first_half": {
+      "trades": 15,
+      "skips": 32,
+      "wins": 10,
+      "win_rate": 0.667,
+      "win_ci95": [
+        0.417,
+        0.848
+      ],
+      "net_pnl": 14.76,
+      "per_dollar": 0.197,
+      "max_drawdown": 3.68,
+      "early_exits": 5,
+      "flips": 0,
+      "hold_instead_pnl": -0.6
+    },
+    "second_half": {
+      "trades": 15,
+      "skips": 32,
+      "wins": 7,
+      "win_rate": 0.467,
+      "win_ci95": [
+        0.248,
+        0.699
+      ],
+      "net_pnl": -4.66,
+      "per_dollar": -0.0622,
+      "max_drawdown": 16.43,
+      "early_exits": 7,
+      "flips": 0,
+      "hold_instead_pnl": -9.99
+    }
+  },
+  "I entries only at/after 90 s": {
+    "all": {
+      "trades": 39,
+      "skips": 55,
+      "wins": 24,
+      "win_rate": 0.615,
+      "win_ci95": [
+        0.459,
+        0.751
+      ],
+      "net_pnl": 19.32,
+      "per_dollar": 0.0992,
+      "max_drawdown": 19.89,
+      "early_exits": 13,
+      "flips": 0,
+      "hold_instead_pnl": 12.07
+    },
+    "first_half": {
+      "trades": 17,
+      "skips": 30,
+      "wins": 12,
+      "win_rate": 0.706,
+      "win_ci95": [
+        0.469,
+        0.867
+      ],
+      "net_pnl": 17.54,
+      "per_dollar": 0.2065,
+      "max_drawdown": 7.85,
+      "early_exits": 4,
+      "flips": 0,
+      "hold_instead_pnl": 8.23
+    },
+    "second_half": {
+      "trades": 22,
+      "skips": 25,
+      "wins": 12,
+      "win_rate": 0.545,
+      "win_ci95": [
+        0.347,
+        0.731
+      ],
+      "net_pnl": 1.78,
+      "per_dollar": 0.0162,
+      "max_drawdown": 18.47,
+      "early_exits": 9,
+      "flips": 0,
+      "hold_instead_pnl": 3.83
+    }
+  },
+  "J add model+market agreement": {
+    "all": {
+      "trades": 40,
+      "skips": 54,
+      "wins": 28,
+      "win_rate": 0.7,
+      "win_ci95": [
+        0.546,
+        0.819
+      ],
+      "net_pnl": 33.58,
+      "per_dollar": 0.168,
+      "max_drawdown": 13.92,
+      "early_exits": 13,
+      "flips": 0,
+      "hold_instead_pnl": 23.17
+    },
+    "first_half": {
+      "trades": 17,
+      "skips": 30,
+      "wins": 13,
+      "win_rate": 0.765,
+      "win_ci95": [
+        0.527,
+        0.904
+      ],
+      "net_pnl": 23.17,
+      "per_dollar": 0.2728,
+      "max_drawdown": 2.85,
+      "early_exits": 5,
+      "flips": 0,
+      "hold_instead_pnl": 13.07
+    },
+    "second_half": {
+      "trades": 23,
+      "skips": 24,
+      "wins": 15,
+      "win_rate": 0.652,
+      "win_ci95": [
+        0.449,
+        0.812
+      ],
+      "net_pnl": 10.41,
+      "per_dollar": 0.0906,
+      "max_drawdown": 13.92,
+      "early_exits": 8,
+      "flips": 0,
+      "hold_instead_pnl": 10.1
+    }
+  },
+  "K band + edge removed": {
+    "all": {
+      "trades": 94,
+      "skips": 0,
+      "wins": 38,
+      "win_rate": 0.404,
+      "win_ci95": [
+        0.311,
+        0.505
+      ],
+      "net_pnl": -34.68,
+      "per_dollar": -0.0738,
+      "max_drawdown": 50.99,
+      "early_exits": 67,
+      "flips": 0,
+      "hold_instead_pnl": -32.93
+    },
+    "first_half": {
+      "trades": 47,
+      "skips": 0,
+      "wins": 20,
+      "win_rate": 0.426,
+      "win_ci95": [
+        0.295,
+        0.567
+      ],
+      "net_pnl": -2.67,
+      "per_dollar": -0.0114,
+      "max_drawdown": 20.07,
+      "early_exits": 34,
+      "flips": 0,
+      "hold_instead_pnl": -27.3
+    },
+    "second_half": {
+      "trades": 47,
+      "skips": 0,
+      "wins": 18,
+      "win_rate": 0.383,
+      "win_ci95": [
+        0.258,
+        0.526
+      ],
+      "net_pnl": -32.0,
+      "per_dollar": -0.1363,
+      "max_drawdown": 48.56,
+      "early_exits": 33,
+      "flips": 0,
+      "hold_instead_pnl": -5.63
+    }
+  },
+  "L all removed (band, edge, shrink, timing) + hold": {
+    "all": {
+      "trades": 94,
+      "skips": 0,
+      "wins": 47,
+      "win_rate": 0.5,
+      "win_ci95": [
+        0.401,
+        0.599
+      ],
+      "net_pnl": -23.64,
+      "per_dollar": -0.0503,
+      "max_drawdown": 66.1,
+      "early_exits": 0,
+      "flips": 0,
+      "hold_instead_pnl": -23.64
+    },
+    "first_half": {
+      "trades": 47,
+      "skips": 0,
+      "wins": 21,
+      "win_rate": 0.447,
+      "win_ci95": [
+        0.314,
+        0.588
+      ],
+      "net_pnl": -27.3,
+      "per_dollar": -0.1162,
+      "max_drawdown": 66.1,
+      "early_exits": 0,
+      "flips": 0,
+      "hold_instead_pnl": -27.3
+    },
+    "second_half": {
+      "trades": 47,
+      "skips": 0,
+      "wins": 26,
+      "win_rate": 0.553,
+      "win_ci95": [
+        0.412,
+        0.686
+      ],
+      "net_pnl": 3.66,
+      "per_dollar": 0.0156,
+      "max_drawdown": 27.98,
+      "early_exits": 0,
+      "flips": 0,
+      "hold_instead_pnl": 3.66
+    }
+  }
+}

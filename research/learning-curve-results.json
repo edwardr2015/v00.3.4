@@ -1,0 +1,914 @@
+{
+  "markets": 89,
+  "evaluation_markets": 29,
+  "retrain_every": 5,
+  "edge": 0.05,
+  "first": "cpc-btc-updown-5m-2026-11-26-0650z",
+  "last": "cpc-btc-updown-5m-2026-11-26-1430z",
+  "up_rate": 0.517,
+  "benchmarks": {
+    "market_price": {
+      "markets": 29,
+      "brier": 0.2267,
+      "accuracy": 0.621,
+      "trades": 0,
+      "wins": 0,
+      "win_rate": null,
+      "win_ci95": null,
+      "pnl": 0
+    },
+    "reference_gap": {
+      "markets": 29,
+      "brier": 0.2423,
+      "accuracy": 0.724,
+      "trades": 14,
+      "wins": 8,
+      "win_rate": 0.571,
+      "win_ci95": [
+        0.326,
+        0.786
+      ],
+      "pnl": 1.6
+    },
+    "momentum_fixed": {
+      "markets": 29,
+      "brier": 0.2563,
+      "accuracy": 0.517,
+      "trades": 16,
+      "wins": 4,
+      "win_rate": 0.25,
+      "win_ci95": [
+        0.102,
+        0.495
+      ],
+      "pnl": -36.33
+    },
+    "coin_flip": {
+      "markets": 29,
+      "brier": 0.25,
+      "accuracy": 0.552,
+      "trades": 18,
+      "wins": 6,
+      "win_rate": 0.333,
+      "win_ci95": [
+        0.163,
+        0.563
+      ],
+      "pnl": -1.29
+    }
+  },
+  "models": {
+    "logistic": {
+      "min_10": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2677,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.34
+        },
+        "all_from_n0": {
+          "markets": 79,
+          "brier": 0.2332,
+          "accuracy": 0.62,
+          "trades": 32,
+          "wins": 10,
+          "win_rate": 0.312,
+          "win_ci95": [
+            0.18,
+            0.486
+          ],
+          "pnl": -57.78
+        }
+      },
+      "min_20": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2677,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.34
+        },
+        "all_from_n0": {
+          "markets": 69,
+          "brier": 0.235,
+          "accuracy": 0.609,
+          "trades": 26,
+          "wins": 8,
+          "win_rate": 0.308,
+          "win_ci95": [
+            0.165,
+            0.5
+          ],
+          "pnl": -41.64
+        }
+      },
+      "min_30": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2677,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.34
+        },
+        "all_from_n0": {
+          "markets": 59,
+          "brier": 0.2335,
+          "accuracy": 0.627,
+          "trades": 21,
+          "wins": 7,
+          "win_rate": 0.333,
+          "win_ci95": [
+            0.172,
+            0.546
+          ],
+          "pnl": -32.11
+        }
+      },
+      "min_40": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2677,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.34
+        },
+        "all_from_n0": {
+          "markets": 49,
+          "brier": 0.2569,
+          "accuracy": 0.571,
+          "trades": 18,
+          "wins": 6,
+          "win_rate": 0.333,
+          "win_ci95": [
+            0.163,
+            0.563
+          ],
+          "pnl": -24.13
+        }
+      },
+      "min_60": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2677,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.34
+        },
+        "all_from_n0": {
+          "markets": 29,
+          "brier": 0.2677,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.34
+        }
+      }
+    },
+    "random_forest": {
+      "min_10": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2535,
+          "accuracy": 0.483,
+          "trades": 16,
+          "wins": 5,
+          "win_rate": 0.312,
+          "win_ci95": [
+            0.142,
+            0.556
+          ],
+          "pnl": -9.86
+        },
+        "all_from_n0": {
+          "markets": 79,
+          "brier": 0.258,
+          "accuracy": 0.468,
+          "trades": 44,
+          "wins": 14,
+          "win_rate": 0.318,
+          "win_ci95": [
+            0.2,
+            0.466
+          ],
+          "pnl": -11.5
+        }
+      },
+      "min_20": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2535,
+          "accuracy": 0.483,
+          "trades": 16,
+          "wins": 5,
+          "win_rate": 0.312,
+          "win_ci95": [
+            0.142,
+            0.556
+          ],
+          "pnl": -9.86
+        },
+        "all_from_n0": {
+          "markets": 69,
+          "brier": 0.2575,
+          "accuracy": 0.464,
+          "trades": 39,
+          "wins": 13,
+          "win_rate": 0.333,
+          "win_ci95": [
+            0.206,
+            0.49
+          ],
+          "pnl": -8.42
+        }
+      },
+      "min_30": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2535,
+          "accuracy": 0.483,
+          "trades": 16,
+          "wins": 5,
+          "win_rate": 0.312,
+          "win_ci95": [
+            0.142,
+            0.556
+          ],
+          "pnl": -9.86
+        },
+        "all_from_n0": {
+          "markets": 59,
+          "brier": 0.2581,
+          "accuracy": 0.458,
+          "trades": 32,
+          "wins": 11,
+          "win_rate": 0.344,
+          "win_ci95": [
+            0.204,
+            0.517
+          ],
+          "pnl": -2.59
+        }
+      },
+      "min_40": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2535,
+          "accuracy": 0.483,
+          "trades": 16,
+          "wins": 5,
+          "win_rate": 0.312,
+          "win_ci95": [
+            0.142,
+            0.556
+          ],
+          "pnl": -9.86
+        },
+        "all_from_n0": {
+          "markets": 49,
+          "brier": 0.2578,
+          "accuracy": 0.469,
+          "trades": 27,
+          "wins": 10,
+          "win_rate": 0.37,
+          "win_ci95": [
+            0.215,
+            0.558
+          ],
+          "pnl": 10.94
+        }
+      },
+      "min_60": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2535,
+          "accuracy": 0.483,
+          "trades": 16,
+          "wins": 5,
+          "win_rate": 0.312,
+          "win_ci95": [
+            0.142,
+            0.556
+          ],
+          "pnl": -9.86
+        },
+        "all_from_n0": {
+          "markets": 29,
+          "brier": 0.2535,
+          "accuracy": 0.483,
+          "trades": 16,
+          "wins": 5,
+          "win_rate": 0.312,
+          "win_ci95": [
+            0.142,
+            0.556
+          ],
+          "pnl": -9.86
+        }
+      }
+    },
+    "gradient_boosting": {
+      "min_10": {
+        "common": {
+          "markets": 29,
+          "brier": 0.3495,
+          "accuracy": 0.483,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -37.44
+        },
+        "all_from_n0": {
+          "markets": 79,
+          "brier": 0.273,
+          "accuracy": 0.544,
+          "trades": 48,
+          "wins": 20,
+          "win_rate": 0.417,
+          "win_ci95": [
+            0.288,
+            0.557
+          ],
+          "pnl": -36.35
+        }
+      },
+      "min_20": {
+        "common": {
+          "markets": 29,
+          "brier": 0.3495,
+          "accuracy": 0.483,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -37.44
+        },
+        "all_from_n0": {
+          "markets": 69,
+          "brier": 0.2746,
+          "accuracy": 0.551,
+          "trades": 43,
+          "wins": 19,
+          "win_rate": 0.442,
+          "win_ci95": [
+            0.304,
+            0.589
+          ],
+          "pnl": -33.27
+        }
+      },
+      "min_30": {
+        "common": {
+          "markets": 29,
+          "brier": 0.3495,
+          "accuracy": 0.483,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -37.44
+        },
+        "all_from_n0": {
+          "markets": 59,
+          "brier": 0.2781,
+          "accuracy": 0.559,
+          "trades": 35,
+          "wins": 16,
+          "win_rate": 0.457,
+          "win_ci95": [
+            0.305,
+            0.618
+          ],
+          "pnl": -32.48
+        }
+      },
+      "min_40": {
+        "common": {
+          "markets": 29,
+          "brier": 0.3495,
+          "accuracy": 0.483,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -37.44
+        },
+        "all_from_n0": {
+          "markets": 49,
+          "brier": 0.3134,
+          "accuracy": 0.51,
+          "trades": 34,
+          "wins": 16,
+          "win_rate": 0.471,
+          "win_ci95": [
+            0.315,
+            0.633
+          ],
+          "pnl": -27.49
+        }
+      },
+      "min_60": {
+        "common": {
+          "markets": 29,
+          "brier": 0.3495,
+          "accuracy": 0.483,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -37.44
+        },
+        "all_from_n0": {
+          "markets": 29,
+          "brier": 0.3495,
+          "accuracy": 0.483,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -37.44
+        }
+      }
+    },
+    "xgboost": {
+      "min_10": {
+        "common": {
+          "markets": 29,
+          "brier": 0.3201,
+          "accuracy": 0.517,
+          "trades": 20,
+          "wins": 5,
+          "win_rate": 0.25,
+          "win_ci95": [
+            0.112,
+            0.469
+          ],
+          "pnl": -50.84
+        },
+        "all_from_n0": {
+          "markets": 79,
+          "brier": 0.2665,
+          "accuracy": 0.595,
+          "trades": 41,
+          "wins": 15,
+          "win_rate": 0.366,
+          "win_ci95": [
+            0.236,
+            0.519
+          ],
+          "pnl": -63.61
+        }
+      },
+      "min_20": {
+        "common": {
+          "markets": 29,
+          "brier": 0.3201,
+          "accuracy": 0.517,
+          "trades": 20,
+          "wins": 5,
+          "win_rate": 0.25,
+          "win_ci95": [
+            0.112,
+            0.469
+          ],
+          "pnl": -50.84
+        },
+        "all_from_n0": {
+          "markets": 69,
+          "brier": 0.2606,
+          "accuracy": 0.623,
+          "trades": 39,
+          "wins": 15,
+          "win_rate": 0.385,
+          "win_ci95": [
+            0.249,
+            0.541
+          ],
+          "pnl": -53.62
+        }
+      },
+      "min_30": {
+        "common": {
+          "markets": 29,
+          "brier": 0.3201,
+          "accuracy": 0.517,
+          "trades": 20,
+          "wins": 5,
+          "win_rate": 0.25,
+          "win_ci95": [
+            0.112,
+            0.469
+          ],
+          "pnl": -50.84
+        },
+        "all_from_n0": {
+          "markets": 59,
+          "brier": 0.2703,
+          "accuracy": 0.61,
+          "trades": 34,
+          "wins": 13,
+          "win_rate": 0.382,
+          "win_ci95": [
+            0.239,
+            0.55
+          ],
+          "pnl": -52.2
+        }
+      },
+      "min_40": {
+        "common": {
+          "markets": 29,
+          "brier": 0.3201,
+          "accuracy": 0.517,
+          "trades": 20,
+          "wins": 5,
+          "win_rate": 0.25,
+          "win_ci95": [
+            0.112,
+            0.469
+          ],
+          "pnl": -50.84
+        },
+        "all_from_n0": {
+          "markets": 49,
+          "brier": 0.2986,
+          "accuracy": 0.551,
+          "trades": 29,
+          "wins": 11,
+          "win_rate": 0.379,
+          "win_ci95": [
+            0.227,
+            0.56
+          ],
+          "pnl": -39.89
+        }
+      },
+      "min_60": {
+        "common": {
+          "markets": 29,
+          "brier": 0.3201,
+          "accuracy": 0.517,
+          "trades": 20,
+          "wins": 5,
+          "win_rate": 0.25,
+          "win_ci95": [
+            0.112,
+            0.469
+          ],
+          "pnl": -50.84
+        },
+        "all_from_n0": {
+          "markets": 29,
+          "brier": 0.3201,
+          "accuracy": 0.517,
+          "trades": 20,
+          "wins": 5,
+          "win_rate": 0.25,
+          "win_ci95": [
+            0.112,
+            0.469
+          ],
+          "pnl": -50.84
+        }
+      }
+    },
+    "lightgbm": {
+      "min_10": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2749,
+          "accuracy": 0.586,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -41.7
+        },
+        "all_from_n0": {
+          "markets": 79,
+          "brier": 0.262,
+          "accuracy": 0.544,
+          "trades": 48,
+          "wins": 16,
+          "win_rate": 0.333,
+          "win_ci95": [
+            0.217,
+            0.475
+          ],
+          "pnl": -54.71
+        }
+      },
+      "min_20": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2749,
+          "accuracy": 0.586,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -41.7
+        },
+        "all_from_n0": {
+          "markets": 69,
+          "brier": 0.262,
+          "accuracy": 0.551,
+          "trades": 43,
+          "wins": 15,
+          "win_rate": 0.349,
+          "win_ci95": [
+            0.224,
+            0.498
+          ],
+          "pnl": -51.63
+        }
+      },
+      "min_30": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2749,
+          "accuracy": 0.586,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -41.7
+        },
+        "all_from_n0": {
+          "markets": 59,
+          "brier": 0.2633,
+          "accuracy": 0.559,
+          "trades": 35,
+          "wins": 12,
+          "win_rate": 0.343,
+          "win_ci95": [
+            0.208,
+            0.508
+          ],
+          "pnl": -50.84
+        }
+      },
+      "min_40": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2749,
+          "accuracy": 0.586,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -41.7
+        },
+        "all_from_n0": {
+          "markets": 49,
+          "brier": 0.2638,
+          "accuracy": 0.592,
+          "trades": 30,
+          "wins": 11,
+          "win_rate": 0.367,
+          "win_ci95": [
+            0.219,
+            0.545
+          ],
+          "pnl": -37.31
+        }
+      },
+      "min_60": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2749,
+          "accuracy": 0.586,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -41.7
+        },
+        "all_from_n0": {
+          "markets": 29,
+          "brier": 0.2749,
+          "accuracy": 0.586,
+          "trades": 20,
+          "wins": 6,
+          "win_rate": 0.3,
+          "win_ci95": [
+            0.145,
+            0.519
+          ],
+          "pnl": -41.7
+        }
+      }
+    },
+    "ensemble": {
+      "min_10": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2578,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.33
+        },
+        "all_from_n0": {
+          "markets": 75,
+          "brier": 0.2227,
+          "accuracy": 0.627,
+          "trades": 29,
+          "wins": 10,
+          "win_rate": 0.345,
+          "win_ci95": [
+            0.199,
+            0.527
+          ],
+          "pnl": -14.73
+        }
+      },
+      "min_20": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2602,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.33
+        },
+        "all_from_n0": {
+          "markets": 69,
+          "brier": 0.2318,
+          "accuracy": 0.623,
+          "trades": 26,
+          "wins": 10,
+          "win_rate": 0.385,
+          "win_ci95": [
+            0.224,
+            0.575
+          ],
+          "pnl": -5.11
+        }
+      },
+      "min_30": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2602,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.33
+        },
+        "all_from_n0": {
+          "markets": 59,
+          "brier": 0.2266,
+          "accuracy": 0.627,
+          "trades": 21,
+          "wins": 8,
+          "win_rate": 0.381,
+          "win_ci95": [
+            0.208,
+            0.591
+          ],
+          "pnl": -5.63
+        }
+      },
+      "min_40": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2602,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.33
+        },
+        "all_from_n0": {
+          "markets": 49,
+          "brier": 0.25,
+          "accuracy": 0.571,
+          "trades": 20,
+          "wins": 8,
+          "win_rate": 0.4,
+          "win_ci95": [
+            0.219,
+            0.613
+          ],
+          "pnl": -0.63
+        }
+      },
+      "min_60": {
+        "common": {
+          "markets": 29,
+          "brier": 0.2602,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.33
+        },
+        "all_from_n0": {
+          "markets": 29,
+          "brier": 0.2602,
+          "accuracy": 0.552,
+          "trades": 14,
+          "wins": 4,
+          "win_rate": 0.286,
+          "win_ci95": [
+            0.117,
+            0.546
+          ],
+          "pnl": -26.33
+        }
+      }
+    }
+  }
+}

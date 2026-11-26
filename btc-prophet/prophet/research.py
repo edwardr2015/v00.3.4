@@ -99,8 +99,11 @@ def sigmoid(z):
 
 
 def fit_challenger(train):
-    if len(train) < 100 or len({r["y"] for r in train}) < 2:
-        raise ValueError("Need at least 100 training examples with both outcomes")
+    from .training_limits import min_fit_examples
+
+    minimum = min_fit_examples()
+    if len(train) < minimum or len({r["y"] for r in train}) < 2:
+        raise ValueError(f"Need at least {minimum} training examples with both outcomes")
     # Preprocessing sees training data only. Fixed hyperparameters: no test-set search.
     means = [statistics.mean(r["x"][j] for r in train) for j in range(3)]
     scales = [max(statistics.pstdev(r["x"][j] for r in train), 1e-8) for j in range(3)]

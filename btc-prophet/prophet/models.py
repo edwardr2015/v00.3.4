@@ -222,8 +222,11 @@ class Models:
         rows = sorted((r for r in rows if r["label_end"] <= now), key=lambda r: r["decision_time"])
         if len({r["slug"] for r in rows}) != len(rows):
             raise ValueError("Duplicate training markets")
-        if len(rows) < 300:
-            raise ValueError("At least 300 chronological labelled markets required")
+        from .training_limits import describe, min_split_markets, min_training_markets
+
+        minimum = min_training_markets()
+        if len(rows) < minimum:
+            raise ValueError(f"At least {minimum} chronological labelled markets required")
         a, b = (
             rows[int(0.6 * len(rows))]["decision_time"],
             rows[int(0.8 * len(rows))]["decision_time"],
@@ -231,7 +234,7 @@ class Models:
         train = [r for r in rows if r["label_end"] <= a]
         validation = [r for r in rows if a <= r["decision_time"] and r["label_end"] <= b]
         test = [r for r in rows if r["decision_time"] >= b]
-        if min(map(len, (train, validation, test))) < 30:
+        if min(map(len, (train, validation, test))) < min_split_markets():
             raise ValueError("Insufficient purged split coverage")
         dependency = CANDIDATES[kind]
         if dependency != "builtin" and importlib.util.find_spec(dependency) is None:
@@ -280,6 +283,7 @@ class Models:
             trained_at=now,
             split="60/20/20 chronological; label purging",
             train_n=len(train),
+            training_limits=describe(len(rows)),
             validation=evaluate(validation),
             test=evaluate(test),
             benchmarks=dict(

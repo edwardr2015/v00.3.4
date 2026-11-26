@@ -131,20 +131,40 @@ def test_sampled_target_rescues_only_a_trade_that_reaches_it():
     )
 
 
-def test_status_reports_optional_challenger_gate_separately(tmp_path):
+def _labels(s, count):
+    start = time.time() - 100000
+    with s.connect() as db:
+        for i in range(count):
+            db.execute("INSERT INTO learning_labels VALUES (?,?,?,?,?,?)",
+                       (f"fixture-{i}", start + i * 300, start + i * 300 + 240,
+                        json.dumps([i % 3, i % 4, -5.0]), i % 2, start + i * 300 + 241))
+
+
+def test_default_limits_train_challengers_early_and_flag_small_samples(tmp_path, monkeypatch):
+    for name in ("PROPHET_MIN_TRAINING_MARKETS", "PROPHET_MIN_SPLIT_MARKETS", "PROPHET_MIN_FIT_EXAMPLES"):
+        monkeypatch.delenv(name, raising=False)
     s, _, _ = seed(tmp_path)
     learner = Learning(s, tmp_path / "missing.sqlite")
     learner.train()
     waiting = s.get("learning_status")
-    assert waiting["status"] == "WAITING" and waiting["optional_challenger_shortage"] == 300
-    start = time.time() - 100000
-    with s.connect() as db:
-        for i in range(210):
-            db.execute("INSERT INTO learning_labels VALUES (?,?,?,?,?,?)",
-                       (f"fixture-{i}", start + i * 300, start + i * 300 + 240,
-                        json.dumps([i % 3, i % 4, -5.0]), i % 2, start + i * 300 + 241))
+    assert waiting["status"] == "WAITING" and waiting["minimum"] == 30
+    _labels(s, 40)
     learner.train()
     status = s.get("learning_status")
-    assert status["status"] == "SHADOW" and status["optional_challenger_minimum"] == 300
-    assert status["optional_challengers"]
-    assert all("300" in why for why in status["optional_challengers"].values())
+    assert status["status"] == "SHADOW" and status["training_limits"]["small_sample"]
+    assert status["optional_challengers"]["random_forest"] == "TRAINED"
+    with s.connect() as db:
+        meta = json.loads(db.execute("SELECT metadata FROM model_registry WHERE kind='random_forest'")
+                          .fetchone()[0])
+    assert meta["training_limits"]["small_sample"] and meta["training_limits"]["examples"] == 40
+
+
+def test_original_limits_can_be_restored(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROPHET_MIN_TRAINING_MARKETS", "300")
+    monkeypatch.setenv("PROPHET_MIN_FIT_EXAMPLES", "100")
+    s, _, _ = seed(tmp_path)
+    learner = Learning(s, tmp_path / "missing.sqlite")
+    _labels(s, 210)
+    learner.train()
+    status = s.get("learning_status")
+    assert status["status"] == "WAITING" and status["optional_challenger_shortage"] == 90

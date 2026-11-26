@@ -40,3 +40,16 @@ def test_wilson_and_sample_size():
     lo, hi = rs.wilson(9, 10)
     assert 0.59 < lo < 0.6 and hi > .98
     assert rs.trades_needed(.95, .90) < rs.trades_needed(.92, .90)
+
+
+def test_safeguard_play_enters_once_and_takes_probability_exit():
+    import safeguards_sim as sg
+    # 50c entry on UP (model .75 shrunk with mid .5 -> .625, EV ~ 15%), later bid jumps to 95c.
+    entry = dict(slug="a", t=1, elapsed=10, gap_p=.75, mid=.50, bid=.49, ask=.50, bid_q=1e4, ask_q=1e4,
+                 terms=TERMS, up=True)
+    later = dict(entry, t=2, elapsed=20, gap_p=.75, mid=.95, bid=.95, ask=.96)
+    r = sg.play([entry, later], True, dict(sg.BASE))
+    assert r["side"] == "UP" and r["exited"] and r["proceeds"] > r["cost"]
+    held = sg.play([entry, later], True, dict(sg.BASE, exit="hold"))
+    assert not held["exited"]
+    assert sg.play([entry], True, dict(sg.BASE, band=(.60, .70))) is None
