@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-btc-prophet"
+version = "0.3.23"
+description = "Private Bitcoin research and paper-trading laboratory; real execution disabled"
+requires-python = ">=3.11"
+dependencies = ["fastapi==0.121.3", "uvicorn==0.38.0", "httpx==0.28.1", "openpyxl==3.1.5"]
+
+[project.optional-dependencies]
+dev = ["pytest==9.0.1", "ruff==0.14.6"]
+depth = ["pyarrow==18.1.0"]
+research = ["scikit-learn==1.7.2", "lightgbm==4.6.0", "xgboost==3.1.1"]
+legacy-hmm = ["hmmlearn==0.3.3"]
+neural = ["torch>=2.5,<3"]
+
+[tool.setuptools.package-data]
+prophet = ["static/*", "static/vendor/*"]
+
+[tool.setuptools.packages.find]
+include = ["prophet*"]
+namespaces = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100

@@ -1,0 +1,2 @@
+'use strict';
+document.getElementById('login-form').onsubmit=async e=>{e.preventDefault();try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json','X-Prophet-Control':'local-dashboard'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});const data=await r.json();if(!r.ok)throw new Error(data.detail);location.href='/';}catch(e){document.getElementById('login-error').textContent=e.message;}};

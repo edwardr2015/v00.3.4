@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Excel export · BTC Prophet</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script defer src="/static/excel.js"></script>
+</head>
+<body class="excel-page">
+  <main class="panel">
+    <h1>Excel export</h1>
+    <p id="export-status" role="status">Preparing the quick report. You can keep using the dashboard.</p>
+    <p>The quick report includes up to 500 recent records per sheet. Use the full audit for complete history and model evidence.</p>
+    <button id="export-quick" class="button" type="button">Quick report</button>
+    <button id="export-full" class="button" type="button">Full audit workbook</button>
+    <button id="export-retry" class="button" type="button" hidden>Try again</button>
+    <noscript><p><a href="/api/export/quick.xlsx">Quick report</a> · <a href="/api/export.xlsx">Full audit workbook</a></p></noscript>
+  </main>
+</body>
+</html>

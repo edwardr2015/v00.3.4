@@ -1,0 +1,48 @@
+Control,Verification,Scope
+Admin sign-in,PASS,Isolated Chromium and authenticated API
+Sign out,PASS,Session logout then login form appears
+Viewer access,PASS,Start and Emergency are disabled; authenticated API tests enforce access
+15-second chart,PASS,Candle request and selected state
+30-second chart,PASS,Candle request and selected state
+60-second chart,PASS,Candle request and selected state
+Refresh,PASS,Unified dashboard reload
+Start adaptive research,PASS,Mode becomes SIMULATE
+Pause,PASS,Mode becomes OFF and former mode saved
+Resume,PASS,Mode restores; rejected under safety lock
+Stop decisions,PASS,Mode becomes OFF
+OFF button,PASS,Selected state and status
+LEARN button,PASS,Selected state and status
+SIMULATE button,PASS,Selected state and status
+LIVE,PASS,Disabled in browser and server rejects activation
+Emergency stop,PASS,Locked mode; approval required for reset
+Settings open and close,PASS,Dialogue visibility
+Diagnose,PASS,Database quick check and status
+Reconnect feed,PASS,Unavailable-session UI gate; worker restart supervisor is independently tested
+Alternative solution,PASS,Recorded alternative keeps safety lock
+Pause collection,PASS,Disabled while emergency latched; active controls tested
+Resume collection,PASS,Health stamps cleared until fresh quotes
+Deny,PASS,Follow-up created
+Approve,PASS,Decision persisted and confirmation shown
+Review and reset,PASS,Blocked before approval; accepted after approval
+Test SMS,PASS,Isolated synthetic queue; no live provider delivery claimed
+Model details,PASS,Eight visible cards; details disclosure
+Roulette tile details,PASS,25 colors and opening a prediction audit
+Strategy Change History,PASS,Open and close
+Compare AI Models,PASS,144 research rows in empty fixture
+Analyze Trends,PASS,Insufficient-data response
+Promotion choice and reason,PASS,Ineligible fixture rejected; automatic engine switching tested separately
+Prior-strategy rollback,PASS,Unselected request rejected; backend validated rollback regression
+Shadow version selector and rollback,PASS,Isolated version selected and verified
+Request training batch,PASS,Refused when OFF; queued in LEARN
+Check local updates,PASS,Installed version and update history; remote discovery not integrated
+Release ZIP and checksum inputs,PASS,Trusted manifest validation and rejection of malformed input
+Stage update,PASS,Isolated code dir and backup
+Apply update on restart,PASS,Activation scheduled without changing ledger
+Rollback update on restart,PASS,Original release scheduled using the same ledger
+Excel export,PASS,Workbook opens; isolated browser confirms new sheets; full reconciliation runs separately
+Legacy dashboard navigation,PASS,Alias redirects to unified root
+Formal seven-day comparison,PASS,"Chromium shows failed preflight and refuses viewer; successful eight-model fixture, persisted session and unchanged history verified in API/SQLite tests"
+Prophet home navigation,PASS,Chromium clicks home and loads the unified route
+TradingView attribution link,PASS,Chromium checks the popup target using an intercepted fixture; the external site has no application privileges
+"Account, historical data, risk and collector disclosure panels",PASS,Chromium opens and closes each panel; no database mutation
+Playback on native Mac Safari,NOT RUN,No native macOS session attached
