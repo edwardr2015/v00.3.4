@@ -28,13 +28,15 @@
       <div class="vegas-side">
         <div id="wheel-result" class="wheel-result" aria-live="polite">Waiting for a result</div>
         <div class="vegas-tally"><div><span>Won</span><strong id="vegas-won" class="profit">0</strong></div><div><span>Lost</span><strong id="vegas-lost" class="loss">0</strong></div><div><span>Games</span><strong id="vegas-games">0</strong></div></div>
-        <div class="vegas-controls"><label><input type="checkbox" id="win-video-on" checked> Play win video</label> <button type="button" class="button subtle" id="win-video-test">Test</button></div>
+        <div class="vegas-controls"><label><input type="checkbox" id="win-video-on" checked> Play win song</label>
+          <select id="win-length" aria-label="Song length"><option value="15">15 s</option><option value="30" selected>30 s</option><option value="0">Whole song</option></select>
+          <button type="button" class="button subtle" id="win-video-test">Test</button> <span id="win-sound-state"></span></div>
       </div>
     </section>
     <div id="win-overlay" class="win-overlay" hidden role="dialog" aria-label="Win celebration">
-      <div class="win-box"><h2>WIN!</h2><p id="win-text"></p>
-        <iframe id="win-frame" title="Win video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-        <p><a href="https://www.youtube.com/shorts/vK8r5586FbQ" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a> <button type="button" class="button" id="win-close">Close</button></p></div>
+      <div class="win-box"><h2>WIN!</h2><p id="win-text"></p><p id="win-note" class="muted"></p>
+        <audio id="win-audio" preload="none"></audio>
+        <p><button type="button" class="button" id="win-close">Close</button></p></div>
     </div>
     <section class="panel game-card"><div class="panel-heading"><div><h2>Paper scoreboard</h2><p>Since 0.3.21 · Starting balance $1,000</p></div><strong id="game-balance">—</strong></div>
       <div class="scoreboard" aria-label="Paper results since 0.3.21"><div><span>Games</span><strong id="games-played">0</strong></div><div><span>Wins</span><strong id="games-won" class="profit">0</strong></div><div><span>Losses</span><strong id="games-lost" class="loss">0</strong></div><div><span>Net P&amp;L</span><strong id="games-pnl">—</strong></div></div>

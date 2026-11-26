@@ -92,7 +92,7 @@
 .win-overlay[hidden]{display:none}
 .win-box{background:#101827;border:2px solid #f5c862;border-radius:14px;padding:18px;text-align:center;max-width:min(92vw,420px)}
 .win-box h2{color:#f5c862;font-size:2.4rem;margin:0 0 6px;text-shadow:0 0 16px rgba(245,200,98,.6)}
-.win-box iframe{width:min(80vw,315px);aspect-ratio:9/16;border:0;border-radius:10px;background:#000}
+.win-box{min-width:min(86vw,320px)}.win-box .muted{color:#a2aec1}#win-sound-state{font-size:.8rem;color:#a2aec1}
 @media(max-width:760px){.vegas{grid-template-columns:1fr;justify-items:center;text-align:center}.vegas-tally{width:100%}}
 @media(prefers-reduced-motion:reduce){.wheel{transition:none}}
 .game-card .games-since{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:0 22px 16px;margin:0;color:#a2aec1;font-size:.85rem}

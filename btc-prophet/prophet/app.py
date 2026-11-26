@@ -166,7 +166,6 @@ def create_app(db_path=None, collect=True, auth_required=True):
         response.headers["Cache-Control"] = "no-store"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-            "frame-src https://www.youtube-nocookie.com https://www.youtube.com; "
             "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
         )
         return response
@@ -751,6 +750,30 @@ def create_app(db_path=None, collect=True, auth_required=True):
         with store.connect() as db:
             db.execute("BEGIN")
             return unified.summary(db,time.time())
+
+    WIN_SOUND_TYPES = {".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".aac": "audio/aac", ".wav": "audio/wav"}
+
+    def win_sound():
+        """The user's own song, placed next to the database as win-sound.mp3/.m4a/.aac/.wav."""
+        folder = Path(store.path).resolve().parent
+        for ext in WIN_SOUND_TYPES:
+            path = folder / ("win-sound" + ext)
+            if path.is_file() and 0 < path.stat().st_size <= 50 * 1024 * 1024:
+                return path
+        return None
+
+    @app.get("/api/win-sound/status")
+    def win_sound_status():
+        path = win_sound()
+        return dict(available=bool(path), file=path.name if path else None,
+                    folder=str(Path(store.path).resolve().parent))
+
+    @app.get("/api/win-sound")
+    def win_sound_file():
+        path = win_sound()
+        if not path:
+            raise HTTPException(404, "Put your song in the data folder as win-sound.mp3 or win-sound.m4a")
+        return FileResponse(path, media_type=WIN_SOUND_TYPES[path.suffix])
 
     @app.post("/api/unified/reset-scoreboard")
     def unified_reset_scoreboard():

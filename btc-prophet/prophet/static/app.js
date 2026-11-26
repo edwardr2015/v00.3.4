@@ -382,33 +382,44 @@ $('request-training').onclick=async()=>{
   }catch(error){$('training-result').textContent='Unable to request training.';}
 };
 
-// Vegas panel: win streak, roulette wheel and win video. Display only; never sends controls.
-const WIN_ORIGIN='https://www.youtube-nocookie.com';
-const WIN_VIDEO=WIN_ORIGIN+'/embed/vK8r5586FbQ?autoplay=1&playsinline=1&rel=0&loop=0&enablejsapi=1&origin='+encodeURIComponent(location.origin);
-const WIN_MAX_MS=70000;   // safety close if the player never reports that it ended
-let wheelAngle=0, lastSettled=undefined, overlayTimer=null;
-function winVideoOn(){try{return localStorage.getItem('prophet-win-video')!=='off';}catch(e){return true;}}
-$('win-video-on').checked=winVideoOn();
-$('win-video-on').onchange=e=>{try{localStorage.setItem('prophet-win-video',e.target.checked?'on':'off');}catch(err){}};
+// Vegas panel: win streak, roulette wheel and win song. Display only; never sends controls.
+let wheelAngle=0, lastSettled=undefined, overlayTimer=null, songAvailable=false;
+const pref=(key,fallback)=>{try{return localStorage.getItem(key)??fallback;}catch(e){return fallback;}};
+const setPref=(key,value)=>{try{localStorage.setItem(key,value);}catch(e){}};
+$('win-video-on').checked=pref('prophet-win-video','on')!=='off';
+$('win-video-on').onchange=e=>setPref('prophet-win-video',e.target.checked?'on':'off');
+$('win-length').value=pref('prophet-win-length','30');
+$('win-length').onchange=e=>setPref('prophet-win-length',e.target.value);
+async function songStatus(){
+  try{const s=await getJSON('/api/win-sound/status');songAvailable=s.available;
+    $('win-sound-state').textContent=s.available?'Song ready':'No song file yet';}catch(e){songAvailable=false;}
+}
+songStatus();setInterval(songStatus,60000);
+function closeWin(){
+  clearTimeout(overlayTimer);
+  const audio=$('win-audio');audio.pause();audio.removeAttribute('src');audio.load();
+  $('win-overlay').hidden=true;
+}
+$('win-audio').addEventListener('ended',closeWin);       // played once: close the screen
 function showWin(text){
   if(!$('win-video-on').checked)return;
-  $('win-text').textContent=text;
-  $('win-frame').src=WIN_VIDEO;
+  $('win-text').textContent=text;$('win-note').textContent='';
   $('win-overlay').hidden=false;
-  clearTimeout(overlayTimer);overlayTimer=setTimeout(closeWin,WIN_MAX_MS);
+  clearTimeout(overlayTimer);
+  const seconds=Number($('win-length').value);
+  if(!songAvailable){
+    $('win-note').textContent='Add your song as win-sound.mp3 in the data folder to hear it here.';
+    overlayTimer=setTimeout(closeWin,6000);return;
+  }
+  const audio=$('win-audio');
+  audio.src='/api/win-sound?v='+Date.now();audio.currentTime=0;   // always the current file
+  audio.play().then(()=>{
+    overlayTimer=setTimeout(closeWin,seconds>0?seconds*1000:15*60*1000);
+  }).catch(()=>{
+    $('win-note').textContent='Safari blocked the sound. Click Test once after opening the dashboard to allow it.';
+    overlayTimer=setTimeout(closeWin,8000);
+  });
 }
-// Ask the embedded player for state updates (no external script needed) and close when it ends.
-$('win-frame').addEventListener('load',()=>{
-  if($('win-overlay').hidden)return;
-  try{$('win-frame').contentWindow.postMessage(JSON.stringify({event:'listening',id:'win'}),WIN_ORIGIN);}catch(e){}
-});
-window.addEventListener('message',e=>{
-  if(e.origin!==WIN_ORIGIN||$('win-overlay').hidden)return;
-  let data;try{data=typeof e.data==='string'?JSON.parse(e.data):e.data;}catch(err){return;}
-  const state=data&&data.info&&data.info.playerState;
-  if(state===0)closeWin();   // 0 = ended: played once, close the screen
-});
-function closeWin(){clearTimeout(overlayTimer);$('win-overlay').hidden=true;$('win-frame').src='about:blank';}
 $('win-close').onclick=closeWin;
 $('win-overlay').onclick=e=>{if(e.target===$('win-overlay'))closeWin();};
 $('win-video-test').onclick=()=>{const was=$('win-video-on').checked;$('win-video-on').checked=true;showWin('Test celebration');$('win-video-on').checked=was;};
