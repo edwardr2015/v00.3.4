@@ -59,7 +59,7 @@ the averaged settlement value while the book can lag.
 | Policy | Rule |
 |---|---|
 | `late_gap_180s_abs10` | Reference Gap, elapsed ≥ 180 s, probability − all-in price ≥ 10¢ |
-| `settle_avg_180s_abs10` | Settlement-average model (vol × 1.5), elapsed ≥ 180 s, ≥ 10¢ |
+| `settle_avg_180s_abs10` | Settlement-average model (vol × 1.0, as tested), elapsed ≥ 180 s, ≥ 10¢ |
 | `settle_mid_blend_90s_abs05` | ½ settlement + ½ midpoint, elapsed ≥ 90 s, ≥ 5¢ |
 | `primary_rule_edge0_40_70` | The primary rule with the minimum edge lowered from 10% to 0% (safeguard variant C) |
 | `settlement_average` (challenger) | Forecast recorded at 90 s, scored on Brier/log loss |

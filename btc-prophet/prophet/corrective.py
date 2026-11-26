@@ -99,8 +99,10 @@ def choice(book, terms, side, probability, band, edge, stress=False):
 # (2026-11-26, 94 markets). Absolute edge: probability - all-in price per contract >= edge.
 RESEARCH_POLICIES = {
     "late_gap_180s_abs10": dict(model="gap", start=180, edge=.10),
-    "settle_avg_180s_abs10": dict(model="settle", start=180, edge=.10),
-    "settle_mid_blend_90s_abs05": dict(model="blend", start=90, edge=.05),
+    # vol_scale 1.0 is the setting the reported replay result used (feature_research.py);
+    # the 1.5 calibration scale applies to the scored settlement_average forecaster only.
+    "settle_avg_180s_abs10": dict(model="settle", start=180, edge=.10, vol_scale=1.0),
+    "settle_mid_blend_90s_abs05": dict(model="blend", start=90, edge=.05, vol_scale=1.0),
 }
 
 
@@ -491,12 +493,15 @@ class Research:
 
     def research_policy_trials(self, db, slug, gap_p, midpoint, features, book, terms, info):
         elapsed = 300 - info["seconds_left"]
-        settle = settlement_model.probability(info["reference_price"],info["opening"],
-            features["volatility"],info["seconds_left"],
-            window_values(db,info["decision"]+info["seconds_left"],info["decision"]))
+        window = window_values(db,info["decision"]+info["seconds_left"],info["decision"])
+        def settle_at(scale):
+            return settlement_model.probability(info["reference_price"],info["opening"],
+                features["volatility"],info["seconds_left"],window,vol_scale=scale)
+        settle = settle_at(settlement_model.VOL_SCALE)
         info["settlement_average_up"] = settle
-        probs = dict(gap=gap_p,settle=settle,blend=None if settle is None else .5*settle+.5*midpoint)
         for name,rule in RESEARCH_POLICIES.items():
+            s_rule = settle_at(rule.get("vol_scale",settlement_model.VOL_SCALE))
+            probs = dict(gap=gap_p,settle=s_rule,blend=None if s_rule is None else .5*s_rule+.5*midpoint)
             p = probs[rule["model"]]
             if p is None:
                 info["rejections"][name] = "FORECAST_UNAVAILABLE"

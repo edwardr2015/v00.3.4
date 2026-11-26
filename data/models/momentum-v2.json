@@ -1,0 +1,1 @@
+{"configuration": "baseline_probability v0.1", "features": ["normalized_momentum_60", "normalized_trend_300", "log_volatility_15"], "kind": "momentum", "version": "momentum-v2"}
