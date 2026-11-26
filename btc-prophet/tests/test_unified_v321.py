@@ -84,7 +84,8 @@ def test_wait_then_adaptive_fill_once_at_any_eligible_time_and_settle(tmp_path):
         assert abs(result["balance"]-(1000+order["quantity"]-order["cost"]))<1e-8
 
 
-def test_probability_exit_requires_new_full_quote_and_records_hold(tmp_path):
+def test_probability_exit_requires_new_full_quote_and_records_hold(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROPHET_PRIMARY_EXIT", "probability")   # original early-exit behaviour
     store,engine = initialize(tmp_path)
     with store.connect() as db:
         observe(db)
@@ -239,3 +240,31 @@ def test_data_blocks_alone_still_record_the_latest_block(tmp_path):
         observe(db,1100,block="STALE_BOOK")
         observe(db,1200,block="NO_LIQUIDITY")
         assert db.execute("SELECT reason FROM unified_rounds").fetchone()[0]=="NO_LIQUIDITY"
+
+
+def test_default_holds_to_settlement_and_records_shadow_exits(tmp_path, monkeypatch):
+    monkeypatch.delenv("PROPHET_PRIMARY_EXIT", raising=False)
+    store,engine = initialize(tmp_path)
+    with store.connect() as db:
+        observe(db)                                           # enters UP
+        observe(db,1101,raw=.15,level=book(.72,.75,1))        # thin book: no full sale, no shadow
+        assert not db.execute("SELECT 1 FROM unified_exit_shadows").fetchone()
+        observe(db,1103,raw=.15,level=book(.72,.75))          # early-exit rule fires: shadow only
+        observe(db,1104,raw=.15,level=book(.10,.12))          # price collapses: stop-loss shadow
+        trade = db.execute("SELECT * FROM unified_trades").fetchone()
+        assert trade["status"]=="OPEN"
+        assert {r[0] for r in db.execute("SELECT policy FROM unified_exit_shadows")} == {
+            "probability_exit","stop_loss_50"}
+        balance = db.execute("SELECT balance FROM unified_account").fetchone()[0]
+        observe(db,1105,raw=.15,level=book(.72,.75))          # repeated triggers do not duplicate
+        assert db.execute("SELECT count(*) FROM unified_exit_shadows").fetchone()[0]==2
+        assert db.execute("SELECT balance FROM unified_account").fetchone()[0]==balance
+        verify(db,"round",1000,"UP",1305)
+    engine.settle(1310)
+    with store.connect() as db:
+        trade = db.execute("SELECT * FROM unified_trades").fetchone()
+        assert trade["status"]=="SETTLED" and trade["proceeds"]==trade["quantity"]
+        rows = {r["policy"]: r for r in unified.exit_comparison(db)}
+        assert rows["actual"]["pnl"]==rows["hold_to_settlement"]["pnl"]==round(trade["pnl"],4)
+        assert rows["probability_exit"]["exits"]==1 and rows["probability_exit"]["pnl"]<rows["actual"]["pnl"]
+        assert rows["stop_loss_50"]["exits"]==1

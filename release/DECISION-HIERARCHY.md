@@ -14,13 +14,23 @@ Files: `prophet/adaptive_entry.py` (`evaluate`), `prophet/autonomous.py` (`Selec
 6. Market execution terms are valid (`INVALID_EXECUTION_TERMS`).
 7. No paper account is halted for review.
 
-## 2. Which model speaks?
+## 2. Which model speaks? (changed in 0.3.23-dev)
 
 1. **Open position → the model that opened it is pinned** (`OPEN_POSITION_MODEL_LOCK`).
-2. Otherwise `Selection.rank`: a trained challenger that, on ≥20 matched forward markets in the
-   same volatility regime, made money **and** beat the $1 momentum baseline.
-3. Otherwise the default: **Volatility-Adjusted Reference Gap** (a fixed formula,
-   `NO_COMPARABLE_WINNER`). In every observed round so far, this is the model that traded.
+2. Otherwise `Selection.rank_incumbent` compares every model's own paper account against the
+   **incumbent, Volatility-Adjusted Reference Gap**, on the same settled markets, held to settlement
+   (latest 100). A challenger is chosen only if, on ≥20 matched markets:
+   - its total P&L is positive;
+   - its average improvement over the incumbent is larger than one standard error;
+   - it picks a different side from the incumbent on more than 10% of markets (not a copy);
+   - its Brier score is no worse than the incumbent's + 0.01.
+   Formula models (Market Odds Adjustment) and trained ML models are eligible. Model Vote and
+   Reference Gap + Market Agreement are never selectable. The best by average improvement wins.
+3. Otherwise the incumbent trades (`NO_COMPARABLE_WINNER`).
+
+Every choice and its evidence (matched markets, P&L, improvement, agreement, Brier) is logged in
+`paper_model_choices` and exported as **Model Selection Evidence**. The older adaptive accounts
+still use their original momentum comparison.
 
 ## 3. Calibrate the forecast (`calibrate`)
 
@@ -35,8 +45,7 @@ where prior = ½ model + ½ book midpoint. With few labels this is **mostly the 
 | No position | for UP and DOWN: fill $5 at the book; average price 40–70¢, all-in ≤ 85¢, EV ≥ 10% of cost; choose the side with the higher EV | ENTER $5 |
 | No position, neither side qualifies | reasons recorded per side (`PRICE_OUTSIDE_BAND`, `EDGE_TOO_SMALL`, depth) | WAIT; at the close this becomes SKIP |
 | Another market's position still open | | SKIP (`PRIOR_POSITION_OPEN`) |
-| Position open, newer confirmed quote, same model | full sale proceeds ≥ (current probability × contracts) + 3% of cost | EXIT (SOLD) |
-| Position open, rule not met | | HOLD to official settlement |
+| Position open | **hold to official settlement** (default). The old early exit and a 50% stop-loss are recorded as shadows only (`unified_exit_shadows`, sheet **Exit Shadow Comparison**). `PROPHET_PRIMARY_EXIT=probability` restores the early exit. | HOLD |
 | UP vs DOWN | the side with the larger expected value, not simply the side above 50% | – |
 | **Flip** | **not available in the primary account.** Flips exist only as unfunded shadows in the older adaptive accounts. | – |
 

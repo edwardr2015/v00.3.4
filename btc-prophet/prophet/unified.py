@@ -11,6 +11,15 @@ BASE_STAKE = 5
 LARGE_STAKE = 100
 MIN_EDGE = .10
 EXIT_MARGIN = .03
+STOP_LOSS_SHADOW = .50   # shadow only: a full sale at or below 50% of cost
+
+
+def primary_exit():
+    """'hold' (default since 0.3.23-dev): hold every primary position to official settlement.
+    'probability' restores the original early exit. Matched research (2,211 pairs) found every
+    early-exit policy below holding."""
+    import os
+    return "probability" if os.getenv("PROPHET_PRIMARY_EXIT", "hold").lower() == "probability" else "hold"
 STRESS_EDGE = .03
 LARGE_MIN_ROUNDS = 100
 LARGE_MAX_DRAWDOWN = 250
@@ -37,6 +46,10 @@ def initialize(db):
             status TEXT NOT NULL CHECK(status IN ('OPEN','SOLD','SETTLED')),
             closed REAL, proceeds REAL, pnl REAL, details TEXT NOT NULL, exit_details TEXT);
         CREATE UNIQUE INDEX IF NOT EXISTS unified_one_open ON unified_trades(status) WHERE status='OPEN';
+        CREATE TABLE IF NOT EXISTS unified_exit_shadows (
+            slug TEXT NOT NULL REFERENCES unified_trades(slug), policy TEXT NOT NULL,
+            time REAL NOT NULL, proceeds REAL NOT NULL, details TEXT NOT NULL,
+            PRIMARY KEY(slug,policy));
         CREATE TABLE IF NOT EXISTS unified_large_trials (
             slug TEXT PRIMARY KEY REFERENCES unified_rounds(slug), time REAL NOT NULL,
             side TEXT NOT NULL, quantity REAL NOT NULL, cost REAL NOT NULL,
@@ -180,11 +193,24 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
             return
         held = up if order["side"]=="UP" else 1-up
         sale = execute(book,order["side"],quantity=order["quantity"],buying=False,**terms)
-        if (sale["quantity"]+1e-9 >= order["quantity"]
-                and sale["total"] >= held*order["quantity"]+EXIT_MARGIN*order["cost"]):
-            checked = commit_time()
-            if checked is not None:
-                close(db,order,checked,sale["total"],"SOLD",dict(audit,fill=sale,hold_probability=held))
+        if sale["quantity"]+1e-9 < order["quantity"]:
+            return
+        triggered = []
+        if sale["total"] >= held*order["quantity"]+EXIT_MARGIN*order["cost"]:
+            triggered.append("probability_exit")
+        if sale["total"] <= STOP_LOSS_SHADOW*order["cost"]:
+            triggered.append("stop_loss_50")
+        if not triggered:
+            return
+        checked = commit_time()
+        if checked is None:
+            return
+        evidence = json.dumps(dict(audit,fill=sale,hold_probability=held))
+        for policy in triggered:
+            db.execute("INSERT OR IGNORE INTO unified_exit_shadows VALUES (?,?,?,?,?)",
+                       (order["slug"],policy,checked,sale["total"],evidence))
+        if "probability_exit" in triggered and primary_exit() == "probability":
+            close(db,order,checked,sale["total"],"SOLD",dict(audit,fill=sale,hold_probability=held))
         return
 
     entry = None
@@ -230,6 +256,28 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
             return
     db.execute("""UPDATE unified_rounds SET observed=?,reason=?,model=?,up=?,details=? WHERE slug=?""",
                (now,reason,model,up,json.dumps(audit),slug))
+
+
+def exit_comparison(db):
+    """Settled primary trades: actual P&L vs each shadow exit policy (first trigger, full sale)."""
+    trades = db.execute("""SELECT t.slug,t.side,t.quantity,t.cost,t.pnl,v.outcome FROM unified_trades t
+        JOIN unified_rounds r ON r.slug=t.slug JOIN verified_markets v ON v.slug=t.slug AND v.end=r.end
+        WHERE t.status<>'OPEN'""").fetchall()
+    shadows = {}
+    for r in db.execute("SELECT slug,policy,proceeds FROM unified_exit_shadows"):
+        shadows.setdefault(r["policy"], {})[r["slug"]] = r["proceeds"]
+    rows = []
+    hold = [(t["side"]==t["outcome"])*t["quantity"]-t["cost"] for t in trades]
+    rows.append(dict(policy="hold_to_settlement", trades=len(trades), exits=0,
+                     wins=sum(v>0 for v in hold), pnl=round(sum(hold),4)))
+    rows.append(dict(policy="actual", trades=len(trades), exits=None,
+                     wins=sum(t["pnl"]>0 for t in trades), pnl=round(sum(t["pnl"] for t in trades),4)))
+    for policy in ("probability_exit", "stop_loss_50"):
+        fired = shadows.get(policy, {})
+        values = [(fired[t["slug"]]-t["cost"]) if t["slug"] in fired else h for t,h in zip(trades,hold)]
+        rows.append(dict(policy=policy, trades=len(trades), exits=sum(t["slug"] in fired for t in trades),
+                         wins=sum(v>0 for v in values), pnl=round(sum(values),4)))
+    return rows
 
 
 def history(db, limit=-1):

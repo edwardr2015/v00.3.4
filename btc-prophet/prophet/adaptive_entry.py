@@ -227,6 +227,7 @@ class AdaptiveEntry:
                            ask_depth=sum(x["quantity"] for x in book["asks"]))
             if self.paper.unified_enabled and up is not None and features.get("volatility") is not None:
                 from .model_paper import FORMULA_VERSIONS, REFERENCE_GAP, probabilities_from_market
+                context["momentum_up"] = up      # formula challengers need the pre-gap momentum input
 
                 midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
                 raw = probabilities_from_market(midpoint,context["reference_price"],opening,

@@ -7,6 +7,13 @@ from .execution import execute, paper_buy
 
 MIN_MATCHED = 20
 VOLATILE = .001
+# Incumbent-based selection for the primary account (0.3.23-dev). A challenger must beat the
+# model that actually trades the account, on the same settled markets, held to settlement.
+INCUMBENT_LOOKBACK = 100        # most recent matched markets used as evidence
+REDUNDANT_AGREEMENT = .90       # challengers that pick the incumbent's side this often add nothing
+MIN_IMPROVEMENT_SE = 1.0        # mean improvement must exceed one standard error
+BRIER_TOLERANCE = .01           # challenger calibration may not be worse than incumbent + tolerance
+NOT_SELECTABLE = {"model_vote", "reference_gap_agreement"}   # derived consensus / rule on incumbent
 MODEL_ERRORS = (ValueError, ImportError, OSError, TypeError, RuntimeError, EOFError, pickle.UnpicklingError)
 
 
@@ -32,6 +39,63 @@ class Selection:
                   book_timestamp REAL NOT NULL, details TEXT NOT NULL
                 );
             """)
+
+    def rank_incumbent(self, slug, volatility, now, incumbent):
+        """Rank challengers against the incumbent on matched, settled, held-to-settlement markets."""
+        from .model_paper import FORMULA_VERSIONS, ModelPaper
+
+        regime = "higher volatility" if volatility >= VOLATILE else "lower volatility"
+        family_of = {v: k for k, v in FORMULA_VERSIONS.items()}
+        home = family_of.get(incumbent)
+        with self.store.connect() as db:
+            if home is None or not db.execute(
+                    "SELECT 1 FROM sqlite_master WHERE name='model_paper_positions'").fetchone():
+                return regime, []
+            current = ModelPaper.versions(db, now)
+            rows = db.execute("""
+                SELECT c.family, c.version, c.slug, c.side, c.quantity, c.cost, c.outcome,
+                       i.side AS i_side, i.quantity AS i_quantity, i.cost AS i_cost,
+                       (SELECT up FROM model_paper_decisions d WHERE d.family=c.family AND d.slug=c.slug
+                          AND d.time=c.entered AND d.action=c.side LIMIT 1) AS up,
+                       (SELECT up FROM model_paper_decisions d WHERE d.family=i.family AND d.slug=i.slug
+                          AND d.time=i.entered AND d.action=i.side LIMIT 1) AS i_up
+                FROM model_paper_positions c
+                JOIN model_paper_positions i ON i.slug=c.slug AND i.family=?
+                JOIN model_paper_windows w ON w.slug=c.slug
+                JOIN verified_markets v ON v.slug=c.slug AND v.end=w.end
+                WHERE c.family<>? AND c.slug<>? AND c.outcome IS NOT NULL AND i.outcome IS NOT NULL
+                  AND v.end<=? AND v.verified_at<=? AND c.entered<? AND i.entered<?
+                ORDER BY v.end DESC""", (home, home, slug, now, now, now, now)).fetchall()
+        by = {}
+        for r in rows:
+            if r["family"] in NOT_SELECTABLE:
+                continue
+            bucket = by.setdefault(r["family"], [])
+            if len(bucket) < INCUMBENT_LOOKBACK:
+                bucket.append(r)
+        ranked = []
+        for family, matched in by.items():
+            version = current.get(family)
+            n = len(matched)
+            if not version or version.startswith("UNAVAILABLE") or n < MIN_MATCHED:
+                continue
+            cand = [(r["side"] == r["outcome"]) * r["quantity"] - r["cost"] for r in matched]
+            inc = [(r["i_side"] == r["outcome"]) * r["i_quantity"] - r["i_cost"] for r in matched]
+            diff = [a - b for a, b in zip(cand, inc)]
+            mean = sum(diff) / n
+            se = (sum((d - mean) ** 2 for d in diff) / (n - 1)) ** .5 / n ** .5 if n > 1 else float("inf")
+            agreement = sum(r["side"] == r["i_side"] for r in matched) / n
+            scored = [r for r in matched if r["up"] is not None and r["i_up"] is not None]
+            brier = (sum((r["up"] - (r["outcome"] == "UP")) ** 2 for r in scored) / len(scored)) if scored else None
+            i_brier = (sum((r["i_up"] - (r["outcome"] == "UP")) ** 2 for r in scored) / len(scored)) if scored else None
+            evidence = dict(family=family, version=version, matched=n, pnl=sum(cand), incumbent_pnl=sum(inc),
+                            improvement=mean, improvement_se=se, agreement=agreement, brier=brier,
+                            incumbent_brier=i_brier, compared_with=incumbent, basis="hold-to-settlement")
+            if (sum(cand) > 0 and mean > MIN_IMPROVEMENT_SE * se and agreement < REDUNDANT_AGREEMENT
+                    and brier is not None and brier <= i_brier + BRIER_TOLERANCE):
+                ranked.append(evidence)
+        ranked.sort(key=lambda e: (-e["improvement"], -e["matched"], e["version"]))
+        return regime, ranked
 
     def rank(self, slug, volatility, now):
         regime = "higher volatility" if volatility >= VOLATILE else "lower volatility"
@@ -61,8 +125,22 @@ class Selection:
         return regime, [dict(row) for row in rows]
 
     def estimate(self, version, slug, now, features, pattern_context=None):
+        from .model_paper import FORMULA_VERSIONS, probabilities_from_market
         from .models import Models, feature_sequence
         from .pattern_odds import VERSION,forecast_from_snapshot
+
+        formula = {v: k for k, v in FORMULA_VERSIONS.items()}.get(version)
+        if formula:
+            if not pattern_context:
+                return None
+            context, book, opening = pattern_context
+            if not book.get("bids") or not book.get("asks") or not opening:
+                return None
+            midpoint = (book["bids"][0]["price"] + book["asks"][0]["price"]) / 2
+            raw = probabilities_from_market(midpoint, context["reference_price"], opening,
+                                            features["volatility"], context["window_end"] - now,
+                                            context.get("momentum_up", .5))
+            return raw.get(formula)
 
         if version==VERSION and pattern_context:
             p,_=forecast_from_snapshot(self.store,slug,now,*pattern_context)
@@ -91,7 +169,11 @@ class Selection:
                 estimate = None
             return pinned_model,estimate,dict(regime=regime,reason="OPEN_POSITION_MODEL_LOCK"
                         if estimate is not None else "OPEN_POSITION_MODEL_UNAVAILABLE")
-        regime, rows = self.rank(slug,volatility,now)
+        from .model_paper import FORMULA_VERSIONS
+        if default_model in FORMULA_VERSIONS.values():
+            regime, rows = self.rank_incumbent(slug,volatility,now,default_model)
+        else:
+            regime, rows = self.rank(slug,volatility,now)
         errors=[]
         for candidate in rows:
             try:

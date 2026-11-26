@@ -41,6 +41,17 @@ TIMESTAMPS = {
 }
 
 
+# Sheets of retired or superseded features (flips, smart exits, old adaptive accounts, roulette).
+# They are omitted from the Full audit only when they have no rows; core sheets always appear.
+LEGACY_OPTIONAL = {
+    "Roulette Pick History", "Smart Flip Research", "Smart Flip Actions", "Adaptive Selections",
+    "Adaptive Decisions", "Adaptive Market Windows", "Adaptive Labeled Observations",
+    "Later Entry Comparison", "Hold vs Flip Rounds", "Paper Flips", "Unfunded Adaptive Flips",
+    "Paired Shadow Stakes", "Approved Configurations", "Experiment History", "Trend Analyses",
+    "Human Review", "Research Runs", "Adaptive vs Fixed Timing",
+}
+
+
 class Sheets:
     def __init__(self, wb):
         self.wb = wb
@@ -76,6 +87,20 @@ class Sheets:
             row.append(value)
         ws.append(row)
         self.counts[ws.title] += 1
+
+    def prune_empty(self):
+        """Drop empty legacy sheets and list them on one sheet (PROPHET_REPORT_KEEP_EMPTY=1 keeps all)."""
+        import os
+        if os.getenv("PROPHET_REPORT_KEEP_EMPTY") == "1":
+            return []
+        empty = [ws for ws in self.wb._sheets if self.counts.get(ws.title) == 1 and ws.title in LEGACY_OPTIONAL]
+        for ws in empty:
+            ws.close()                   # finish the write-only stream before dropping the sheet
+            self.wb._sheets.remove(ws)
+        if empty:
+            self.table("Omitted Empty Sheets", ["Sheet", "Reason"],
+                       ([ws.title, "No rows in this database"] for ws in empty))
+        return [ws.title for ws in empty]
 
     def table(self, name, headers, rows):
         ws = self.create(name, headers)
@@ -129,6 +154,13 @@ def add_unified(sheets, db, *, quick):
         [r["slug"],utc(r["observed"]), "SKIP: "+r["reason"] if r["end"]<=now and r["reason"]!="ENTERED"
          else r["reason"],r["model"],r["up"],r["details"]]
         for r in db.execute("SELECT * FROM unified_rounds ORDER BY start DESC LIMIT ?",(limit,))))
+    sheets.table("Exit Shadow Comparison", ["Exit policy","Settled trades","Shadow exits","Wins","Net P&L",
+        "Primary exit setting"], (
+        [r["policy"],r["trades"],r["exits"],r["wins"],r["pnl"],unified.primary_exit()]
+        for r in unified.exit_comparison(db)))
+    sheets.table("Model Selection Evidence", ["Market","Regime","UTC","Model","Evidence"], (
+        [r["slug"],r["regime"],utc(r["time"]),r["model"],r["evidence"]]
+        for r in db.execute("SELECT * FROM paper_model_choices ORDER BY time DESC LIMIT ?",(limit,))))
     if not quick:
         sheets.table("Unified Large Shadows", ["Market","Quote UTC","Side","Cost","Stress cost","Outcome",
             "P&L","Stress P&L","Evidence"], (
@@ -1204,6 +1236,7 @@ def write_workbook(database, output, *, include_account_equity=True):
             titles_from_data=True,
         )
         dash.add_chart(chart, "D2")
+    sheets.prune_empty()
     wb.save(output)
 
 
