@@ -22,9 +22,24 @@
       <article class="stat"><div class="stat-label">CONTRACT SETTLEMENT IN</div><div class="metric mono" id="countdown">—:—</div><div class="stat-foot" id="market-window">Awaiting verified five-minute market</div></article>
       <article class="stat"><div class="stat-label">PROPHET’S PICK</div><div class="direction-call" id="ai-decision" aria-live="polite">Waiting</div><div id="ai-reason" class="stat-foot">Waiting for a paper entry</div><p class="direction-tally" id="ai-tally" hidden></p></article>
     </section>
+    <section class="panel vegas" aria-label="Win streak and roulette">
+      <div class="vegas-streak"><span>WIN STREAK</span><strong id="vegas-streak">0</strong><small id="vegas-best">Best 0 · Worst losing run 0</small></div>
+      <div class="wheel-wrap" aria-hidden="true"><div class="wheel-pointer">▼</div><div id="wheel" class="wheel"><span class="wheel-hub">₿</span></div></div>
+      <div class="vegas-side">
+        <div id="wheel-result" class="wheel-result" aria-live="polite">Waiting for a result</div>
+        <div class="vegas-tally"><div><span>Won</span><strong id="vegas-won" class="profit">0</strong></div><div><span>Lost</span><strong id="vegas-lost" class="loss">0</strong></div><div><span>Games</span><strong id="vegas-games">0</strong></div></div>
+        <div class="vegas-controls"><label><input type="checkbox" id="win-video-on" checked> Play win video</label> <button type="button" class="button subtle" id="win-video-test">Test</button></div>
+      </div>
+    </section>
+    <div id="win-overlay" class="win-overlay" hidden role="dialog" aria-label="Win celebration">
+      <div class="win-box"><h2>WIN!</h2><p id="win-text"></p>
+        <iframe id="win-frame" title="Win video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        <p><a href="https://www.youtube.com/shorts/vK8r5586FbQ" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a> <button type="button" class="button" id="win-close">Close</button></p></div>
+    </div>
     <section class="panel game-card"><div class="panel-heading"><div><h2>Paper scoreboard</h2><p>Since 0.3.21 · Starting balance $1,000</p></div><strong id="game-balance">—</strong></div>
       <div class="scoreboard" aria-label="Paper results since 0.3.21"><div><span>Games</span><strong id="games-played">0</strong></div><div><span>Wins</span><strong id="games-won" class="profit">0</strong></div><div><span>Losses</span><strong id="games-lost" class="loss">0</strong></div><div><span>Net P&amp;L</span><strong id="games-pnl">—</strong></div></div>
-      <p id="games-streak" aria-live="polite">Waiting for the first completed paper trade.</p></section>
+      <p id="games-streak" aria-live="polite">Waiting for the first completed paper trade.</p>
+      <p><span id="games-since"></span> <button type="button" id="reset-scoreboard">Reset counter</button></p></section>
     <div class="workspace-grid">
       <section class="panel chart-panel"><div class="panel-heading"><div><h2>Bitcoin reference price <span class="gold">↗</span></h2><p>Official settlement reference</p></div><div class="segments" aria-label="Candle interval"><button class="selected" data-interval="15">15s</button><button data-interval="30">30s</button><button data-interval="60">1m</button></div></div><div class="chart-legend"><span class="legend-gold">━</span> Reference candlesticks <span class="legend-blue">┄</span> Contract opening reference</div><div class="chart-wrap"><div id="chart"></div><div id="chart-empty">Waiting for verified candles…</div></div><div class="chart-footer"><span id="candle-info">No fabricated or interpolated candles</span><a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">Charts by TradingView ↗</a></div></section>
       <section class="panel contract-panel"><div class="panel-heading"><div><h2>Five-minute BTC contract <span class="tiny-tag">5 MIN</span></h2></div><span class="dot" id="market-dot"></span></div><p class="contract-sub" id="contract-status">Verifying an open contract…</p><div class="reference-box"><span>Official price to beat</span><strong id="price-to-beat">—</strong><small>60-second average · ties settle UP</small></div><div class="outcomes" id="direction-quotes" hidden><div class="outcome up"><span>↗ UP / YES</span><strong id="up-price">—</strong><small>Observed buy ask</small></div><div class="outcome down"><span>↘ DOWN / NO</span><strong id="down-price">—</strong><small>1 − observed YES bid</small></div></div><div class="detail-row"><span>Bid / ask spread</span><strong id="spread">—</strong></div><div class="detail-row"><span>Model probabilities</span><strong id="model-probabilities" class="muted" hidden>Waiting</strong></div><div class="detail-row"><span>Market data status</span><strong id="book-status">Waiting</strong></div><details class="mini-book"><summary>Order book</summary><div class="book-title"><span>YES BID · QTY</span><span>YES ASK · QTY</span></div><div id="book-levels" class="book-levels"><p class="muted">No verified order book yet</p></div></details></section>

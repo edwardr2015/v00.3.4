@@ -166,6 +166,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
         response.headers["Cache-Control"] = "no-store"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+            "frame-src https://www.youtube-nocookie.com https://www.youtube.com; "
             "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
         )
         return response
@@ -750,6 +751,15 @@ def create_app(db_path=None, collect=True, auth_required=True):
         with store.connect() as db:
             db.execute("BEGIN")
             return unified.summary(db,time.time())
+
+    @app.post("/api/unified/reset-scoreboard")
+    def unified_reset_scoreboard():
+        """Restart the dashboard counters only; trades, cash and exports keep full history."""
+        with store.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            since = unified.reset_scoreboard(db,time.time())
+        store.event("INFO","Paper scoreboard counter reset (history kept)")
+        return dict(counting_since=since)
 
     @app.get("/api/corrective-research")
     def corrective_state():

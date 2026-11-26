@@ -136,8 +136,11 @@ def add_unified(sheets, db, *, quick):
     c = matched_forecasts(db,now)
     sheets.table("Unified Scoreboard", ["Metric","Value"], [
         ["Started UTC",utc(account["start"])],["Starting cash",unified.STARTING_CASH],
-        ["Current cash",account["balance"]],["Games",account["played"]],["Wins",account["wins"]],
+        ["Current cash",account["balance"]],["Counting since UTC",utc(account["counting_since"])],
+        ["Games",account["played"]],["Wins",account["wins"]],
         ["Losses",account["losses"]],["Net P&L",account["net"]],
+        ["All-time games",account["all_time"]["played"]],["All-time wins",account["all_time"]["wins"]],
+        ["All-time losses",account["all_time"]["losses"]],["All-time net P&L",account["all_time"]["net"]],
         ["$100 matched shadow fills",gate["rounds"]],["$100 after higher costs",gate["stress_net"]],
         ["$100 eligible",gate["qualified"]],["Matched challenger forecasts",c["matched"]],
         ["Baseline correct",c["baseline_right"]],["Challenger correct",c["challenger_right"]],

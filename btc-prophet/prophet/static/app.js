@@ -152,6 +152,14 @@ $('formal-start').onclick=async()=>{
   }catch(e){$('formal-start-result').textContent=e.message;}
 };
 
+$('reset-scoreboard').onclick=async()=>{
+  if(!confirm('Reset the Games / Wins / Losses / Net P&L counter to zero?\n\nTrades, cash balance and Excel history are kept.'))return;
+  try{
+    const r=await fetch('/api/unified/reset-scoreboard',{method:'POST',headers:{'X-Prophet-Control':'local-dashboard'}});
+    if(!r.ok)throw new Error((await r.json()).detail||`HTTP ${r.status}`);
+    scoreboard();
+  }catch(e){$('notice').classList.add('warning');$('notice').textContent=`Reset failed: ${e.message}.`;}
+};
 $('collector-pause').onclick=()=>control('collector-pause');
 $('collector-resume').onclick=()=>control('collector-resume');
 
@@ -234,6 +242,10 @@ async function scoreboard(){
     $('games-lost').textContent=game.losses;
     $('games-pnl').textContent=money(game.net);
     $('game-balance').textContent=money(game.balance)+' cash';
+    vegas(game);
+    $('games-since').textContent=game.reset
+      ? `Counting since ${new Date(game.counting_since*1000).toISOString().slice(0,16).replace('T',' ')} UTC · all-time ${game.all_time.played} games, ${game.all_time.wins}–${game.all_time.losses}, ${money(game.all_time.net)}`
+      : 'Counting since the account started';
     const streak=game.streaks;
     $('games-streak').textContent=game.played
       ? `${(100*game.wins/game.played).toFixed(1)}% wins · Current ${streak.current||'flat'} ${streak.length} · Best win ${streak.longest.WIN} · Worst loss ${streak.longest.LOSS}`
@@ -369,3 +381,60 @@ $('request-training').onclick=async()=>{
     $('training-result').textContent=result.message||result.detail;
   }catch(error){$('training-result').textContent='Unable to request training.';}
 };
+
+// Vegas panel: win streak, roulette wheel and win video. Display only; never sends controls.
+const WIN_ORIGIN='https://www.youtube-nocookie.com';
+const WIN_VIDEO=WIN_ORIGIN+'/embed/vK8r5586FbQ?autoplay=1&playsinline=1&rel=0&loop=0&enablejsapi=1&origin='+encodeURIComponent(location.origin);
+const WIN_MAX_MS=70000;   // safety close if the player never reports that it ended
+let wheelAngle=0, lastSettled=undefined, overlayTimer=null;
+function winVideoOn(){try{return localStorage.getItem('prophet-win-video')!=='off';}catch(e){return true;}}
+$('win-video-on').checked=winVideoOn();
+$('win-video-on').onchange=e=>{try{localStorage.setItem('prophet-win-video',e.target.checked?'on':'off');}catch(err){}};
+function showWin(text){
+  if(!$('win-video-on').checked)return;
+  $('win-text').textContent=text;
+  $('win-frame').src=WIN_VIDEO;
+  $('win-overlay').hidden=false;
+  clearTimeout(overlayTimer);overlayTimer=setTimeout(closeWin,WIN_MAX_MS);
+}
+// Ask the embedded player for state updates (no external script needed) and close when it ends.
+$('win-frame').addEventListener('load',()=>{
+  if($('win-overlay').hidden)return;
+  try{$('win-frame').contentWindow.postMessage(JSON.stringify({event:'listening',id:'win'}),WIN_ORIGIN);}catch(e){}
+});
+window.addEventListener('message',e=>{
+  if(e.origin!==WIN_ORIGIN||$('win-overlay').hidden)return;
+  let data;try{data=typeof e.data==='string'?JSON.parse(e.data):e.data;}catch(err){return;}
+  const state=data&&data.info&&data.info.playerState;
+  if(state===0)closeWin();   // 0 = ended: played once, close the screen
+});
+function closeWin(){clearTimeout(overlayTimer);$('win-overlay').hidden=true;$('win-frame').src='about:blank';}
+$('win-close').onclick=closeWin;
+$('win-overlay').onclick=e=>{if(e.target===$('win-overlay'))closeWin();};
+$('win-video-test').onclick=()=>{const was=$('win-video-on').checked;$('win-video-on').checked=true;showWin('Test celebration');$('win-video-on').checked=was;};
+function spinTo(outcome){
+  // 12 slices of 30°: green (UP) starts at 0°, red (DOWN) at 30°, alternating. Pointer at the top.
+  const slice=Math.floor(Math.random()*6)*60+(outcome==='UP'?15:45);
+  const target=wheelAngle+3*360+((360-((wheelAngle+slice)%360))%360);
+  wheelAngle=target;$('wheel').style.transform=`rotate(${target}deg)`;
+}
+function vegas(game){
+  const s=game.streaks||{current:null,length:0,longest:{WIN:0,LOSS:0}};
+  $('vegas-streak').textContent=s.current==='WIN'?s.length:0;
+  $('vegas-best').textContent=`Best ${s.longest.WIN} · Worst losing run ${s.longest.LOSS}`;
+  $('vegas-won').textContent=game.wins;$('vegas-lost').textContent=game.losses;$('vegas-games').textContent=game.played;
+  const last=game.last_settled;
+  const key=last?last.slug:null;
+  if(lastSettled===undefined){lastSettled=key;if(last)showResult(last,false);return;}
+  if(!last||key===lastSettled)return;
+  lastSettled=key;
+  if(last.outcome)spinTo(last.outcome);
+  setTimeout(()=>showResult(last,true),4100);
+}
+function showResult(last,celebrate){
+  const won=last.pnl>0;
+  const el=$('wheel-result');
+  el.textContent=`${won?'WIN':'LOSS'} · bought ${last.side}, market went ${last.outcome||'?'} · ${money(last.pnl)}`;
+  el.className='wheel-result '+(won?'win':'loss');
+  if(won&&celebrate)showWin(`${money(last.pnl)} · win streak ${$('vegas-streak').textContent}`);
+}

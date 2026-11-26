@@ -288,12 +288,28 @@ def history(db, limit=-1):
         ORDER BY t.time DESC LIMIT ?""",(limit,))
 
 
+SCOREBOARD_KEY = "unified_scoreboard_since"
+
+
+def scoreboard_since(db):
+    """Display-only counting start. Trades, cash and history are never changed by a reset."""
+    row = db.execute("SELECT payload FROM state WHERE key=?", (SCOREBOARD_KEY,)).fetchone()
+    return json.loads(row[0]) if row else None
+
+
+def reset_scoreboard(db, now):
+    db.execute("INSERT OR REPLACE INTO state VALUES (?,?,?)", (SCOREBOARD_KEY, json.dumps(now), now))
+    return now
+
+
 def summary(db, now):
     account = db.execute("SELECT * FROM unified_account WHERE id=1").fetchone()
     if not account:
         return None
-    rows = db.execute("""SELECT pnl FROM unified_trades WHERE status!='OPEN'
+    since = scoreboard_since(db)
+    every = db.execute("""SELECT pnl,time FROM unified_trades WHERE status!='OPEN'
         ORDER BY closed,slug""").fetchall()
+    rows = [r for r in every if since is None or r["time"] >= since]
     pnl = [r["pnl"] for r in rows]
     results = ["WIN" if p>0 else "LOSS" if p<0 else "FLAT" for p in pnl]
     pos = db.execute("""SELECT side,model,up,stake,slug,time FROM unified_trades
@@ -302,7 +318,16 @@ def summary(db, now):
         LEFT JOIN unified_trades t ON t.slug=r.slug ORDER BY r.start DESC LIMIT 1""").fetchone()
     recent = [dict(r) for r in db.execute("SELECT slug,time,side,closed,status FROM unified_trades ORDER BY time DESC LIMIT 120")]
     played = len(pnl)
+    all_pnl = [r["pnl"] for r in every]
+    last = db.execute("""SELECT t.slug,t.side,t.pnl,t.closed,v.outcome FROM unified_trades t
+        JOIN unified_rounds r ON r.slug=t.slug
+        LEFT JOIN verified_markets v ON v.slug=t.slug AND v.end=r.end
+        WHERE t.status!='OPEN' ORDER BY t.closed DESC,t.slug DESC LIMIT 1""").fetchone()
     return dict(start=account["started"],balance=account["balance"],played=played,
+                counting_since=since or account["started"],reset=since is not None,
+                last_settled=dict(last) if last else None,
+                all_time=dict(played=len(all_pnl),wins=sum(p>0 for p in all_pnl),
+                              losses=sum(p<0 for p in all_pnl),net=sum(all_pnl)),
                 wins=results.count("WIN"),losses=results.count("LOSS"),net=sum(pnl),
                 streaks=streaks(results,"WIN","LOSS"),position=dict(pos) if pos else None,
                 latest=dict(latest) if latest else None,recent=recent)

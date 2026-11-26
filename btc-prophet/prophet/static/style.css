@@ -73,3 +73,25 @@
   .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .stats .stat:last-child { grid-column: 1 / -1; }
 }
+
+/* Vegas win-streak panel and roulette wheel */
+.vegas{display:grid;grid-template-columns:minmax(150px,1fr) auto minmax(220px,1.4fr);align-items:center;gap:22px;padding:18px 22px;margin:0 0 18px;background:radial-gradient(circle at 30% 20%,#2a1d06 0,#0f1626 60%);border:1px solid #6b5420}
+.vegas-streak{display:grid;gap:4px;text-align:center}.vegas-streak span{letter-spacing:.18em;font-size:.75rem;color:#e8b45a}
+.vegas-streak strong{font-size:clamp(3rem,9vw,5.5rem);line-height:1;color:#f5c862;text-shadow:0 0 18px rgba(245,200,98,.55);font-variant-numeric:tabular-nums}
+.vegas-streak small{color:#a2aec1}
+.wheel-wrap{position:relative;width:170px;height:170px}
+.wheel-pointer{position:absolute;top:-14px;left:50%;transform:translateX(-50%);color:#f5c862;font-size:1.4rem;z-index:2}
+.wheel{width:170px;height:170px;border-radius:50%;border:6px solid #c9a24a;box-shadow:0 0 24px rgba(201,162,74,.35),inset 0 0 18px rgba(0,0,0,.6);
+  background:conic-gradient(#1f9d55 0 30deg,#b3262e 30deg 60deg,#1f9d55 60deg 90deg,#b3262e 90deg 120deg,#1f9d55 120deg 150deg,#b3262e 150deg 180deg,#1f9d55 180deg 210deg,#b3262e 210deg 240deg,#1f9d55 240deg 270deg,#b3262e 270deg 300deg,#1f9d55 300deg 330deg,#b3262e 330deg 360deg);
+  transition:transform 4s cubic-bezier(.12,.6,.1,1);display:grid;place-items:center}
+.wheel-hub{width:46px;height:46px;border-radius:50%;background:#0b101b;border:3px solid #c9a24a;display:grid;place-items:center;color:#f5c862;font-weight:700}
+.wheel-result{font-size:1.5rem;font-weight:700;margin-bottom:8px}.wheel-result.win{color:#3ddc84}.wheel-result.loss{color:#ff6b6b}
+.vegas-tally{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.vegas-tally div{display:grid;gap:2px}.vegas-tally span{font-size:.72rem;color:#a2aec1}.vegas-tally strong{font-size:1.4rem;font-variant-numeric:tabular-nums}
+.vegas-controls{margin-top:10px;font-size:.85rem;color:#a2aec1}
+.win-overlay{position:fixed;inset:0;background:rgba(5,8,14,.82);display:grid;place-items:center;z-index:50}
+.win-overlay[hidden]{display:none}
+.win-box{background:#101827;border:2px solid #f5c862;border-radius:14px;padding:18px;text-align:center;max-width:min(92vw,420px)}
+.win-box h2{color:#f5c862;font-size:2.4rem;margin:0 0 6px;text-shadow:0 0 16px rgba(245,200,98,.6)}
+.win-box iframe{width:min(80vw,315px);aspect-ratio:9/16;border:0;border-radius:10px;background:#000}
+@media(max-width:760px){.vegas{grid-template-columns:1fr;justify-items:center;text-align:center}.vegas-tally{width:100%}}
+@media(prefers-reduced-motion:reduce){.wheel{transition:none}}
