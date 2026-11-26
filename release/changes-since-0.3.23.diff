@@ -11,21 +11,37 @@ index a3e2848..77e4057 100644
                  midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
                  raw = probabilities_from_market(midpoint,context["reference_price"],opening,
 diff --git a/btc-prophet/prophet/app.py b/btc-prophet/prophet/app.py
-index 92100b5..2ca3631 100644
+index 92100b5..17b2a2e 100644
 --- a/btc-prophet/prophet/app.py
 +++ b/btc-prophet/prophet/app.py
-@@ -166,6 +166,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
-         response.headers["Cache-Control"] = "no-store"
-         response.headers["Content-Security-Policy"] = (
-             "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-+            "frame-src https://www.youtube-nocookie.com https://www.youtube.com; "
-             "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
-         )
-         return response
-@@ -751,6 +752,15 @@ def create_app(db_path=None, collect=True, auth_required=True):
+@@ -751,6 +751,39 @@ def create_app(db_path=None, collect=True, auth_required=True):
              db.execute("BEGIN")
              return unified.summary(db,time.time())
  
++    WIN_SOUND_TYPES = {".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".aac": "audio/aac", ".wav": "audio/wav"}
++
++    def win_sound():
++        """The user's own song, placed next to the database as win-sound.mp3/.m4a/.aac/.wav."""
++        folder = Path(store.path).resolve().parent
++        for ext in WIN_SOUND_TYPES:
++            path = folder / ("win-sound" + ext)
++            if path.is_file() and 0 < path.stat().st_size <= 50 * 1024 * 1024:
++                return path
++        return None
++
++    @app.get("/api/win-sound/status")
++    def win_sound_status():
++        path = win_sound()
++        return dict(available=bool(path), file=path.name if path else None,
++                    folder=str(Path(store.path).resolve().parent))
++
++    @app.get("/api/win-sound")
++    def win_sound_file():
++        path = win_sound()
++        if not path:
++            raise HTTPException(404, "Put your song in the data folder as win-sound.mp3 or win-sound.m4a")
++        return FileResponse(path, media_type=WIN_SOUND_TYPES[path.suffix])
++
 +    @app.post("/api/unified/reset-scoreboard")
 +    def unified_reset_scoreboard():
 +        """Restart the dashboard counters only; trades, cash and exports keep full history."""
@@ -448,7 +464,7 @@ index 0000000..d4479f2
 +    z = math.log(mean / opening) / math.sqrt(max(var, 1e-14))
 +    return min(.99, max(.01, .5 * (1 + math.erf(z / math.sqrt(2)))))
 diff --git a/btc-prophet/prophet/static/app.js b/btc-prophet/prophet/static/app.js
-index 765e8c7..744a525 100644
+index 765e8c7..469d43e 100644
 --- a/btc-prophet/prophet/static/app.js
 +++ b/btc-prophet/prophet/static/app.js
 @@ -152,6 +152,14 @@ $('formal-start').onclick=async()=>{
@@ -477,38 +493,49 @@ index 765e8c7..744a525 100644
      const streak=game.streaks;
      $('games-streak').textContent=game.played
        ? `${(100*game.wins/game.played).toFixed(1)}% wins · Current ${streak.current||'flat'} ${streak.length} · Best win ${streak.longest.WIN} · Worst loss ${streak.longest.LOSS}`
-@@ -369,3 +381,60 @@ $('request-training').onclick=async()=>{
+@@ -369,3 +381,71 @@ $('request-training').onclick=async()=>{
      $('training-result').textContent=result.message||result.detail;
    }catch(error){$('training-result').textContent='Unable to request training.';}
  };
 +
-+// Vegas panel: win streak, roulette wheel and win video. Display only; never sends controls.
-+const WIN_ORIGIN='https://www.youtube-nocookie.com';
-+const WIN_VIDEO=WIN_ORIGIN+'/embed/vK8r5586FbQ?autoplay=1&playsinline=1&rel=0&loop=0&enablejsapi=1&origin='+encodeURIComponent(location.origin);
-+const WIN_MAX_MS=70000;   // safety close if the player never reports that it ended
-+let wheelAngle=0, lastSettled=undefined, overlayTimer=null;
-+function winVideoOn(){try{return localStorage.getItem('prophet-win-video')!=='off';}catch(e){return true;}}
-+$('win-video-on').checked=winVideoOn();
-+$('win-video-on').onchange=e=>{try{localStorage.setItem('prophet-win-video',e.target.checked?'on':'off');}catch(err){}};
++// Vegas panel: win streak, roulette wheel and win song. Display only; never sends controls.
++let wheelAngle=0, lastSettled=undefined, overlayTimer=null, songAvailable=false;
++const pref=(key,fallback)=>{try{return localStorage.getItem(key)??fallback;}catch(e){return fallback;}};
++const setPref=(key,value)=>{try{localStorage.setItem(key,value);}catch(e){}};
++$('win-video-on').checked=pref('prophet-win-video','on')!=='off';
++$('win-video-on').onchange=e=>setPref('prophet-win-video',e.target.checked?'on':'off');
++$('win-length').value=pref('prophet-win-length','30');
++$('win-length').onchange=e=>setPref('prophet-win-length',e.target.value);
++async function songStatus(){
++  try{const s=await getJSON('/api/win-sound/status');songAvailable=s.available;
++    $('win-sound-state').textContent=s.available?'Song ready':'No song file yet';}catch(e){songAvailable=false;}
++}
++songStatus();setInterval(songStatus,60000);
++function closeWin(){
++  clearTimeout(overlayTimer);
++  const audio=$('win-audio');audio.pause();audio.removeAttribute('src');audio.load();
++  $('win-overlay').hidden=true;
++}
++$('win-audio').addEventListener('ended',closeWin);       // played once: close the screen
 +function showWin(text){
 +  if(!$('win-video-on').checked)return;
-+  $('win-text').textContent=text;
-+  $('win-frame').src=WIN_VIDEO;
++  $('win-text').textContent=text;$('win-note').textContent='';
 +  $('win-overlay').hidden=false;
-+  clearTimeout(overlayTimer);overlayTimer=setTimeout(closeWin,WIN_MAX_MS);
++  clearTimeout(overlayTimer);
++  const seconds=Number($('win-length').value);
++  if(!songAvailable){
++    $('win-note').textContent='Add your song as win-sound.mp3 in the data folder to hear it here.';
++    overlayTimer=setTimeout(closeWin,6000);return;
++  }
++  const audio=$('win-audio');
++  audio.src='/api/win-sound?v='+Date.now();audio.currentTime=0;   // always the current file
++  audio.play().then(()=>{
++    overlayTimer=setTimeout(closeWin,seconds>0?seconds*1000:15*60*1000);
++  }).catch(()=>{
++    $('win-note').textContent='Safari blocked the sound. Click Test once after opening the dashboard to allow it.';
++    overlayTimer=setTimeout(closeWin,8000);
++  });
 +}
-+// Ask the embedded player for state updates (no external script needed) and close when it ends.
-+$('win-frame').addEventListener('load',()=>{
-+  if($('win-overlay').hidden)return;
-+  try{$('win-frame').contentWindow.postMessage(JSON.stringify({event:'listening',id:'win'}),WIN_ORIGIN);}catch(e){}
-+});
-+window.addEventListener('message',e=>{
-+  if(e.origin!==WIN_ORIGIN||$('win-overlay').hidden)return;
-+  let data;try{data=typeof e.data==='string'?JSON.parse(e.data):e.data;}catch(err){return;}
-+  const state=data&&data.info&&data.info.playerState;
-+  if(state===0)closeWin();   // 0 = ended: played once, close the screen
-+});
-+function closeWin(){clearTimeout(overlayTimer);$('win-overlay').hidden=true;$('win-frame').src='about:blank';}
 +$('win-close').onclick=closeWin;
 +$('win-overlay').onclick=e=>{if(e.target===$('win-overlay'))closeWin();};
 +$('win-video-test').onclick=()=>{const was=$('win-video-on').checked;$('win-video-on').checked=true;showWin('Test celebration');$('win-video-on').checked=was;};
@@ -539,10 +566,10 @@ index 765e8c7..744a525 100644
 +  if(won&&celebrate)showWin(`${money(last.pnl)} · win streak ${$('vegas-streak').textContent}`);
 +}
 diff --git a/btc-prophet/prophet/static/index.html b/btc-prophet/prophet/static/index.html
-index 9d3861c..cccbb92 100644
+index 9d3861c..5168c92 100644
 --- a/btc-prophet/prophet/static/index.html
 +++ b/btc-prophet/prophet/static/index.html
-@@ -22,9 +22,24 @@
+@@ -22,9 +22,26 @@
        <article class="stat"><div class="stat-label">CONTRACT SETTLEMENT IN</div><div class="metric mono" id="countdown">—:—</div><div class="stat-foot" id="market-window">Awaiting verified five-minute market</div></article>
        <article class="stat"><div class="stat-label">PROPHET’S PICK</div><div class="direction-call" id="ai-decision" aria-live="polite">Waiting</div><div id="ai-reason" class="stat-foot">Waiting for a paper entry</div><p class="direction-tally" id="ai-tally" hidden></p></article>
      </section>
@@ -552,13 +579,15 @@ index 9d3861c..cccbb92 100644
 +      <div class="vegas-side">
 +        <div id="wheel-result" class="wheel-result" aria-live="polite">Waiting for a result</div>
 +        <div class="vegas-tally"><div><span>Won</span><strong id="vegas-won" class="profit">0</strong></div><div><span>Lost</span><strong id="vegas-lost" class="loss">0</strong></div><div><span>Games</span><strong id="vegas-games">0</strong></div></div>
-+        <div class="vegas-controls"><label><input type="checkbox" id="win-video-on" checked> Play win video</label> <button type="button" class="button subtle" id="win-video-test">Test</button></div>
++        <div class="vegas-controls"><label><input type="checkbox" id="win-video-on" checked> Play win song</label>
++          <select id="win-length" aria-label="Song length"><option value="15">15 s</option><option value="30" selected>30 s</option><option value="0">Whole song</option></select>
++          <button type="button" class="button subtle" id="win-video-test">Test</button> <span id="win-sound-state"></span></div>
 +      </div>
 +    </section>
 +    <div id="win-overlay" class="win-overlay" hidden role="dialog" aria-label="Win celebration">
-+      <div class="win-box"><h2>WIN!</h2><p id="win-text"></p>
-+        <iframe id="win-frame" title="Win video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-+        <p><a href="https://www.youtube.com/shorts/vK8r5586FbQ" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a> <button type="button" class="button" id="win-close">Close</button></p></div>
++      <div class="win-box"><h2>WIN!</h2><p id="win-text"></p><p id="win-note" class="muted"></p>
++        <audio id="win-audio" preload="none"></audio>
++        <p><button type="button" class="button" id="win-close">Close</button></p></div>
 +    </div>
      <section class="panel game-card"><div class="panel-heading"><div><h2>Paper scoreboard</h2><p>Since 0.3.21 · Starting balance $1,000</p></div><strong id="game-balance">—</strong></div>
        <div class="scoreboard" aria-label="Paper results since 0.3.21"><div><span>Games</span><strong id="games-played">0</strong></div><div><span>Wins</span><strong id="games-won" class="profit">0</strong></div><div><span>Losses</span><strong id="games-lost" class="loss">0</strong></div><div><span>Net P&amp;L</span><strong id="games-pnl">—</strong></div></div>
@@ -569,7 +598,7 @@ index 9d3861c..cccbb92 100644
        <section class="panel chart-panel"><div class="panel-heading"><div><h2>Bitcoin reference price <span class="gold">↗</span></h2><p>Official settlement reference</p></div><div class="segments" aria-label="Candle interval"><button class="selected" data-interval="15">15s</button><button data-interval="30">30s</button><button data-interval="60">1m</button></div></div><div class="chart-legend"><span class="legend-gold">━</span> Reference candlesticks <span class="legend-blue">┄</span> Contract opening reference</div><div class="chart-wrap"><div id="chart"></div><div id="chart-empty">Waiting for verified candles…</div></div><div class="chart-footer"><span id="candle-info">No fabricated or interpolated candles</span><a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">Charts by TradingView ↗</a></div></section>
        <section class="panel contract-panel"><div class="panel-heading"><div><h2>Five-minute BTC contract <span class="tiny-tag">5 MIN</span></h2></div><span class="dot" id="market-dot"></span></div><p class="contract-sub" id="contract-status">Verifying an open contract…</p><div class="reference-box"><span>Official price to beat</span><strong id="price-to-beat">—</strong><small>60-second average · ties settle UP</small></div><div class="outcomes" id="direction-quotes" hidden><div class="outcome up"><span>↗ UP / YES</span><strong id="up-price">—</strong><small>Observed buy ask</small></div><div class="outcome down"><span>↘ DOWN / NO</span><strong id="down-price">—</strong><small>1 − observed YES bid</small></div></div><div class="detail-row"><span>Bid / ask spread</span><strong id="spread">—</strong></div><div class="detail-row"><span>Model probabilities</span><strong id="model-probabilities" class="muted" hidden>Waiting</strong></div><div class="detail-row"><span>Market data status</span><strong id="book-status">Waiting</strong></div><details class="mini-book"><summary>Order book</summary><div class="book-title"><span>YES BID · QTY</span><span>YES ASK · QTY</span></div><div id="book-levels" class="book-levels"><p class="muted">No verified order book yet</p></div></details></section>
 diff --git a/btc-prophet/prophet/static/style.css b/btc-prophet/prophet/static/style.css
-index 56774e9..3ea3a14 100644
+index 56774e9..638e2b1 100644
 --- a/btc-prophet/prophet/static/style.css
 +++ b/btc-prophet/prophet/static/style.css
 @@ -73,3 +73,27 @@
@@ -595,7 +624,7 @@ index 56774e9..3ea3a14 100644
 +.win-overlay[hidden]{display:none}
 +.win-box{background:#101827;border:2px solid #f5c862;border-radius:14px;padding:18px;text-align:center;max-width:min(92vw,420px)}
 +.win-box h2{color:#f5c862;font-size:2.4rem;margin:0 0 6px;text-shadow:0 0 16px rgba(245,200,98,.6)}
-+.win-box iframe{width:min(80vw,315px);aspect-ratio:9/16;border:0;border-radius:10px;background:#000}
++.win-box{min-width:min(86vw,320px)}.win-box .muted{color:#a2aec1}#win-sound-state{font-size:.8rem;color:#a2aec1}
 +@media(max-width:760px){.vegas{grid-template-columns:1fr;justify-items:center;text-align:center}.vegas-tally{width:100%}}
 +@media(prefers-reduced-motion:reduce){.wheel{transition:none}}
 +.game-card .games-since{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:0 22px 16px;margin:0;color:#a2aec1;font-size:.85rem}
@@ -1298,3 +1327,38 @@ index 5db6140..e6c49bc 100644
 +        assert rows["actual"]["pnl"]==rows["hold_to_settlement"]["pnl"]==round(trade["pnl"],4)
 +        assert rows["probability_exit"]["exits"]==1 and rows["probability_exit"]["pnl"]<rows["actual"]["pnl"]
 +        assert rows["stop_loss_50"]["exits"]==1
+diff --git a/btc-prophet/tests/test_win_sound.py b/btc-prophet/tests/test_win_sound.py
+new file mode 100644
+index 0000000..0107312
+--- /dev/null
++++ b/btc-prophet/tests/test_win_sound.py
+@@ -0,0 +1,29 @@
++import wave
++
++from fastapi.testclient import TestClient
++
++from prophet.app import create_app
++from prophet.store import Store
++
++
++def tone(path, seconds=1):
++    with wave.open(str(path), "wb") as w:
++        w.setnchannels(1); w.setsampwidth(2); w.setframerate(8000)
++        w.writeframes(b"\x00\x00" * 8000 * seconds)
++
++
++def test_win_song_served_only_from_the_data_folder(tmp_path):
++    store = Store(str(tmp_path / "prophet.sqlite3"))
++    app = create_app(store.path, collect=False, auth_required=False)
++    with TestClient(app) as client:
++        assert client.get("/api/win-sound/status").json()["available"] is False
++        missing = client.get("/api/win-sound")
++        assert missing.status_code == 404 and "win-sound.mp3" in missing.json()["detail"]
++        tone(tmp_path / "win-sound.wav")
++        status = client.get("/api/win-sound/status").json()
++        assert status == dict(available=True, file="win-sound.wav", folder=str(tmp_path.resolve()))
++        song = client.get("/api/win-sound")
++        assert song.status_code == 200 and song.headers["content-type"] == "audio/wav"
++        assert song.content == (tmp_path / "win-sound.wav").read_bytes()
++        csp = client.get("/").headers["content-security-policy"]
++        assert "youtube" not in csp and "frame-src" not in csp
