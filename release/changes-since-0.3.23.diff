@@ -1,0 +1,144 @@
+diff --git a/btc-prophet/prophet/learning.py b/btc-prophet/prophet/learning.py
+index c88d586..04fab4e 100644
+--- a/btc-prophet/prophet/learning.py
++++ b/btc-prophet/prophet/learning.py
+@@ -8,6 +8,8 @@ import time
+ from pathlib import Path
+ 
+ from .history import History
++
++CHALLENGER_MINIMUM = 300  # prophet.models.Models.train; the 200 gate covers only the logistic challenger
+ from .research import (
+     baseline_probability,
+     challenger_probability,
+@@ -127,7 +129,9 @@ class Learning:
+         if len(rows) < 200:
+             self.store.put(
+                 "learning_status",
+-                dict(status="WAITING", examples=len(rows), message="Need 200 labelled examples"),
++                dict(status="WAITING", examples=len(rows), message="Need 200 labelled examples",
++                     minimum=200, optional_challenger_minimum=CHALLENGER_MINIMUM,
++                     optional_challenger_shortage=max(0, CHALLENGER_MINIMUM - len(rows))),
+             )
+             return
+         cut = rows[int(len(rows) * 0.8)]["decision_time"]
+@@ -177,6 +181,7 @@ class Learning:
+ 
+         registry = Models(self.store)
+         registry.sync_logistic()
++        challengers = {}
+         for kind in os.getenv(
+             "PROPHET_RESEARCH_MODELS", "ensemble,random_forest,gradient_boosting,xgboost,lightgbm"
+         ).split(","):
+@@ -184,7 +189,9 @@ class Learning:
+                 continue
+             try:
+                 registry.train(kind.strip(), rows, now=now)
++                challengers[kind.strip()] = "TRAINED"
+             except (ValueError, ImportError, OSError, RuntimeError) as exc:
++                challengers[kind.strip()] = str(exc)
+                 self.store.event("INFO", "Optional challenger " + kind + ": " + str(exc))
+         self.store.put("shadow_version", version)
+         self.store.put(
+@@ -195,6 +202,8 @@ class Learning:
+                 examples=len(rows),
+                 brier=score["brier_score"],
+                 active_model_unchanged=True,
++                optional_challenger_minimum=CHALLENGER_MINIMUM,
++                optional_challengers=challengers,
+             ),
+         )
+ 
+diff --git a/btc-prophet/prophet/unified.py b/btc-prophet/prophet/unified.py
+index 2effab5..1dcf640 100644
+--- a/btc-prophet/prophet/unified.py
++++ b/btc-prophet/prophet/unified.py
+@@ -148,6 +148,7 @@ def premium_trial(db, slug, start, now, book, terms, audit, commit_time):
+ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, commit_time):
+     """Evaluate one current observation on the caller's verified book transaction."""
+     end, start = details["window_end"], details["window_start"]
++    block = reason  # set before any model ran: missing/stale data, empty book, invalid terms
+     now = commit_time()
+     if now is None or not start <= now < end:
+         return
+@@ -159,6 +160,8 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
+                                          "volatility","elapsed","reference_price","opening_price",
+                                          "model_evidence")}
+     audit["raw_up"] = raw_up
++    if block:
++        audit["data_block"] = True
+     if not reason:
+         midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
+         up, labels = calibrate(db,slug,model,raw_up,midpoint,now)
+@@ -218,6 +221,13 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
+         if debit.rowcount!=1:
+             raise ValueError("Unified paper debit failed")
+         now, reason = checked, "ENTERED"
++    if block and reason != "ENTERED":
++        # A later data-availability block (typically the venue emptying the book just before
++        # the close) must not overwrite the reason the model already reached for this round.
++        prior = db.execute("SELECT reason,details FROM unified_rounds WHERE slug=?", (slug,)).fetchone()
++        if prior and prior[0] != "WAITING" and not json.loads(prior[1] or "{}").get("data_block"):
++            db.execute("UPDATE unified_rounds SET observed=? WHERE slug=?", (now, slug))
++            return
+     db.execute("""UPDATE unified_rounds SET observed=?,reason=?,model=?,up=?,details=? WHERE slug=?""",
+                (now,reason,model,up,json.dumps(audit),slug))
+ 
+diff --git a/btc-prophet/tests/test_learning_smart.py b/btc-prophet/tests/test_learning_smart.py
+index 7fb9732..02517fd 100644
+--- a/btc-prophet/tests/test_learning_smart.py
++++ b/btc-prophet/tests/test_learning_smart.py
+@@ -129,3 +129,22 @@ def test_sampled_target_rescues_only_a_trade_that_reaches_it():
+         replay(rows, lambda x: 0.9, checkpoint=False, exit_factor=1.4)["accounts"][0]["realized"]
+         == hold["accounts"][0]["realized"]
+     )
++
++
++def test_status_reports_optional_challenger_gate_separately(tmp_path):
++    s, _, _ = seed(tmp_path)
++    learner = Learning(s, tmp_path / "missing.sqlite")
++    learner.train()
++    waiting = s.get("learning_status")
++    assert waiting["status"] == "WAITING" and waiting["optional_challenger_shortage"] == 300
++    start = time.time() - 100000
++    with s.connect() as db:
++        for i in range(210):
++            db.execute("INSERT INTO learning_labels VALUES (?,?,?,?,?,?)",
++                       (f"fixture-{i}", start + i * 300, start + i * 300 + 240,
++                        json.dumps([i % 3, i % 4, -5.0]), i % 2, start + i * 300 + 241))
++    learner.train()
++    status = s.get("learning_status")
++    assert status["status"] == "SHADOW" and status["optional_challenger_minimum"] == 300
++    assert status["optional_challengers"]
++    assert all("300" in why for why in status["optional_challengers"].values())
+diff --git a/btc-prophet/tests/test_unified_v321.py b/btc-prophet/tests/test_unified_v321.py
+index 5db6140..9623a97 100644
+--- a/btc-prophet/tests/test_unified_v321.py
++++ b/btc-prophet/tests/test_unified_v321.py
+@@ -216,3 +216,26 @@ def test_actual_engine_entry_uses_fresh_book_and_preserves_old_ledgers(tmp_path)
+     with store.connect() as db:
+         assert unified.summary(db,now+1)["position"]["side"]=="UP"
+         assert db.execute("SELECT count(*) FROM v2_orders").fetchone()[0]==0
++
++
++def test_late_data_block_does_not_overwrite_model_skip_reason(tmp_path):
++    store,_ = initialize(tmp_path)
++    with store.connect() as db:
++        # Model evaluates and skips: both sides priced outside the 40-70c band.
++        observe(db,1100,raw=.5,level=book(bid=.10,ask=.12))
++        first = db.execute("SELECT reason,model FROM unified_rounds").fetchone()
++        assert "PRICE_OUTSIDE_BAND" in first[0] and first[1]=="fixture"
++        # Book empties just before the close; the caller passes a pre-model block.
++        details = dict(window_start=1000,window_end=1300,book_checked=1299,reference_timestamp=1299)
++        unified.observe(db,"round",1299,"SIMULATE","momentum-book-v0.2",None,"NO_LIQUIDITY",
++                        details,dict(bids=[],asks=[]),TERMS,lambda: 1299)
++        row = db.execute("SELECT reason,model,observed FROM unified_rounds").fetchone()
++        assert (row[0],row[1]) == (first[0],first[1]) and row[2]==1299
++
++
++def test_data_blocks_alone_still_record_the_latest_block(tmp_path):
++    store,_ = initialize(tmp_path)
++    with store.connect() as db:
++        observe(db,1100,block="STALE_BOOK")
++        observe(db,1200,block="NO_LIQUIDITY")
++        assert db.execute("SELECT reason FROM unified_rounds").fetchone()[0]=="NO_LIQUIDITY"
