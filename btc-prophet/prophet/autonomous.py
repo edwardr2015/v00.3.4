@@ -14,6 +14,15 @@ REDUNDANT_AGREEMENT = .90       # challengers that pick the incumbent's side thi
 MIN_IMPROVEMENT_SE = 1.0        # mean improvement must exceed one standard error
 BRIER_TOLERANCE = .01           # challenger calibration may not be worse than incumbent + tolerance
 NOT_SELECTABLE = {"model_vote", "reference_gap_agreement"}   # derived consensus / rule on incumbent
+
+
+def primary_selection_enabled():
+    """Primary-account model switching. Off by default since 0.3.23-dev2: challenger evidence comes
+    from each model's own account rules, which do not transfer to the primary entry rule (a selected
+    near-market model could not pass the primary's 10% edge test and skipped every round).
+    The ranking is still computed and logged as 'would_select'. PROPHET_PRIMARY_SELECTION=on enables it."""
+    import os
+    return os.getenv("PROPHET_PRIMARY_SELECTION", "off").lower() == "on"
 MODEL_ERRORS = (ValueError, ImportError, OSError, TypeError, RuntimeError, EOFError, pickle.UnpicklingError)
 
 
@@ -172,6 +181,11 @@ class Selection:
         from .model_paper import FORMULA_VERSIONS
         if default_model in FORMULA_VERSIONS.values():
             regime, rows = self.rank_incumbent(slug,volatility,now,default_model)
+            if not primary_selection_enabled():
+                best = rows[0] if rows else None
+                return default_model,up,dict(regime=regime,reason="SELECTION_OFF",
+                    would_select=None if not best else {k: best[k] for k in (
+                        "version","matched","pnl","incumbent_pnl","improvement","improvement_se","agreement")})
         else:
             regime, rows = self.rank(slug,volatility,now)
         errors=[]

@@ -73,7 +73,8 @@ def test_losing_challenger_is_not_selected(tmp_path):
     assert selection.rank_incumbent("live", .0005, now, INCUMBENT)[1] == []
 
 
-def test_predict_uses_winner_formula_and_logs_evidence(tmp_path):
+def test_predict_uses_winner_formula_and_logs_evidence(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROPHET_PRIMARY_SELECTION", "on")
     s, selection, now, current = build(tmp_path)
     features = dict(momentum_60=.1, trend_300=.1, volatility=.001)
     book = dict(bids=[dict(price=.55, quantity=100)], asks=[dict(price=.57, quantity=100)])
@@ -83,3 +84,19 @@ def test_predict_uses_winner_formula_and_logs_evidence(tmp_path):
     assert model == current["market_odds_adjustment"]
     assert 0 < up < 1 and evidence["family"] == "market_odds_adjustment"
     assert json.dumps(evidence)   # serialisable for paper_model_choices
+
+
+def test_selection_off_by_default_keeps_incumbent_and_logs_would_select(tmp_path, monkeypatch):
+    monkeypatch.delenv("PROPHET_PRIMARY_SELECTION", raising=False)
+    s, selection, now, current = build(tmp_path)
+    features = dict(momentum_60=.1, trend_300=.1, volatility=.001)
+    book = dict(bids=[dict(price=.55, quantity=100)], asks=[dict(price=.57, quantity=100)])
+    context = dict(features, reference_price=100.2, window_end=now + 120, momentum_up=.6)
+    model, up, evidence = selection.predict("live", now, .62, features, INCUMBENT,
+                                            pattern_context=(context, book, 100.0))
+    assert model == INCUMBENT and up == .62 and evidence["reason"] == "SELECTION_OFF"
+    assert evidence["would_select"]["version"] == current["market_odds_adjustment"]
+    # An open position still pins its own model.
+    pinned = selection.predict("live", now, .62, features, INCUMBENT, pinned_model=INCUMBENT,
+                               pattern_context=(context, book, 100.0))
+    assert pinned[2]["reason"] == "OPEN_POSITION_MODEL_LOCK"
