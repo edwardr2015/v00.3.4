@@ -129,3 +129,22 @@ def test_sampled_target_rescues_only_a_trade_that_reaches_it():
         replay(rows, lambda x: 0.9, checkpoint=False, exit_factor=1.4)["accounts"][0]["realized"]
         == hold["accounts"][0]["realized"]
     )
+
+
+def test_status_reports_optional_challenger_gate_separately(tmp_path):
+    s, _, _ = seed(tmp_path)
+    learner = Learning(s, tmp_path / "missing.sqlite")
+    learner.train()
+    waiting = s.get("learning_status")
+    assert waiting["status"] == "WAITING" and waiting["optional_challenger_shortage"] == 300
+    start = time.time() - 100000
+    with s.connect() as db:
+        for i in range(210):
+            db.execute("INSERT INTO learning_labels VALUES (?,?,?,?,?,?)",
+                       (f"fixture-{i}", start + i * 300, start + i * 300 + 240,
+                        json.dumps([i % 3, i % 4, -5.0]), i % 2, start + i * 300 + 241))
+    learner.train()
+    status = s.get("learning_status")
+    assert status["status"] == "SHADOW" and status["optional_challenger_minimum"] == 300
+    assert status["optional_challengers"]
+    assert all("300" in why for why in status["optional_challengers"].values())

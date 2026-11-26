@@ -117,3 +117,31 @@ def test_gates_and_export(tmp_path):
 def test_missing_db_is_an_error(tmp_path):
     with pytest.raises(FileNotFoundError):
         ca.audit([("x", tmp_path / "nope.db")], [])
+
+
+def test_v03_verified_markets_labels_predictions_and_detects_conflict(tmp_path):
+    s = tmp_path / "v03.db"
+    db = sqlite3.connect(s)
+    db.executescript("""
+      CREATE TABLE state (key TEXT PRIMARY KEY, payload TEXT NOT NULL, received REAL NOT NULL);
+      CREATE TABLE predictions (slug TEXT PRIMARY KEY, time REAL, model TEXT, up REAL,
+        decision TEXT, reason TEXT, checkpoint INTEGER, details TEXT);
+      CREATE TABLE verified_markets (slug TEXT PRIMARY KEY, start REAL, end REAL, outcome TEXT,
+        opening REAL, closing REAL, verified_at REAL, source TEXT, evidence TEXT);
+    """)
+    feats = json.dumps(dict(momentum_60=.1, trend_300=.2, volatility=.001))
+    for i, (outcome, state_payout) in enumerate([("UP", None), ("DOWN", 1), ("UP", 1)]):
+        start = T0 + i * 300
+        db.execute("INSERT INTO predictions VALUES (?,?,?,?,?,?,?,?)",
+                   (slug(i), start + 60, "m", .6, "UP", "", 0, feats))
+        db.execute("INSERT INTO verified_markets VALUES (?,?,?,?,?,?,?,?,?)",
+                   (slug(i), start, start + 300, outcome, 1, 1, start + 305, "t", "{}"))
+        if state_payout is not None:
+            db.execute("INSERT INTO state VALUES (?,?,?)", ("outcome_" + slug(i),
+                       json.dumps(dict(yes_payout=state_payout, received=start + 305)), 0))
+    db.commit()
+    db.close()
+    report, rows = ca.audit([("v03", s)], [])
+    assert {r["slug"] for r in rows} == {slug(0), slug(2)}
+    assert report["databases"][0]["rejected"] == {"label_source_conflict": 1}
+    assert report["databases"][0]["counts"]["verified_markets"] == 3

@@ -216,3 +216,26 @@ def test_actual_engine_entry_uses_fresh_book_and_preserves_old_ledgers(tmp_path)
     with store.connect() as db:
         assert unified.summary(db,now+1)["position"]["side"]=="UP"
         assert db.execute("SELECT count(*) FROM v2_orders").fetchone()[0]==0
+
+
+def test_late_data_block_does_not_overwrite_model_skip_reason(tmp_path):
+    store,_ = initialize(tmp_path)
+    with store.connect() as db:
+        # Model evaluates and skips: both sides priced outside the 40-70c band.
+        observe(db,1100,raw=.5,level=book(bid=.10,ask=.12))
+        first = db.execute("SELECT reason,model FROM unified_rounds").fetchone()
+        assert "PRICE_OUTSIDE_BAND" in first[0] and first[1]=="fixture"
+        # Book empties just before the close; the caller passes a pre-model block.
+        details = dict(window_start=1000,window_end=1300,book_checked=1299,reference_timestamp=1299)
+        unified.observe(db,"round",1299,"SIMULATE","momentum-book-v0.2",None,"NO_LIQUIDITY",
+                        details,dict(bids=[],asks=[]),TERMS,lambda: 1299)
+        row = db.execute("SELECT reason,model,observed FROM unified_rounds").fetchone()
+        assert (row[0],row[1]) == (first[0],first[1]) and row[2]==1299
+
+
+def test_data_blocks_alone_still_record_the_latest_block(tmp_path):
+    store,_ = initialize(tmp_path)
+    with store.connect() as db:
+        observe(db,1100,block="STALE_BOOK")
+        observe(db,1200,block="NO_LIQUIDITY")
+        assert db.execute("SELECT reason FROM unified_rounds").fetchone()[0]=="NO_LIQUIDITY"

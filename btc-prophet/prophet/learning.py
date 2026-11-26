@@ -8,6 +8,8 @@ import time
 from pathlib import Path
 
 from .history import History
+
+CHALLENGER_MINIMUM = 300  # prophet.models.Models.train; the 200 gate covers only the logistic challenger
 from .research import (
     baseline_probability,
     challenger_probability,
@@ -127,7 +129,9 @@ class Learning:
         if len(rows) < 200:
             self.store.put(
                 "learning_status",
-                dict(status="WAITING", examples=len(rows), message="Need 200 labelled examples"),
+                dict(status="WAITING", examples=len(rows), message="Need 200 labelled examples",
+                     minimum=200, optional_challenger_minimum=CHALLENGER_MINIMUM,
+                     optional_challenger_shortage=max(0, CHALLENGER_MINIMUM - len(rows))),
             )
             return
         cut = rows[int(len(rows) * 0.8)]["decision_time"]
@@ -177,6 +181,7 @@ class Learning:
 
         registry = Models(self.store)
         registry.sync_logistic()
+        challengers = {}
         for kind in os.getenv(
             "PROPHET_RESEARCH_MODELS", "ensemble,random_forest,gradient_boosting,xgboost,lightgbm"
         ).split(","):
@@ -184,7 +189,9 @@ class Learning:
                 continue
             try:
                 registry.train(kind.strip(), rows, now=now)
+                challengers[kind.strip()] = "TRAINED"
             except (ValueError, ImportError, OSError, RuntimeError) as exc:
+                challengers[kind.strip()] = str(exc)
                 self.store.event("INFO", "Optional challenger " + kind + ": " + str(exc))
         self.store.put("shadow_version", version)
         self.store.put(
@@ -195,6 +202,8 @@ class Learning:
                 examples=len(rows),
                 brier=score["brier_score"],
                 active_model_unchanged=True,
+                optional_challenger_minimum=CHALLENGER_MINIMUM,
+                optional_challengers=challengers,
             ),
         )
 

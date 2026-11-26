@@ -42,7 +42,8 @@ SLUG = re.compile(r"^cpc-btc-updown-5m-\d{4}-\d{2}-\d{2}-\d{4}z$")
 COUNT_TABLES = [
     "candles", "predictions", "learning_labels", "lab_orders", "lab_predictions",
     "lab_configs", "lab_skips", "model_runs", "model_shadows", "markets", "reference15",
-    "quotes", "trades", "events",
+    "quotes", "trades", "events", "verified_markets", "model_registry", "unified_trades",
+    "unified_rounds", "unified_forecasts", "v2_orders", "model_paper_positions",
 ]
 LEARNING_MINIMUM = 200   # prophet/learning.py: Learning.train
 CHALLENGER_MINIMUM = 300  # prophet/models.py: Models.train (optional challengers)
@@ -94,15 +95,25 @@ def store_examples(db, source):
                 continue
             o = db.execute("SELECT payload FROM state WHERE key=?",
                            ("outcome_" + p["slug"],)).fetchone()
-            if not o:
+            v = (db.execute("SELECT * FROM verified_markets WHERE slug=?", (p["slug"],)).fetchone()
+                 if "verified_markets" in present else None)
+            if not o and not v:
                 yield None, "prediction_without_outcome"
                 continue
             seen.add(p["slug"])
             try:
-                o, d = json.loads(o[0]), json.loads(p["details"] or "{}")
+                d = json.loads(p["details"] or "{}")
+                o = json.loads(o[0]) if o else None
             except ValueError:
                 yield None, "bad_json"
                 continue
+            if v:  # 0.3.x: official verified settlement table
+                verified = dict(yes_payout=int(v["outcome"] == "UP"), received=v["verified_at"])
+                if o and o.get("yes_payout") != verified["yes_payout"]:
+                    yield None, "label_source_conflict"
+                    continue
+                o = verified
+                d.setdefault("window_end", v["end"])
             if not all(k in d for k in ("momentum_60", "trend_300", "volatility")):
                 yield None, "missing_features"
                 continue

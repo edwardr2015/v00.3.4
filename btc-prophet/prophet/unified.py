@@ -148,6 +148,7 @@ def premium_trial(db, slug, start, now, book, terms, audit, commit_time):
 def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, commit_time):
     """Evaluate one current observation on the caller's verified book transaction."""
     end, start = details["window_end"], details["window_start"]
+    block = reason  # set before any model ran: missing/stale data, empty book, invalid terms
     now = commit_time()
     if now is None or not start <= now < end:
         return
@@ -159,6 +160,8 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
                                          "volatility","elapsed","reference_price","opening_price",
                                          "model_evidence")}
     audit["raw_up"] = raw_up
+    if block:
+        audit["data_block"] = True
     if not reason:
         midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
         up, labels = calibrate(db,slug,model,raw_up,midpoint,now)
@@ -218,6 +221,13 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
         if debit.rowcount!=1:
             raise ValueError("Unified paper debit failed")
         now, reason = checked, "ENTERED"
+    if block and reason != "ENTERED":
+        # A later data-availability block (typically the venue emptying the book just before
+        # the close) must not overwrite the reason the model already reached for this round.
+        prior = db.execute("SELECT reason,details FROM unified_rounds WHERE slug=?", (slug,)).fetchone()
+        if prior and prior[0] != "WAITING" and not json.loads(prior[1] or "{}").get("data_block"):
+            db.execute("UPDATE unified_rounds SET observed=? WHERE slug=?", (now, slug))
+            return
     db.execute("""UPDATE unified_rounds SET observed=?,reason=?,model=?,up=?,details=? WHERE slug=?""",
                (now,reason,model,up,json.dumps(audit),slug))
 
