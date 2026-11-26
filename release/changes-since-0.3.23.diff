@@ -10,6 +10,34 @@ index a3e2848..77e4057 100644
  
                  midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
                  raw = probabilities_from_market(midpoint,context["reference_price"],opening,
+diff --git a/btc-prophet/prophet/app.py b/btc-prophet/prophet/app.py
+index 92100b5..2ca3631 100644
+--- a/btc-prophet/prophet/app.py
++++ b/btc-prophet/prophet/app.py
+@@ -166,6 +166,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
+         response.headers["Cache-Control"] = "no-store"
+         response.headers["Content-Security-Policy"] = (
+             "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
++            "frame-src https://www.youtube-nocookie.com https://www.youtube.com; "
+             "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"
+         )
+         return response
+@@ -751,6 +752,15 @@ def create_app(db_path=None, collect=True, auth_required=True):
+             db.execute("BEGIN")
+             return unified.summary(db,time.time())
+ 
++    @app.post("/api/unified/reset-scoreboard")
++    def unified_reset_scoreboard():
++        """Restart the dashboard counters only; trades, cash and exports keep full history."""
++        with store.connect() as db:
++            db.execute("BEGIN IMMEDIATE")
++            since = unified.reset_scoreboard(db,time.time())
++        store.event("INFO","Paper scoreboard counter reset (history kept)")
++        return dict(counting_since=since)
++
+     @app.get("/api/corrective-research")
+     def corrective_state():
+         with store.connect() as db:
 diff --git a/btc-prophet/prophet/autonomous.py b/btc-prophet/prophet/autonomous.py
 index 0b04e6e..4b36a57 100644
 --- a/btc-prophet/prophet/autonomous.py
@@ -419,6 +447,157 @@ index 0000000..d4479f2
 +        var = s1 ** 2 * (s / WINDOW) ** 2 * s / 3
 +    z = math.log(mean / opening) / math.sqrt(max(var, 1e-14))
 +    return min(.99, max(.01, .5 * (1 + math.erf(z / math.sqrt(2)))))
+diff --git a/btc-prophet/prophet/static/app.js b/btc-prophet/prophet/static/app.js
+index 765e8c7..744a525 100644
+--- a/btc-prophet/prophet/static/app.js
++++ b/btc-prophet/prophet/static/app.js
+@@ -152,6 +152,14 @@ $('formal-start').onclick=async()=>{
+   }catch(e){$('formal-start-result').textContent=e.message;}
+ };
+ 
++$('reset-scoreboard').onclick=async()=>{
++  if(!confirm('Reset the Games / Wins / Losses / Net P&L counter to zero?\n\nTrades, cash balance and Excel history are kept.'))return;
++  try{
++    const r=await fetch('/api/unified/reset-scoreboard',{method:'POST',headers:{'X-Prophet-Control':'local-dashboard'}});
++    if(!r.ok)throw new Error((await r.json()).detail||`HTTP ${r.status}`);
++    scoreboard();
++  }catch(e){$('notice').classList.add('warning');$('notice').textContent=`Reset failed: ${e.message}.`;}
++};
+ $('collector-pause').onclick=()=>control('collector-pause');
+ $('collector-resume').onclick=()=>control('collector-resume');
+ 
+@@ -234,6 +242,10 @@ async function scoreboard(){
+     $('games-lost').textContent=game.losses;
+     $('games-pnl').textContent=money(game.net);
+     $('game-balance').textContent=money(game.balance)+' cash';
++    vegas(game);
++    $('games-since').textContent=game.reset
++      ? `Counting since ${new Date(game.counting_since*1000).toISOString().slice(0,16).replace('T',' ')} UTC · all-time ${game.all_time.played} games, ${game.all_time.wins}–${game.all_time.losses}, ${money(game.all_time.net)}`
++      : 'Counting since the account started';
+     const streak=game.streaks;
+     $('games-streak').textContent=game.played
+       ? `${(100*game.wins/game.played).toFixed(1)}% wins · Current ${streak.current||'flat'} ${streak.length} · Best win ${streak.longest.WIN} · Worst loss ${streak.longest.LOSS}`
+@@ -369,3 +381,60 @@ $('request-training').onclick=async()=>{
+     $('training-result').textContent=result.message||result.detail;
+   }catch(error){$('training-result').textContent='Unable to request training.';}
+ };
++
++// Vegas panel: win streak, roulette wheel and win video. Display only; never sends controls.
++const WIN_ORIGIN='https://www.youtube-nocookie.com';
++const WIN_VIDEO=WIN_ORIGIN+'/embed/vK8r5586FbQ?autoplay=1&playsinline=1&rel=0&loop=0&enablejsapi=1&origin='+encodeURIComponent(location.origin);
++const WIN_MAX_MS=70000;   // safety close if the player never reports that it ended
++let wheelAngle=0, lastSettled=undefined, overlayTimer=null;
++function winVideoOn(){try{return localStorage.getItem('prophet-win-video')!=='off';}catch(e){return true;}}
++$('win-video-on').checked=winVideoOn();
++$('win-video-on').onchange=e=>{try{localStorage.setItem('prophet-win-video',e.target.checked?'on':'off');}catch(err){}};
++function showWin(text){
++  if(!$('win-video-on').checked)return;
++  $('win-text').textContent=text;
++  $('win-frame').src=WIN_VIDEO;
++  $('win-overlay').hidden=false;
++  clearTimeout(overlayTimer);overlayTimer=setTimeout(closeWin,WIN_MAX_MS);
++}
++// Ask the embedded player for state updates (no external script needed) and close when it ends.
++$('win-frame').addEventListener('load',()=>{
++  if($('win-overlay').hidden)return;
++  try{$('win-frame').contentWindow.postMessage(JSON.stringify({event:'listening',id:'win'}),WIN_ORIGIN);}catch(e){}
++});
++window.addEventListener('message',e=>{
++  if(e.origin!==WIN_ORIGIN||$('win-overlay').hidden)return;
++  let data;try{data=typeof e.data==='string'?JSON.parse(e.data):e.data;}catch(err){return;}
++  const state=data&&data.info&&data.info.playerState;
++  if(state===0)closeWin();   // 0 = ended: played once, close the screen
++});
++function closeWin(){clearTimeout(overlayTimer);$('win-overlay').hidden=true;$('win-frame').src='about:blank';}
++$('win-close').onclick=closeWin;
++$('win-overlay').onclick=e=>{if(e.target===$('win-overlay'))closeWin();};
++$('win-video-test').onclick=()=>{const was=$('win-video-on').checked;$('win-video-on').checked=true;showWin('Test celebration');$('win-video-on').checked=was;};
++function spinTo(outcome){
++  // 12 slices of 30°: green (UP) starts at 0°, red (DOWN) at 30°, alternating. Pointer at the top.
++  const slice=Math.floor(Math.random()*6)*60+(outcome==='UP'?15:45);
++  const target=wheelAngle+3*360+((360-((wheelAngle+slice)%360))%360);
++  wheelAngle=target;$('wheel').style.transform=`rotate(${target}deg)`;
++}
++function vegas(game){
++  const s=game.streaks||{current:null,length:0,longest:{WIN:0,LOSS:0}};
++  $('vegas-streak').textContent=s.current==='WIN'?s.length:0;
++  $('vegas-best').textContent=`Best ${s.longest.WIN} · Worst losing run ${s.longest.LOSS}`;
++  $('vegas-won').textContent=game.wins;$('vegas-lost').textContent=game.losses;$('vegas-games').textContent=game.played;
++  const last=game.last_settled;
++  const key=last?last.slug:null;
++  if(lastSettled===undefined){lastSettled=key;if(last)showResult(last,false);return;}
++  if(!last||key===lastSettled)return;
++  lastSettled=key;
++  if(last.outcome)spinTo(last.outcome);
++  setTimeout(()=>showResult(last,true),4100);
++}
++function showResult(last,celebrate){
++  const won=last.pnl>0;
++  const el=$('wheel-result');
++  el.textContent=`${won?'WIN':'LOSS'} · bought ${last.side}, market went ${last.outcome||'?'} · ${money(last.pnl)}`;
++  el.className='wheel-result '+(won?'win':'loss');
++  if(won&&celebrate)showWin(`${money(last.pnl)} · win streak ${$('vegas-streak').textContent}`);
++}
+diff --git a/btc-prophet/prophet/static/index.html b/btc-prophet/prophet/static/index.html
+index 9d3861c..5bbcc2a 100644
+--- a/btc-prophet/prophet/static/index.html
++++ b/btc-prophet/prophet/static/index.html
+@@ -22,9 +22,24 @@
+       <article class="stat"><div class="stat-label">CONTRACT SETTLEMENT IN</div><div class="metric mono" id="countdown">—:—</div><div class="stat-foot" id="market-window">Awaiting verified five-minute market</div></article>
+       <article class="stat"><div class="stat-label">PROPHET’S PICK</div><div class="direction-call" id="ai-decision" aria-live="polite">Waiting</div><div id="ai-reason" class="stat-foot">Waiting for a paper entry</div><p class="direction-tally" id="ai-tally" hidden></p></article>
+     </section>
++    <section class="panel vegas" aria-label="Win streak and roulette">
++      <div class="vegas-streak"><span>WIN STREAK</span><strong id="vegas-streak">0</strong><small id="vegas-best">Best 0 · Worst losing run 0</small></div>
++      <div class="wheel-wrap" aria-hidden="true"><div class="wheel-pointer">▼</div><div id="wheel" class="wheel"><span class="wheel-hub">₿</span></div></div>
++      <div class="vegas-side">
++        <div id="wheel-result" class="wheel-result" aria-live="polite">Waiting for a result</div>
++        <div class="vegas-tally"><div><span>Won</span><strong id="vegas-won" class="profit">0</strong></div><div><span>Lost</span><strong id="vegas-lost" class="loss">0</strong></div><div><span>Games</span><strong id="vegas-games">0</strong></div></div>
++        <div class="vegas-controls"><label><input type="checkbox" id="win-video-on" checked> Play win video</label> <button type="button" class="button subtle" id="win-video-test">Test</button></div>
++      </div>
++    </section>
++    <div id="win-overlay" class="win-overlay" hidden role="dialog" aria-label="Win celebration">
++      <div class="win-box"><h2>WIN!</h2><p id="win-text"></p>
++        <iframe id="win-frame" title="Win video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
++        <p><a href="https://www.youtube.com/shorts/vK8r5586FbQ" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a> <button type="button" class="button" id="win-close">Close</button></p></div>
++    </div>
+     <section class="panel game-card"><div class="panel-heading"><div><h2>Paper scoreboard</h2><p>Since 0.3.21 · Starting balance $1,000</p></div><strong id="game-balance">—</strong></div>
+       <div class="scoreboard" aria-label="Paper results since 0.3.21"><div><span>Games</span><strong id="games-played">0</strong></div><div><span>Wins</span><strong id="games-won" class="profit">0</strong></div><div><span>Losses</span><strong id="games-lost" class="loss">0</strong></div><div><span>Net P&amp;L</span><strong id="games-pnl">—</strong></div></div>
+-      <p id="games-streak" aria-live="polite">Waiting for the first completed paper trade.</p></section>
++      <p id="games-streak" aria-live="polite">Waiting for the first completed paper trade.</p>
++      <p><span id="games-since"></span> <button type="button" id="reset-scoreboard">Reset counter</button></p></section>
+     <div class="workspace-grid">
+       <section class="panel chart-panel"><div class="panel-heading"><div><h2>Bitcoin reference price <span class="gold">↗</span></h2><p>Official settlement reference</p></div><div class="segments" aria-label="Candle interval"><button class="selected" data-interval="15">15s</button><button data-interval="30">30s</button><button data-interval="60">1m</button></div></div><div class="chart-legend"><span class="legend-gold">━</span> Reference candlesticks <span class="legend-blue">┄</span> Contract opening reference</div><div class="chart-wrap"><div id="chart"></div><div id="chart-empty">Waiting for verified candles…</div></div><div class="chart-footer"><span id="candle-info">No fabricated or interpolated candles</span><a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">Charts by TradingView ↗</a></div></section>
+       <section class="panel contract-panel"><div class="panel-heading"><div><h2>Five-minute BTC contract <span class="tiny-tag">5 MIN</span></h2></div><span class="dot" id="market-dot"></span></div><p class="contract-sub" id="contract-status">Verifying an open contract…</p><div class="reference-box"><span>Official price to beat</span><strong id="price-to-beat">—</strong><small>60-second average · ties settle UP</small></div><div class="outcomes" id="direction-quotes" hidden><div class="outcome up"><span>↗ UP / YES</span><strong id="up-price">—</strong><small>Observed buy ask</small></div><div class="outcome down"><span>↘ DOWN / NO</span><strong id="down-price">—</strong><small>1 − observed YES bid</small></div></div><div class="detail-row"><span>Bid / ask spread</span><strong id="spread">—</strong></div><div class="detail-row"><span>Model probabilities</span><strong id="model-probabilities" class="muted" hidden>Waiting</strong></div><div class="detail-row"><span>Market data status</span><strong id="book-status">Waiting</strong></div><details class="mini-book"><summary>Order book</summary><div class="book-title"><span>YES BID · QTY</span><span>YES ASK · QTY</span></div><div id="book-levels" class="book-levels"><p class="muted">No verified order book yet</p></div></details></section>
+diff --git a/btc-prophet/prophet/static/style.css b/btc-prophet/prophet/static/style.css
+index 56774e9..579a4ca 100644
+--- a/btc-prophet/prophet/static/style.css
++++ b/btc-prophet/prophet/static/style.css
+@@ -73,3 +73,25 @@
+   .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+   .stats .stat:last-child { grid-column: 1 / -1; }
+ }
++
++/* Vegas win-streak panel and roulette wheel */
++.vegas{display:grid;grid-template-columns:minmax(150px,1fr) auto minmax(220px,1.4fr);align-items:center;gap:22px;padding:18px 22px;margin:0 0 18px;background:radial-gradient(circle at 30% 20%,#2a1d06 0,#0f1626 60%);border:1px solid #6b5420}
++.vegas-streak{display:grid;gap:4px;text-align:center}.vegas-streak span{letter-spacing:.18em;font-size:.75rem;color:#e8b45a}
++.vegas-streak strong{font-size:clamp(3rem,9vw,5.5rem);line-height:1;color:#f5c862;text-shadow:0 0 18px rgba(245,200,98,.55);font-variant-numeric:tabular-nums}
++.vegas-streak small{color:#a2aec1}
++.wheel-wrap{position:relative;width:170px;height:170px}
++.wheel-pointer{position:absolute;top:-14px;left:50%;transform:translateX(-50%);color:#f5c862;font-size:1.4rem;z-index:2}
++.wheel{width:170px;height:170px;border-radius:50%;border:6px solid #c9a24a;box-shadow:0 0 24px rgba(201,162,74,.35),inset 0 0 18px rgba(0,0,0,.6);
++  background:conic-gradient(#1f9d55 0 30deg,#b3262e 30deg 60deg,#1f9d55 60deg 90deg,#b3262e 90deg 120deg,#1f9d55 120deg 150deg,#b3262e 150deg 180deg,#1f9d55 180deg 210deg,#b3262e 210deg 240deg,#1f9d55 240deg 270deg,#b3262e 270deg 300deg,#1f9d55 300deg 330deg,#b3262e 330deg 360deg);
++  transition:transform 4s cubic-bezier(.12,.6,.1,1);display:grid;place-items:center}
++.wheel-hub{width:46px;height:46px;border-radius:50%;background:#0b101b;border:3px solid #c9a24a;display:grid;place-items:center;color:#f5c862;font-weight:700}
++.wheel-result{font-size:1.5rem;font-weight:700;margin-bottom:8px}.wheel-result.win{color:#3ddc84}.wheel-result.loss{color:#ff6b6b}
++.vegas-tally{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.vegas-tally div{display:grid;gap:2px}.vegas-tally span{font-size:.72rem;color:#a2aec1}.vegas-tally strong{font-size:1.4rem;font-variant-numeric:tabular-nums}
++.vegas-controls{margin-top:10px;font-size:.85rem;color:#a2aec1}
++.win-overlay{position:fixed;inset:0;background:rgba(5,8,14,.82);display:grid;place-items:center;z-index:50}
++.win-overlay[hidden]{display:none}
++.win-box{background:#101827;border:2px solid #f5c862;border-radius:14px;padding:18px;text-align:center;max-width:min(92vw,420px)}
++.win-box h2{color:#f5c862;font-size:2.4rem;margin:0 0 6px;text-shadow:0 0 16px rgba(245,200,98,.6)}
++.win-box iframe{width:min(80vw,315px);aspect-ratio:9/16;border:0;border-radius:10px;background:#000}
++@media(max-width:760px){.vegas{grid-template-columns:1fr;justify-items:center;text-align:center}.vegas-tally{width:100%}}
++@media(prefers-reduced-motion:reduce){.wheel{transition:none}}
 diff --git a/btc-prophet/prophet/training_limits.py b/btc-prophet/prophet/training_limits.py
 new file mode 100644
 index 0000000..faec173
@@ -471,7 +650,7 @@ index 0000000..faec173
 +                min_fit_examples=min_fit_examples(), retrain_seconds=retrain_seconds(),
 +                original=ORIGINAL, small_sample=n < SMALL_SAMPLE_BELOW, examples=n)
 diff --git a/btc-prophet/prophet/unified.py b/btc-prophet/prophet/unified.py
-index 2effab5..3ecd72b 100644
+index 2effab5..ccb29fb 100644
 --- a/btc-prophet/prophet/unified.py
 +++ b/btc-prophet/prophet/unified.py
 @@ -11,6 +11,15 @@ BASE_STAKE = 5
@@ -588,8 +767,55 @@ index 2effab5..3ecd72b 100644
  def history(db, limit=-1):
      return db.execute("""SELECT t.*,r.end,v.outcome,
          CASE WHEN v.outcome IS NOT NULL THEN (t.side=v.outcome)*t.quantity-t.cost END AS hold_pnl
+@@ -230,12 +288,28 @@ def history(db, limit=-1):
+         ORDER BY t.time DESC LIMIT ?""",(limit,))
+ 
+ 
++SCOREBOARD_KEY = "unified_scoreboard_since"
++
++
++def scoreboard_since(db):
++    """Display-only counting start. Trades, cash and history are never changed by a reset."""
++    row = db.execute("SELECT payload FROM state WHERE key=?", (SCOREBOARD_KEY,)).fetchone()
++    return json.loads(row[0]) if row else None
++
++
++def reset_scoreboard(db, now):
++    db.execute("INSERT OR REPLACE INTO state VALUES (?,?,?)", (SCOREBOARD_KEY, json.dumps(now), now))
++    return now
++
++
+ def summary(db, now):
+     account = db.execute("SELECT * FROM unified_account WHERE id=1").fetchone()
+     if not account:
+         return None
+-    rows = db.execute("""SELECT pnl FROM unified_trades WHERE status!='OPEN'
++    since = scoreboard_since(db)
++    every = db.execute("""SELECT pnl,time FROM unified_trades WHERE status!='OPEN'
+         ORDER BY closed,slug""").fetchall()
++    rows = [r for r in every if since is None or r["time"] >= since]
+     pnl = [r["pnl"] for r in rows]
+     results = ["WIN" if p>0 else "LOSS" if p<0 else "FLAT" for p in pnl]
+     pos = db.execute("""SELECT side,model,up,stake,slug,time FROM unified_trades
+@@ -244,7 +318,16 @@ def summary(db, now):
+         LEFT JOIN unified_trades t ON t.slug=r.slug ORDER BY r.start DESC LIMIT 1""").fetchone()
+     recent = [dict(r) for r in db.execute("SELECT slug,time,side,closed,status FROM unified_trades ORDER BY time DESC LIMIT 120")]
+     played = len(pnl)
++    all_pnl = [r["pnl"] for r in every]
++    last = db.execute("""SELECT t.slug,t.side,t.pnl,t.closed,v.outcome FROM unified_trades t
++        JOIN unified_rounds r ON r.slug=t.slug
++        LEFT JOIN verified_markets v ON v.slug=t.slug AND v.end=r.end
++        WHERE t.status!='OPEN' ORDER BY t.closed DESC,t.slug DESC LIMIT 1""").fetchone()
+     return dict(start=account["started"],balance=account["balance"],played=played,
++                counting_since=since or account["started"],reset=since is not None,
++                last_settled=dict(last) if last else None,
++                all_time=dict(played=len(all_pnl),wins=sum(p>0 for p in all_pnl),
++                              losses=sum(p<0 for p in all_pnl),net=sum(all_pnl)),
+                 wins=results.count("WIN"),losses=results.count("LOSS"),net=sum(pnl),
+                 streaks=streaks(results,"WIN","LOSS"),position=dict(pos) if pos else None,
+                 latest=dict(latest) if latest else None,recent=recent)
 diff --git a/btc-prophet/prophet/v2reporting.py b/btc-prophet/prophet/v2reporting.py
-index 8eb161f..c3c7a45 100644
+index 8eb161f..bc406bd 100644
 --- a/btc-prophet/prophet/v2reporting.py
 +++ b/btc-prophet/prophet/v2reporting.py
 @@ -41,6 +41,17 @@ TIMESTAMPS = {
@@ -631,7 +857,20 @@ index 8eb161f..c3c7a45 100644
      def table(self, name, headers, rows):
          ws = self.create(name, headers)
          first = ws
-@@ -129,6 +154,13 @@ def add_unified(sheets, db, *, quick):
+@@ -111,8 +136,11 @@ def add_unified(sheets, db, *, quick):
+     c = matched_forecasts(db,now)
+     sheets.table("Unified Scoreboard", ["Metric","Value"], [
+         ["Started UTC",utc(account["start"])],["Starting cash",unified.STARTING_CASH],
+-        ["Current cash",account["balance"]],["Games",account["played"]],["Wins",account["wins"]],
++        ["Current cash",account["balance"]],["Counting since UTC",utc(account["counting_since"])],
++        ["Games",account["played"]],["Wins",account["wins"]],
+         ["Losses",account["losses"]],["Net P&L",account["net"]],
++        ["All-time games",account["all_time"]["played"]],["All-time wins",account["all_time"]["wins"]],
++        ["All-time losses",account["all_time"]["losses"]],["All-time net P&L",account["all_time"]["net"]],
+         ["$100 matched shadow fills",gate["rounds"]],["$100 after higher costs",gate["stress_net"]],
+         ["$100 eligible",gate["qualified"]],["Matched challenger forecasts",c["matched"]],
+         ["Baseline correct",c["baseline_right"]],["Challenger correct",c["challenger_right"]],
+@@ -129,6 +157,13 @@ def add_unified(sheets, db, *, quick):
          [r["slug"],utc(r["observed"]), "SKIP: "+r["reason"] if r["end"]<=now and r["reason"]!="ENTERED"
           else r["reason"],r["model"],r["up"],r["details"]]
          for r in db.execute("SELECT * FROM unified_rounds ORDER BY start DESC LIMIT ?",(limit,))))
@@ -645,7 +884,7 @@ index 8eb161f..c3c7a45 100644
      if not quick:
          sheets.table("Unified Large Shadows", ["Market","Quote UTC","Side","Cost","Stress cost","Outcome",
              "P&L","Stress P&L","Evidence"], (
-@@ -1204,6 +1236,7 @@ def write_workbook(database, output, *, include_account_equity=True):
+@@ -1204,6 +1239,7 @@ def write_workbook(database, output, *, include_account_equity=True):
              titles_from_data=True,
          )
          dash.add_chart(chart, "D2")
@@ -926,6 +1165,68 @@ index 0000000..263ae00
 +    for name in (*corrective.RESEARCH_POLICIES, "primary_rule_edge0_40_70"):
 +        assert name in evidence["rejections"]
 +    assert evidence["settlement_average_up"] is not None
+diff --git a/btc-prophet/tests/test_scoreboard_reset.py b/btc-prophet/tests/test_scoreboard_reset.py
+new file mode 100644
+index 0000000..f09070c
+--- /dev/null
++++ b/btc-prophet/tests/test_scoreboard_reset.py
+@@ -0,0 +1,56 @@
++import io
++
++from fastapi.testclient import TestClient
++from openpyxl import load_workbook
++
++from prophet import unified
++from prophet.app import create_app
++from prophet.store import Store
++from prophet.v2reporting import write_quick_workbook
++from test_unified_v321 import TERMS, book, verify
++
++
++def play(db, slug, start, outcome):
++    details = dict(window_start=start, window_end=start + 300, book_checked=start + 100,
++                   reference_timestamp=start + 100)
++    unified.observe(db, slug, start + 100, "SIMULATE", "fixture", .9, None, details, book(), TERMS,
++                    lambda: start + 100)
++    verify(db, slug, start, outcome, start + 305)
++    unified.settle(db, start + 310)
++
++
++def test_reset_restarts_counter_but_keeps_trades_cash_and_all_time(tmp_path):
++    store = Store(str(tmp_path / "prophet.sqlite3"))
++    app = create_app(store.path, collect=False, auth_required=False)
++    app.state.paper.recover_startup(1000)
++    with store.connect() as db:
++        play(db, "a", 1000, "UP")
++        play(db, "b", 2000, "DOWN")
++        before = unified.summary(db, 3000)
++        assert before["played"] == 2 and not before["reset"]
++        unified.reset_scoreboard(db, 2500)
++        after = unified.summary(db, 3000)
++        assert (after["played"], after["wins"], after["losses"], after["net"]) == (0, 0, 0, 0)
++        assert after["balance"] == before["balance"] and after["reset"] and after["counting_since"] == 2500
++        assert after["all_time"] == dict(played=2, wins=before["wins"], losses=before["losses"], net=before["net"])
++        assert db.execute("SELECT count(*) FROM unified_trades").fetchone()[0] == 2
++        play(db, "c", 3000, "UP")
++        later = unified.summary(db, 4000)
++        assert later["played"] == 1 and later["wins"] == 1 and later["all_time"]["played"] == 3
++    out = io.BytesIO()
++    write_quick_workbook(store.path, out)
++    rows = {r[0]: (r[1] if len(r) > 1 else None) for r in load_workbook(io.BytesIO(out.getvalue()),
++            read_only=True)["Unified Scoreboard"].iter_rows(values_only=True)}
++    assert rows["Games"] == 1 and rows["All-time games"] == 3 and rows["Counting since UTC"]
++
++
++def test_reset_endpoint_requires_dashboard_header(tmp_path):
++    store = Store(str(tmp_path / "prophet.sqlite3"))
++    app = create_app(store.path, collect=False, auth_required=False)
++    app.state.paper.recover_startup(1000)
++    with TestClient(app) as client:
++        assert client.post("/api/unified/reset-scoreboard").status_code == 403
++        r = client.post("/api/unified/reset-scoreboard", headers={"X-Prophet-Control": "local-dashboard"})
++        assert r.status_code == 200 and r.json()["counting_since"] > 0
++        state = client.get("/api/unified").json()
++        assert state["reset"] and state["played"] == 0
 diff --git a/btc-prophet/tests/test_unified_v321.py b/btc-prophet/tests/test_unified_v321.py
 index 5db6140..e6c49bc 100644
 --- a/btc-prophet/tests/test_unified_v321.py
