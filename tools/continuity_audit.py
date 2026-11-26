@@ -136,7 +136,7 @@ def check(source, table, slug, entry, label_end, received, x, y):
     if not finite_vector(x):
         return None, "missing_features"
     return dict(slug=slug, decision_time=entry, label_end=label_end, x=x, y=int(y),
-                source=source, table=table), None
+                received=received, source=source, table=table), None
 
 
 def history_features(bars, decision_time):
