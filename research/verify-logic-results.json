@@ -1,0 +1,138 @@
+{
+  "checks": {
+    "1_outcome_blind_20_shuffles": true,
+    "2_entry_unchanged_by_future_noise": true,
+    "3_sequencing_and_conditions": true,
+    "4_accounting": true
+  },
+  "results": {
+    "baseline (min 3-4, agree, <=90c)": {
+      "trades": 44,
+      "wins": 36,
+      "win_rate": 0.818,
+      "pnl": 9.83,
+      "per_trade": 0.223,
+      "max_drawdown": 10.34,
+      "first_half": 8.03,
+      "second_half": 1.8,
+      "early_exits": 0
+    },
+    "+ reversal exit": {
+      "trades": 44,
+      "wins": 36,
+      "win_rate": 0.818,
+      "pnl": 24.99,
+      "per_trade": 0.568,
+      "max_drawdown": 2.99,
+      "first_half": 13.35,
+      "second_half": 11.64,
+      "early_exits": 7
+    },
+    "+ all-3-agree + reversal exit": {
+      "trades": 42,
+      "wins": 37,
+      "win_rate": 0.881,
+      "pnl": 30.62,
+      "per_trade": 0.729,
+      "max_drawdown": 1.93,
+      "first_half": 13.98,
+      "second_half": 16.64,
+      "early_exits": 5
+    }
+  },
+  "examples": [
+    {
+      "slug": "cpc-btc-updown-5m-2026-11-26-0645z",
+      "decision_s": 232.6,
+      "decision_t": 1795675732.578324,
+      "side": "DOWN",
+      "model_p": 0.066,
+      "market_mid": 0.155,
+      "arrival_s": 234.7,
+      "qty": 3.39,
+      "cost": 2.9993,
+      "all_in_price": 0.885,
+      "exit": null,
+      "outcome": "DOWN",
+      "pnl": 0.3907
+    },
+    {
+      "slug": "cpc-btc-updown-5m-2026-11-26-0840z",
+      "decision_s": 213.9,
+      "decision_t": 1795682613.8559182,
+      "side": "DOWN",
+      "model_p": 0.035,
+      "market_mid": 0.195,
+      "arrival_s": 216.0,
+      "qty": 4.07,
+      "cost": 2.9997,
+      "all_in_price": 0.737,
+      "exit": {
+        "signal_t": 272.20711398124695,
+        "sold_t": 274.38009905815125,
+        "proceeds": 2.9525,
+        "model_p": 0.501
+      },
+      "outcome": "UP",
+      "pnl": -0.0472
+    },
+    {
+      "slug": "cpc-btc-updown-5m-2026-11-26-1155z",
+      "decision_s": 181.6,
+      "decision_t": 1795694281.615875,
+      "side": "UP",
+      "model_p": 0.719,
+      "market_mid": 0.565,
+      "arrival_s": 183.8,
+      "qty": 4.68,
+      "cost": 2.9948,
+      "all_in_price": 0.64,
+      "exit": {
+        "signal_t": 263.7307131290436,
+        "sold_t": 265.95228099823,
+        "proceeds": 1.956,
+        "model_p": 0.461
+      },
+      "outcome": "DOWN",
+      "pnl": -1.0388
+    }
+  ],
+  "exit_stress": {
+    "+ reversal exit | exit bid taken 50% of the time": {
+      "trades": 44,
+      "win_rate": 0.818,
+      "pnl": 24.99,
+      "max_drawdown": 2.99
+    },
+    "+ all-3-agree + reversal exit | exit bid taken 50% of the time": {
+      "trades": 42,
+      "win_rate": 0.881,
+      "pnl": 24.6,
+      "max_drawdown": 3.85
+    },
+    "+ reversal exit | exit bid taken 100%": {
+      "trades": 44,
+      "win_rate": 0.818,
+      "pnl": 9.83,
+      "max_drawdown": 10.34
+    },
+    "+ all-3-agree + reversal exit | exit bid taken 100%": {
+      "trades": 42,
+      "win_rate": 0.881,
+      "pnl": 19.83,
+      "max_drawdown": 4.92
+    },
+    "+ reversal exit | book reprices to the model's value first": {
+      "trades": 44,
+      "win_rate": 0.818,
+      "pnl": 23.93,
+      "max_drawdown": 2.99
+    },
+    "+ all-3-agree + reversal exit | book reprices to the model's value first": {
+      "trades": 42,
+      "win_rate": 0.881,
+      "pnl": 29.58,
+      "max_drawdown": 1.93
+    }
+  }
+}

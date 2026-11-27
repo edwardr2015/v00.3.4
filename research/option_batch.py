@@ -29,6 +29,8 @@ from quotes import load  # noqa: E402
 from replay_sim import wilson  # noqa: E402
 
 STAKE, LATENCY, SLIP, THETA_ADD = 3.0, 2.0, 2, .02
+EXIT_STRESS = {}            # research knobs: {"taken": 0.5} or {"reprice": True}
+EXIT_RNG = random.Random(11)
 
 
 # ---------------------------------------------------------------- per-quote extra features
@@ -120,7 +122,7 @@ def fill(q, side, buying=True, quantity=None):
     return f["total"] if f["quantity"] + 1e-9 >= quantity else None
 
 
-def play_round(rows, opt, signal, state):
+def play_round(rows, opt, signal, state, trace=None):
     window = opt.get("window", (180, 240))
     for i, r in enumerate(rows):
         if not window[0] <= r["elapsed"] < window[1]:
@@ -148,26 +150,41 @@ def play_round(rows, opt, signal, state):
             continue
         settle = qty * ((side == "UP") == r["up"])
         exit_rule = opt.get("exit")
-        proceeds, peak = None, 0.0
+        proceeds, peak, exit_info = None, 0.0, None
         if exit_rule:
-            for x in rows:
+            for j, x in enumerate(rows):
                 if x["t"] <= arrival["t"]:
                     continue
-                sale = fill(x, side, buying=False, quantity=qty)
-                if sale is None:
+                seen = fill(x, side, buying=False, quantity=qty)      # what the bot sees at decision time
+                if seen is None:
                     continue
                 px = signal(x) or p
                 held = px if side == "UP" else 1 - px
-                peak = max(peak, sale)
-                if exit_rule == "probability" and sale >= held * qty + .03 * cost:
-                    proceeds = sale; break
-                if exit_rule == "trailing" and peak >= 1.3 * cost and sale <= peak - .15 * qty:
-                    proceeds = sale; break
-                if exit_rule == "time270" and x["elapsed"] >= 270:
-                    proceeds = sale; break
-                if exit_rule == "reversal" and ((px >= .5) != (side == "UP")):
-                    proceeds = sale; break
+                peak = max(peak, seen)
+                fire = ((exit_rule == "probability" and seen >= held * qty + .03 * cost)
+                        or (exit_rule == "trailing" and peak >= 1.3 * cost and seen <= peak - .15 * qty)
+                        or (exit_rule == "time270" and x["elapsed"] >= 270)
+                        or (exit_rule == "reversal" and ((px >= .5) != (side == "UP"))))
+                if not fire:
+                    continue
+                # The sell order also arrives LATENCY seconds later; if the round ends first, hold.
+                sell_at = next((y for y in rows[j:] if y["t"] >= x["t"] + LATENCY), None)
+                sale = fill(sell_at, side, buying=False, quantity=qty) if sell_at else None
+                if sale is not None and EXIT_STRESS.get("reprice"):
+                    sale = min(sale, held * qty)            # book catches up to the model before we sell
+                if sale is not None and EXIT_RNG.random() < EXIT_STRESS.get("taken", 0):
+                    sale = None                             # a faster bot hit the stale bid first: hold
+                if sale is not None:
+                    proceeds = sale
+                    exit_info = dict(signal_t=x["elapsed"], sold_t=sell_at["elapsed"], proceeds=round(sale, 4),
+                                     model_p=round(px, 3))
+                    break
         value = settle if proceeds is None else proceeds
+        if trace is not None:
+            trace.append(dict(slug=r["slug"], decision_s=round(r["elapsed"], 1), decision_t=r["t"], side=side, model_p=round(p, 3),
+                              market_mid=r["mid"], arrival_s=round(arrival["elapsed"], 1), qty=qty, cost=round(cost, 4),
+                              all_in_price=round(price, 3), exit=exit_info, outcome="UP" if r["up"] else "DOWN",
+                              pnl=round(value - cost, 4)))
         return value - cost, "TRADED"
     return None, "NO_SIGNAL"
 
