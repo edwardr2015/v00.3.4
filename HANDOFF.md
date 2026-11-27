@@ -58,3 +58,9 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 
 ## dev15
 - Fix: remote.Updater.restart used asyncio.get_event_loop() from a sync endpoint (thread pool); on Python 3.14 that raises, so dev13/14 installs staged and selected the release but never restarted (bot left paused, restart marker left behind). Now a threading.Timer sends SIGTERM.
+
+## dev16
+- LIVE CONFIRMED (cloud test, 10 rounds): the bot's BRTI (Polymarket /v1/asset-prices/history 1S) matches the official 60s averages only when shifted ~+29 s (0/10 exact at shift 0; $5-9 error at 0, ~$1 at best shift). Its timestamp says ~2 s old, but the values are ~30 s behind settlement. Next step (dev17): live reference from Kraken/Coinbase + measured basis, once the Mac recorder has spot data (cloud blocks those hosts).
+- book_timestamp = exchange last-trade time (transactTime), NOT quote freshness. Earlier claim "exits on 30 s old prices" was wrong. Exit guard uses book_checked (fetch time) > 5 s.
+- New: prophet/fresh.py (recorder, lag check, settlement_model account with learned vol scale, limit_down_55 maker sim), prophet/hourly.py (1h fade test), main-model switch /api/remote/main-model/{settlement|standard} (off), /api/export/recorder.csv.gz, report sheets Feed Lag Check / Fresh Data Accounts / 1-Hour Fade Test, exit_comparison uses real SOLD P&L.
+- Horizon research: 5m 1/32 rules profitable out-of-sample, 15m 9/43, 1h 11/41; only 1h "fade 20c+ move at minute 45" held (+17.7% -> +17.0%, n=142, ~15% chance luck). Tests: 241 passed.

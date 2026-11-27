@@ -6,8 +6,8 @@
  },
  {
   "path": "README.md",
-  "sha256": "931bad32e5bab94a6cb34727334e5088585f3ef2f8cb2d4a58dbcc2267dc6d55",
-  "bytes": 23007
+  "sha256": "7b5adec476b139deb30a149ece29cd2da124cedfb35fa08cc7c34e802386af2d",
+  "bytes": 24061
  },
  {
   "path": "Start Prophet.command",
@@ -81,8 +81,8 @@
  },
  {
   "path": "prophet/app.py",
-  "sha256": "62adbe165cb6f61e7e0f9ef9d82ab277d29afe5f421931654b7b444340053f52",
-  "bytes": 47630
+  "sha256": "513276ad5b6ad03bcc34ba8721f2b8acb32de08ef73ecc18bf139e818bc66a90",
+  "bytes": 49291
  },
  {
   "path": "prophet/auth.py",
@@ -150,6 +150,11 @@
   "bytes": 1630
  },
  {
+  "path": "prophet/fresh.py",
+  "sha256": "2292a37a176a3a92fd1d1316137dbbca1328a30ce1579575303fd36c43e5c630",
+  "bytes": 16583
+ },
+ {
   "path": "prophet/history.py",
   "sha256": "93f7e9cef9413fb01ea3912c2f536371331e617922d755f5d03d9abfc7f38069",
   "bytes": 13949
@@ -158,6 +163,11 @@
   "path": "prophet/hold_research.py",
   "sha256": "a240f5462226564a2f60793be334944c4d7aac041e3511b2b18814ed6c80593b",
   "bytes": 7555
+ },
+ {
+  "path": "prophet/hourly.py",
+  "sha256": "ad88cafb8f994ee4c0573657122a83a8c846cc504cefea6a9070436aa03b1d25",
+  "bytes": 7013
  },
  {
   "path": "prophet/intervention.py",
@@ -226,7 +236,7 @@
  },
  {
   "path": "prophet/remote.py",
-  "sha256": "92555e57c6a24ead39ce69a368b963836e07df7d0712d4d8cc7a8cd1351a7711",
+  "sha256": "b8e9fc908ce151badfcc05cf0b0b0c695537bbef570c25b0c9007b08759ac21d",
   "bytes": 8902
  },
  {
@@ -281,8 +291,8 @@
  },
  {
   "path": "prophet/static/app.js",
-  "sha256": "6b98b3a39118f919ca806a8ecdffc8040c0b5898eeaffb8d47e812f8e37d21ae",
-  "bytes": 37277
+  "sha256": "2417a420f02e48af0973815478366884f76ec2874f7772fcbe22d921b5c8c427",
+  "bytes": 37378
  },
  {
   "path": "prophet/static/decision.js",
@@ -316,13 +326,13 @@
  },
  {
   "path": "prophet/static/remote.html",
-  "sha256": "c9e5c5252fb1d86b33babfbbd56e5fd2d158e0596856d02e36a80b15d56c3136",
-  "bytes": 2683
+  "sha256": "5203893f31a51c782125d38793249d543a0e863cc85f037995378e4b1f269629",
+  "bytes": 3165
  },
  {
   "path": "prophet/static/remote.js",
-  "sha256": "372d00b5a689e78f2f240b7d68462dfd80b6ce1f32b32b202e003c19aab3f874",
-  "bytes": 3292
+  "sha256": "dcae64d42bdc7bb654e44298e532a76fbdd56a06197f1318d5de01eb4f66834a",
+  "bytes": 4220
  },
  {
   "path": "prophet/static/sounds/jackpot.mp3",
@@ -371,8 +381,8 @@
  },
  {
   "path": "prophet/unified.py",
-  "sha256": "12666e02e2dcb7d7de928b112821935d06c518be5c43140bfebb9e86997cab9d",
-  "bytes": 21894
+  "sha256": "ef9bb9e4ac359b80eed7797633c5a408358e20810d480484408fd6e5f1034aac",
+  "bytes": 24229
  },
  {
   "path": "prophet/updates.py",
@@ -386,8 +396,8 @@
  },
  {
   "path": "prophet/v2reporting.py",
-  "sha256": "4c49afb8b22cd454aad9c2652eb2419e4f3aa400bfa0e3af0a5c4ea316f83431",
-  "bytes": 86974
+  "sha256": "0aac13e9915a4c05418e847853730ea4d5cb5571d8480b6b4ab259c38eda4b1c",
+  "bytes": 89097
  },
  {
   "path": "prophet/v2risk.py",
@@ -518,6 +528,11 @@
   "path": "tests/test_dev14.py",
   "sha256": "822f405aee55883e8b5d7e9aec239d79e4b05a7a8e39a57a1485e1d2b31efc3e",
   "bytes": 3694
+ },
+ {
+  "path": "tests/test_dev16.py",
+  "sha256": "6f2bd2eb3e75b53221c11f33a78463bfe53a529f38fc436e1daab34a23e1ec7a",
+  "bytes": 10251
  },
  {
   "path": "tests/test_exit_research.py",

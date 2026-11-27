@@ -343,6 +343,7 @@ function shadowTable(game){
   if(game.selective50)add('Selective $50','Minute 3–4 · all 3 agree · ≤90¢',game.selective50);
   if(game.selective1000)add('Selective $1,000 at $50','Same rule · $50 trades · only full fills, never forced',game.selective1000);
   for(const r of game.shadow_rules||[])add(r.name,r.describe+(r.open?' · 1 open':''),r);
+  for(const r of game.fresh_accounts||[])add(r.name,r.describe+(r.open?' · '+r.open+' open':''),r);
   $('shadow-rows').replaceChildren(...rows);
 }
 async function modelsOverview(){

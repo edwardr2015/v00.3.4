@@ -5,7 +5,7 @@ import math
 
 import logging
 
-from . import feed_check, selective50, shadow_rules
+from . import feed_check, fresh, selective50, shadow_rules
 from .analytics import streaks
 from .execution import execute, paper_buy
 
@@ -34,6 +34,7 @@ def initialize(db):
     selective50.initialize(db)
     shadow_rules.initialize(db)
     feed_check.initialize(db)
+    fresh.initialize(db)
     db.executescript("""
         CREATE TABLE IF NOT EXISTS unified_account (
             id INTEGER PRIMARY KEY CHECK(id=1), started REAL NOT NULL,
@@ -69,6 +70,15 @@ def initialize(db):
 
 
 MINUTE_LABELS = 30   # settled same-minute forecasts needed before per-minute learning takes over
+
+
+EXIT_BOOK_MAX_AGE = 5
+
+
+def _hourly_accounts(db):
+    from . import hourly
+    hourly.initialize(db)
+    return hourly.accounts(db)
 
 
 def calibrate(db, slug, model, raw_up, midpoint, now, minute=None):
@@ -168,6 +178,14 @@ def settle(db, now):
         shadow_rules.settle(db, now)
     except Exception as exc:  # noqa: BLE001
         log.warning("Shadow test accounts settlement skipped: %s", exc)
+    db.execute("SAVEPOINT fresh_settle")
+    try:
+        fresh.settle(db, now)
+        db.execute("RELEASE fresh_settle")
+    except Exception as exc:  # noqa: BLE001 - research accounts must never stop the main bot
+        db.execute("ROLLBACK TO fresh_settle")
+        db.execute("RELEASE fresh_settle")
+        log.warning("dev16 fresh-data settlement skipped: %s", exc)
 
 
 def premium_trial(db, slug, start, now, book, terms, audit, commit_time):
@@ -222,6 +240,21 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
         db.execute("INSERT OR IGNORE INTO unified_forecasts VALUES (?,?,?,?,?)", (slug,model,now,raw_up,up))
         db.execute("INSERT OR IGNORE INTO unified_minute_forecasts VALUES (?,?,?,?,?)",
                    (slug,model,minute,now,raw_up))
+    if not reason:
+        db.execute("SAVEPOINT fresh_observe")
+        try:
+            settle_up = fresh.observe(db,slug,now,details,book,terms,mode)
+            db.execute("RELEASE fresh_observe")
+        except Exception as exc:  # noqa: BLE001 - research must never stop the main bot
+            db.execute("ROLLBACK TO fresh_observe")
+            db.execute("RELEASE fresh_observe")
+            log.warning("dev16 fresh-data observation skipped %s: %s", slug, exc)
+            settle_up = None
+        audit["settlement_up"] = settle_up
+        if settle_up is not None and fresh.main_uses_settlement(db):
+            # Owner switch (off by default): the main account uses the official-rule forecast.
+            up = settle_up
+            audit["main_forecast"] = "settlement-average"
     try:
         feed_check.record(db,slug,now,start,details)
     except Exception as exc:  # noqa: BLE001 - logging must never stop the bot
@@ -249,6 +282,9 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
         if (reason or now <= order["time"] or order["stake"]==LARGE_STAKE or order["model"]!=model
                 or details["book_checked"] <= entry_confirmation):
             return
+        if details.get("book_checked") and now - details["book_checked"] > EXIT_BOOK_MAX_AGE:
+            return   # dev16: never sell (or record a shadow sale) on a book fetched more than 5 s ago
+            # (book_timestamp is the exchange's last-trade time, not quote freshness, so it is not used)
         held = up if order["side"]=="UP" else 1-up
         sale = execute(book,order["side"],quantity=order["quantity"],buying=False,**terms)
         if sale["quantity"]+1e-9 < order["quantity"]:
@@ -322,7 +358,7 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
 
 def exit_comparison(db):
     """Settled primary trades: actual P&L vs each shadow exit policy (first trigger, full sale)."""
-    trades = db.execute("""SELECT t.slug,t.side,t.quantity,t.cost,t.pnl,v.outcome FROM unified_trades t
+    trades = db.execute("""SELECT t.slug,t.side,t.quantity,t.cost,t.pnl,t.status,v.outcome FROM unified_trades t
         JOIN unified_rounds r ON r.slug=t.slug JOIN verified_markets v ON v.slug=t.slug AND v.end=r.end
         WHERE t.status<>'OPEN'""").fetchall()
     shadows = {}
@@ -334,9 +370,15 @@ def exit_comparison(db):
                      wins=sum(v>0 for v in hold), pnl=round(sum(hold),4)))
     rows.append(dict(policy="actual", trades=len(trades), exits=None,
                      wins=sum(t["pnl"]>0 for t in trades), pnl=round(sum(t["pnl"] for t in trades),4)))
+    # dev16 fix: trades the bot really sold count at their real sale price. Before, a sale with no
+    # matching shadow row fell back to the hold result, so this sheet overstated early selling.
+    sold = [(t,h) for t,h in zip(trades,hold) if t["status"]=="SOLD"]
+    rows.append(dict(policy="actual_early_sales_vs_hold", trades=len(sold), exits=len(sold),
+                     wins=sum(t["pnl"]>h for t,h in sold), pnl=round(sum(t["pnl"]-h for t,h in sold),4)))
     for policy in ("probability_exit", "stop_loss_50", "reversal_exit"):
         fired = shadows.get(policy, {})
-        values = [(fired[t["slug"]]-t["cost"]) if t["slug"] in fired else h for t,h in zip(trades,hold)]
+        values = [(t["pnl"] if policy=="probability_exit" and t["status"]=="SOLD"
+                   else (fired[t["slug"]]-t["cost"]) if t["slug"] in fired else h) for t,h in zip(trades,hold)]
         rows.append(dict(policy=policy, trades=len(trades), exits=sum(t["slug"] in fired for t in trades),
                          wins=sum(v>0 for v in values), pnl=round(sum(values),4)))
     return rows
@@ -400,4 +442,4 @@ def summary(db, now):
                 wins=results.count("WIN"),losses=results.count("LOSS"),net=sum(pnl),
                 streaks=streaks(results,"WIN","LOSS"),position=dict(pos) if pos else None,
                 latest=dict(latest) if latest else None,recent=recent,
-                selective50=selective50.summary(db), selective1000=selective50.summary(db,"selective1000"), shadow_rules=shadow_rules.summary(db), feed_check=feed_check.summary(db))
+                selective50=selective50.summary(db), selective1000=selective50.summary(db,"selective1000"), shadow_rules=shadow_rules.summary(db), feed_check=feed_check.summary(db), fresh_accounts=fresh.accounts(db)+_hourly_accounts(db), freshness=fresh.lag_summary(db), main_settlement=fresh.main_uses_settlement(db))

@@ -71,6 +71,8 @@ def create_app(db_path=None, collect=True, auth_required=True):
     alerts = Alerts(store)
     corrective_research = corrective.Research(store,paper)
     updater = remote.Updater(store, paper)
+    from .hourly import Hourly
+    hourly = Hourly(store, collector)
     export_lock = asyncio.Lock()
     quick_export_lock = asyncio.Lock()
 
@@ -94,11 +96,13 @@ def create_app(db_path=None, collect=True, auth_required=True):
                 await alerts.start()
                 corrective_research.start()
                 updater.start()
+                hourly.start()
             yield
         finally:
             await runtime.close(release=False)
             try:
                 await updater.close()
+                await hourly.close()
                 await corrective_research.close()
                 await alerts.close()
                 await learning.close()
@@ -511,6 +515,31 @@ def create_app(db_path=None, collect=True, auth_required=True):
         if store.get("emergency", False):
             raise HTTPException(409, "Clear the safety lock before installing an update.")
         return updater.install(state["pending"])
+
+    @app.post("/api/remote/main-model/{value}")
+    def main_model(value: str):
+        """Owner switch: main account forecast = official settlement-average rule (off by default)."""
+        if value not in ("settlement", "standard"):
+            raise HTTPException(404, "Use settlement or standard")
+        store.put("main_model_settlement", value == "settlement")
+        store.event("INFO", "Main account forecast set to " + value)
+        return dict(main_model=value)
+
+    @app.get("/api/export/recorder.csv.gz")
+    def export_recorder(hours: float = Query(24, gt=0, le=72)):
+        """Second-by-second recorder rows (order book, BRTI, spot) for research, gzip CSV."""
+        import csv, gzip, io
+        buffer = io.BytesIO()
+        with gzip.GzipFile(fileobj=buffer, mode="wb") as gz, io.TextIOWrapper(gz, encoding="utf-8", newline="") as text:
+            writer = csv.writer(text)
+            writer.writerow(["time","slug","elapsed","book","book_timestamp","reference_price",
+                             "reference_timestamp","spot_price","spot_timestamp","spot_source"])
+            with store.connect() as db:
+                for row in db.execute("SELECT * FROM fresh_recorder WHERE time>=? ORDER BY time",
+                                      (time.time()-hours*3600,)):
+                    writer.writerow(list(row))
+        return Response(buffer.getvalue(), media_type="application/gzip",
+                        headers={"Content-Disposition": "attachment; filename=BTC-Prophet-Recorder.csv.gz"})
 
     @app.post("/api/remote/restart")
     def remote_restart():

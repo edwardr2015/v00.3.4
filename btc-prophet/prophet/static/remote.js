@@ -1,4 +1,5 @@
 'use strict';
+let mainSettlement=false;
 const $=id=>document.getElementById(id);
 const money=n=>n==null?'—':(n<0?'-$':'$')+Math.abs(n).toFixed(2);
 const tone=(el,n)=>{el.classList.remove('pnl-up','pnl-down');if(n>0)el.classList.add('pnl-up');if(n<0)el.classList.add('pnl-down');};
@@ -30,6 +31,12 @@ async function state(){
       v.textContent=`${money(a.balance)} · ${a.wins}W ${a.losses}L · ${money(a.net)}`;tone(v,a.net);d.append(n,v);rows.push(d);};
     add('Selective $50',g.selective50);add('Selective $1,000 at $50',g.selective1000);
     for(const r of g.shadow_rules||[])add(r.name,r);
+    for(const r of g.fresh_accounts||[])add(r.name,r);
+    const f=g.freshness||{};
+    $('f-lag').textContent=f.rounds?`${f.typical_shift>0?'+':''}${f.typical_shift}s typical shift · ${f.exact_at_zero}/${f.rounds} rounds exact at 0`:'Waiting for settled rounds';
+    $('f-spot').textContent=f.brti_minus_spot==null?'—':`$${f.brti_minus_spot.toFixed(2)} avg gap · BRTI age ${(f.reference_age||0).toFixed(1)}s`;
+    $('f-main').textContent=g.main_settlement?'Official rule (switch ON)':'Standard (switch off)';
+    mainSettlement=!!g.main_settlement;$('f-toggle').textContent=mainSettlement?'Main: back to standard':'Main: use official rule';
     if(rows.length)$('r-accounts').replaceChildren(...rows);
   }catch(e){}
 }
@@ -49,3 +56,4 @@ $('u-check').onclick=async()=>{say('Checking GitHub…');try{showUpdate(await ap
 $('u-install').onclick=()=>{if(confirm('Back up the database, install the update and restart?'))act('/api/remote/install');};
 $('u-restart').onclick=()=>{if(confirm('Restart the bot now? Pause first.'))act('/api/remote/restart');};
 state();updates();setInterval(state,5000);setInterval(updates,15000);
+$('f-toggle').onclick=()=>{if(confirm(mainSettlement?'Switch the main account back to the standard forecast?':'Switch the main $1,000 paper account to the official-rule forecast?'))act('/api/remote/main-model/'+(mainSettlement?'standard':'settlement'));};

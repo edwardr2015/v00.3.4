@@ -193,6 +193,31 @@ def add_unified(sheets, db, *, quick):
         [r["slug"],utc(r["start"]),r["official_open"],r["bot_open"],r["open_difference"],r["official_close"],
          r["bot_last"],r["last_elapsed"],r["feed_age"],r["outcome"],r["bot_direction_matches"]]
         for r in feed_check.rows(db, limit)])
+    from . import fresh
+    lag = fresh.lag_summary(db)
+    sheets.table("Feed Lag Check", ["Market","End UTC","Official open","Our open (60s avg)","Official close",
+        "Our close (60s avg)","Best time shift (s)","Error at best shift $","Error at shift 0 $","Seconds saved"], [
+        ["Summary","Rounds "+str(lag.get("rounds",0)),"Typical shift (s)",lag.get("typical_shift"),
+         "Exact at 0 (<1c)",lag.get("exact_at_zero"),"BRTI minus spot $ (last hour)",lag.get("brti_minus_spot"),
+         "Reference age (s)",lag.get("reference_age")]] + [
+        [r["slug"],utc(r["end"]),r["official_open"],r["our_open"],r["official_close"],r["our_close"],
+         r["best_shift"],r["best_error"],r["zero_error"],r["seconds"]]
+        for r in db.execute("SELECT * FROM fresh_lag_checks ORDER BY end DESC LIMIT ?",(limit,))])
+    sheets.table("Fresh Data Accounts", ["Account","Market","Placed UTC","Filled UTC","Side","Price","Quantity",
+        "Fee","Status","Outcome","P&L","P&L without fee","Details"], [
+        ["Summary: "+a["name"],a["describe"],"Balance",a["balance"],"Trades",a["trades"],"Wins",a["wins"],
+         "Losses",a["losses"],a["net"],a["net_no_fee"],"Orders "+str(a["orders"])+" · cancelled "+str(a["cancelled"])]
+        for a in fresh.accounts(db)] + [
+        [r["rule"],r["slug"],utc(r["placed"]),utc(r["filled"]) if r["filled"] else None,r["side"],r["price"],
+         r["quantity"],r["fee"],r["status"],r["outcome"],r["pnl"],r["pnl_no_fee"],r["details"]]
+        for r in db.execute("SELECT * FROM fresh_trades ORDER BY placed DESC LIMIT ?",(limit,))])
+    from . import hourly
+    hourly.initialize(db)
+    h = hourly.accounts(db)[0]
+    sheets.table("1-Hour Fade Test", ["Market","Entry UTC","Side","Quantity","Cost","Status","Outcome","P&L","Details"], [
+        ["Summary",h["describe"],"Balance",h["balance"],"Trades",h["trades"],"Wins",h["wins"],"Net "+str(h["net"])]] + [
+        [r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],r["outcome"],r["pnl"],r["details"]]
+        for r in db.execute("SELECT * FROM hourly_trades ORDER BY time DESC LIMIT ?",(limit,))])
     sheets.table("Exit Shadow Comparison", ["Exit policy","Settled trades","Shadow exits","Wins","Net P&L",
         "Primary exit setting"], (
         [r["policy"],r["trades"],r["exits"],r["wins"],r["pnl"],unified.primary_exit()]

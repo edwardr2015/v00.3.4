@@ -15,6 +15,12 @@ body.remote{max-width:520px;margin:0 auto;padding:16px;}
 <div class="row"><span>Net since reset</span><b id="r-net">—</b></div><div class="row"><span>All time</span><b id="r-all">—</b></div>
 <div class="row"><span>Open position</span><b id="r-pos">—</b></div></section>
 <section class="card"><h2>Test accounts</h2><div id="r-accounts"><small>Loading…</small></div></section>
+<section class="card"><h2>Data freshness</h2>
+<div class="row"><span>Feed vs official result</span><b id="f-lag">—</b></div>
+<div class="row"><span>BRTI vs exchange</span><b id="f-spot">—</b></div>
+<div class="row"><span>Main forecast</span><b id="f-main">—</b></div>
+<div class="grid" style="margin-top:8px"><button class="button" id="f-toggle">Main: use official rule</button>
+<a class="button" href="/api/export/recorder.csv.gz?hours=24">Recorder (24h)</a></div></section>
 <section class="card"><h2>Updates</h2><div class="row"><span>Running</span><b id="u-build">—</b></div>
 <p id="u-status"><small>…</small></p>
 <div class="grid"><button class="button" id="u-check">Check for update</button><button class="button primary" id="u-install" disabled>Install now</button>

@@ -126,6 +126,14 @@ The 90-second shadow records a call only when the Momentum score meets 65% and a
 - Updates never install on their own. On the phone page press **Check for update** (reads `release/LATEST.json` on GitHub), then **Install now** when ready. It pauses, backs up the database, installs, restarts and resumes paper trading.
 - Real-money trading stays locked.
 
+## dev16
+- **Data freshness check**: for every settled round the bot re-computes the official 60-second averages from its own saved BRTI seconds and finds the time shift that matches Polymarket. Shift 0 = live feed; any other number = the feed is that many seconds late. Shown on the phone page and in the report sheet "Feed Lag Check".
+- **Recorder**: order book, BRTI and exchange price saved about once a second (download: phone page → Recorder, or `/api/export/recorder.csv.gz`).
+- **Settlement model** test account: the official rule (60-second averages) with volatility learned from your own settled rounds.
+- **Limit order: DOWN near 55¢** test account: rests a DOWN bid when UP is 40–50¢, counts a fill only if the market trades through it; P&L shown with and without the fee.
+- **Main forecast switch** (off): phone page → "Main: use official rule". Only changes the main paper account’s forecast.
+- Fixes: Exit Shadow Comparison now uses real sale prices (new row actual_early_sales_vs_hold); no exits on order books older than 5 s.
+
 ## dev15 (includes dev14)
 - Fix: Install now / Restart now really restart the bot (dev13–14 could not on Python 3.14).
 
