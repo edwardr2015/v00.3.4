@@ -17,7 +17,7 @@ legacy-hmm = ["hmmlearn==0.3.3"]
 neural = ["torch>=2.5,<3"]
 
 [tool.setuptools.package-data]
-prophet = ["static/*", "static/vendor/*"]
+prophet = ["static/*", "static/vendor/*", "static/sounds/*"]
 
 [tool.setuptools.packages.find]
 include = ["prophet*"]

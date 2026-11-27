@@ -1,3 +1,259 @@
+diff --git a/btc-prophet/MANIFEST.json b/btc-prophet/MANIFEST.json
+index 6bcbed6..106fb75 100644
+--- a/btc-prophet/MANIFEST.json
++++ b/btc-prophet/MANIFEST.json
+@@ -61,8 +61,8 @@
+   },
+   {
+     "path": "prophet/adaptive_entry.py",
+-    "bytes": 23186,
+-    "sha256": "44b54e60b5518d018116157a27924cf211763d522d22f42abc7f15d4c1719020"
++    "bytes": 23289,
++    "sha256": "355d0634c5af7117580c93b85a03d5f2397d0998fcb4046d4ad13e44756067c7"
+   },
+   {
+     "path": "prophet/agreement.py",
+@@ -81,8 +81,8 @@
+   },
+   {
+     "path": "prophet/app.py",
+-    "bytes": 41269,
+-    "sha256": "21bbfd632fc78b7d890ed2ddb0fa9c0b66d134e8bfc8184d18071459b6c20204"
++    "bytes": 42997,
++    "sha256": "eef38fba6f363b236d0da762ea2a0f01bb1b4399d13e8699875f8ae099258db3"
+   },
+   {
+     "path": "prophet/auth.py",
+@@ -91,8 +91,8 @@
+   },
+   {
+     "path": "prophet/autonomous.py",
+-    "bytes": 8701,
+-    "sha256": "ec7cd5220ba02db53ad943468fcee90ac8a1ce6efb5234d0921456bb91519837"
++    "bytes": 14960,
++    "sha256": "717f10fde04b76b7d5f3220b9f7c7de6b5aec8fffe4fee7b76d9b2074db34578"
+   },
+   {
+     "path": "prophet/backtest.py",
+@@ -116,8 +116,8 @@
+   },
+   {
+     "path": "prophet/corrective.py",
+-    "bytes": 26347,
+-    "sha256": "76387a289715d98da7ca875c5e254365988b7ecba4197c65d4d2acdb826e2c3e"
++    "bytes": 30262,
++    "sha256": "25c778a18057336c1c15a7108216929cc1c77b765c31804977e6f9c254647837"
+   },
+   {
+     "path": "prophet/depth.py",
+@@ -171,8 +171,8 @@
+   },
+   {
+     "path": "prophet/learning.py",
+-    "bytes": 12274,
+-    "sha256": "162777ed934067949f4e73cf9f13a915ac508ce29d2ba51b5425368191d135ef"
++    "bytes": 12948,
++    "sha256": "15182e2608cae8d6629166f6e2ee9a6cfe8333b27d2ed83be52b76ae05404cc2"
+   },
+   {
+     "path": "prophet/model_paper.py",
+@@ -181,8 +181,8 @@
+   },
+   {
+     "path": "prophet/models.py",
+-    "bytes": 21329,
+-    "sha256": "99180edd72e0e9eb4a9f6e7cd4ce3708c4c894351fb2d341eff9d9f7cede2a61"
++    "bytes": 21535,
++    "sha256": "eab5c73ea6b2c3177afd02b44df49494e6f69db99d1046bf906a9325212113c0"
+   },
+   {
+     "path": "prophet/observer.py",
+@@ -226,8 +226,8 @@
+   },
+   {
+     "path": "prophet/research.py",
+-    "bytes": 10087,
+-    "sha256": "893bd7ca74b1f94a5a2bec3e53132658aafc9078422caf740d18742583682588"
++    "bytes": 10182,
++    "sha256": "a30751fefac3be7e528a0a694c5cd9c57c09c2360c5277eaebda41cfe38661dd"
+   },
+   {
+     "path": "prophet/research_audit.py",
+@@ -249,6 +249,11 @@
+     "bytes": 5426,
+     "sha256": "a4cc055aa733a761dbdffaaf494d0a97db98e4038bfeae5c03357818105aeea2"
+   },
++  {
++    "path": "prophet/settlement_model.py",
++    "bytes": 1840,
++    "sha256": "410385ccb7964199be74c8f3e10505e4501c5ce9e0d7f9d0a09837235f28d847"
++  },
+   {
+     "path": "prophet/smart.py",
+     "bytes": 8365,
+@@ -256,13 +261,13 @@
+   },
+   {
+     "path": "prophet/static/app.js",
+-    "bytes": 24988,
+-    "sha256": "a2688d7d7cbbe94f1e34f6315a78a2f2274ffc35370774f237c95615353f6dfb"
++    "bytes": 33866,
++    "sha256": "bc08f2e80a3c0fd7fa73fde94519415635751892c606416e43294ced143052b2"
+   },
+   {
+     "path": "prophet/static/decision.js",
+-    "bytes": 1172,
+-    "sha256": "b769f3bfc120afb18b8175b8891486e31fcd0b91e60f6eef7063bd2f1ac975bb"
++    "bytes": 1256,
++    "sha256": "e5f65babb7b32f7fc3227c325fe17086d4d68c046a1fe89474fece4113d9f7c7"
+   },
+   {
+     "path": "prophet/static/excel.html",
+@@ -276,8 +281,8 @@
+   },
+   {
+     "path": "prophet/static/index.html",
+-    "bytes": 17339,
+-    "sha256": "ac2d376e72172e10b84744130f16264f8af75a8cb8a228b9839d8a77cecad80b"
++    "bytes": 19485,
++    "sha256": "89c951501f5399d49e37feef41699628e8167cb1ae924b9e8665978718052fe6"
+   },
+   {
+     "path": "prophet/static/login.html",
+@@ -289,10 +294,15 @@
+     "bytes": 508,
+     "sha256": "eba301dc9c501e4792d50f2c5a3283701c42563b4e5415b34bb1ce0601f11302"
+   },
++  {
++    "path": "prophet/static/sounds/jackpot.wav",
++    "bytes": 882044,
++    "sha256": "a706c959a8d85197650f43c23e65868c49ac95ba5418ff07888d1b133d52a445"
++  },
+   {
+     "path": "prophet/static/style.css",
+-    "bytes": 16513,
+-    "sha256": "5c76cd98211ed352ce6d9fde18d3173c3eda8d75e41c2a3567114dde036b9266"
++    "bytes": 20591,
++    "sha256": "dbdf110b20e084dcac59158a8e19f5b1c899a59677e8afbc06b2247ff24e2592"
+   },
+   {
+     "path": "prophet/static/v2.js",
+@@ -324,10 +334,15 @@
+     "bytes": 3183,
+     "sha256": "6f99c2b4ffefa206b182a7239ca7b28da70291fd71fd0dfd9c1c606545b0cb30"
+   },
++  {
++    "path": "prophet/training_limits.py",
++    "bytes": 1613,
++    "sha256": "ead1eb7c97ed613ea22a14164a19d2003a6b193cff48d8a978495d271c185d87"
++  },
+   {
+     "path": "prophet/unified.py",
+-    "bytes": 12869,
+-    "sha256": "957428b29645714cc7aeab7f158b292e78f7e6ddd1106e1f7f8a928e6ca9ac6c"
++    "bytes": 18047,
++    "sha256": "8ba3c41df31dea0eb4b06679389c8b2ca04b7f733c6f5e1a8ab80515661646ba"
+   },
+   {
+     "path": "prophet/updates.py",
+@@ -341,8 +356,8 @@
+   },
+   {
+     "path": "prophet/v2reporting.py",
+-    "bytes": 81762,
+-    "sha256": "2b8bbbc14af77b157393844a2ca7615d400e818ef4733bb4ef2975cb956be884"
++    "bytes": 83978,
++    "sha256": "b973919ced4557cc9a39f8bdbb3719ad097c347b53e143e0c7c65b635c9899b1"
+   },
+   {
+     "path": "prophet/v2risk.py",
+@@ -356,8 +371,8 @@
+   },
+   {
+     "path": "pyproject.toml",
+-    "bytes": 833,
+-    "sha256": "a482891a5372aee381928ff9eed5280048f3bd80780eea13add223d001af6bb1"
++    "bytes": 852,
++    "sha256": "d250f9692bd1fcd60ddeb21f18f9c7efa5ff25470ed4f81a1f4e124322fb2d75"
+   },
+   {
+     "path": "scripts/backfill_verified.py",
+@@ -479,10 +494,15 @@
+     "bytes": 4793,
+     "sha256": "05019e3331cf1185805bf09e4de8995b684ee69837bc3e352f896743f8376808"
+   },
++  {
++    "path": "tests/test_incumbent_selection.py",
++    "bytes": 5737,
++    "sha256": "683acca8cf14d4dd66ed7a2c273f22127e9e22e7d022c44b8aa9f3fffb890ba2"
++  },
+   {
+     "path": "tests/test_learning_smart.py",
+-    "bytes": 4499,
+-    "sha256": "1019b12059f1f4081c1bd1f59e08388f2da852a53160db5f51ed6ebb398208e5"
++    "bytes": 6270,
++    "sha256": "846daf001f22d1d1c73907dec4e83b86099fc0cef7bb4328db27bbd7214b0551"
+   },
+   {
+     "path": "tests/test_model_paper.py",
+@@ -504,6 +524,11 @@
+     "bytes": 5492,
+     "sha256": "de059e2204cc5abe89fac47fb9af7a44dc92e2bfae550b74150f65842140a937"
+   },
++  {
++    "path": "tests/test_report_simplify.py",
++    "bytes": 1374,
++    "sha256": "ab55ee78ff04981bcc28ac2329cd9e47a7af08824f6b35e99b107a5a6efaf2fc"
++  },
+   {
+     "path": "tests/test_reporting_backtest.py",
+     "bytes": 3207,
+@@ -519,6 +544,11 @@
+     "bytes": 3467,
+     "sha256": "7a12dabc2cb2134f19d27534593ef0cf81c117c79cade8817a75b0632c5c7e41"
+   },
++  {
++    "path": "tests/test_research_policies.py",
++    "bytes": 4097,
++    "sha256": "b746fd770cc75531925f3ff56c36fa732dca2429d22792ab8de330b7399469db"
++  },
+   {
+     "path": "tests/test_research_protocol.py",
+     "bytes": 2374,
+@@ -529,6 +559,11 @@
+     "bytes": 3975,
+     "sha256": "c58860d21784660765573e289fd606d840a5231d95b84064de5094f537009500"
+   },
++  {
++    "path": "tests/test_scoreboard_reset.py",
++    "bytes": 4565,
++    "sha256": "bb87c220e1c98491bf21dd56a5fbe99f9862ee94ce98d2f4c9d5c9a8ac9aef21"
++  },
+   {
+     "path": "tests/test_timing_update.py",
+     "bytes": 13040,
+@@ -541,8 +576,8 @@
+   },
+   {
+     "path": "tests/test_unified_v321.py",
+-    "bytes": 10170,
+-    "sha256": "b43bf88401f7e9fb6c7eba0ccd1d97113f3c53cc378912795bf749118bbc1c5e"
++    "bytes": 13391,
++    "sha256": "ced9d4f29ff42e4c2d040be32dbef9ff195643bbc3dcc5ef6cb94f6a86b286b6"
+   },
+   {
+     "path": "tests/test_v2.py",
+@@ -553,5 +588,10 @@
+     "path": "tests/test_viability_tracking.py",
+     "bytes": 5385,
+     "sha256": "3386dbe6ea34f74dada32b3eac5a5881df6c45e6ac10aa1a17dd84a49c96ecde"
++  },
++  {
++    "path": "tests/test_win_sound.py",
++    "bytes": 1538,
++    "sha256": "4214398326a9c558895f97705314943c4a3ea4c76f38a1331a597af0c788975d"
+   }
+ ]
 diff --git a/btc-prophet/prophet/adaptive_entry.py b/btc-prophet/prophet/adaptive_entry.py
 index a3e2848..77e4057 100644
 --- a/btc-prophet/prophet/adaptive_entry.py
@@ -11,28 +267,32 @@ index a3e2848..77e4057 100644
                  midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
                  raw = probabilities_from_market(midpoint,context["reference_price"],opening,
 diff --git a/btc-prophet/prophet/app.py b/btc-prophet/prophet/app.py
-index 92100b5..17b2a2e 100644
+index 92100b5..e7dfdce 100644
 --- a/btc-prophet/prophet/app.py
 +++ b/btc-prophet/prophet/app.py
-@@ -751,6 +751,39 @@ def create_app(db_path=None, collect=True, auth_required=True):
+@@ -751,6 +751,43 @@ def create_app(db_path=None, collect=True, auth_required=True):
              db.execute("BEGIN")
              return unified.summary(db,time.time())
  
 +    WIN_SOUND_TYPES = {".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".aac": "audio/aac", ".wav": "audio/wav"}
 +
++    BUILT_IN_SOUND = Path(__file__).resolve().parent / "static" / "sounds" / "jackpot.wav"
++
 +    def win_sound():
-+        """The user's own song, placed next to the database as win-sound.mp3/.m4a/.aac/.wav."""
++        """The user's own song (win-sound.mp3/.m4a/.aac/.wav next to the database) if present,
++        otherwise the built-in original slot-machine jackpot sound."""
 +        folder = Path(store.path).resolve().parent
 +        for ext in WIN_SOUND_TYPES:
 +            path = folder / ("win-sound" + ext)
 +            if path.is_file() and 0 < path.stat().st_size <= 50 * 1024 * 1024:
 +                return path
-+        return None
++        return BUILT_IN_SOUND if BUILT_IN_SOUND.is_file() else None
 +
 +    @app.get("/api/win-sound/status")
 +    def win_sound_status():
 +        path = win_sound()
 +        return dict(available=bool(path), file=path.name if path else None,
++                    built_in=bool(path) and path == BUILT_IN_SOUND,
 +                    folder=str(Path(store.path).resolve().parent))
 +
 +    @app.get("/api/win-sound")
@@ -464,7 +724,7 @@ index 0000000..d4479f2
 +    z = math.log(mean / opening) / math.sqrt(max(var, 1e-14))
 +    return min(.99, max(.01, .5 * (1 + math.erf(z / math.sqrt(2)))))
 diff --git a/btc-prophet/prophet/static/app.js b/btc-prophet/prophet/static/app.js
-index 765e8c7..ade6d82 100644
+index 765e8c7..0c52230 100644
 --- a/btc-prophet/prophet/static/app.js
 +++ b/btc-prophet/prophet/static/app.js
 @@ -85,7 +85,7 @@ function render(s) {
@@ -517,7 +777,7 @@ index 765e8c7..ade6d82 100644
 +$('win-length').onchange=e=>setPref('prophet-win-length',e.target.value);
 +async function songStatus(){
 +  try{const s=await getJSON('/api/win-sound/status');songAvailable=s.available;
-+    $('win-sound-state').textContent=s.available?'Song ready':'No song file yet';}catch(e){songAvailable=false;}
++    $('win-sound-state').textContent=!s.available?'No song file yet':s.built_in?'Jackpot sound ready':'Your song ready';}catch(e){songAvailable=false;}
 +}
 +songStatus();setInterval(songStatus,60000);
 +function closeWin(){
@@ -688,6 +948,10 @@ index 9d3861c..fc315d8 100644
      <div class="workspace-grid">
        <section class="panel chart-panel"><div class="panel-heading"><div><h2>Bitcoin reference price <span class="gold">↗</span></h2><p>Official settlement reference</p></div><div class="segments" aria-label="Candle interval"><button class="selected" data-interval="15">15s</button><button data-interval="30">30s</button><button data-interval="60">1m</button></div></div><div class="chart-legend"><span class="legend-gold">━</span> Reference candlesticks <span class="legend-blue">┄</span> Contract opening reference</div><div class="chart-wrap"><div id="chart"></div><div id="chart-empty">Waiting for verified candles…</div></div><div class="chart-footer"><span id="candle-info">No fabricated or interpolated candles</span><a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">Charts by TradingView ↗</a></div></section>
        <section class="panel contract-panel"><div class="panel-heading"><div><h2>Five-minute BTC contract <span class="tiny-tag">5 MIN</span></h2></div><span class="dot" id="market-dot"></span></div><p class="contract-sub" id="contract-status">Verifying an open contract…</p><div class="reference-box"><span>Official price to beat</span><strong id="price-to-beat">—</strong><small>60-second average · ties settle UP</small></div><div class="outcomes" id="direction-quotes" hidden><div class="outcome up"><span>↗ UP / YES</span><strong id="up-price">—</strong><small>Observed buy ask</small></div><div class="outcome down"><span>↘ DOWN / NO</span><strong id="down-price">—</strong><small>1 − observed YES bid</small></div></div><div class="detail-row"><span>Bid / ask spread</span><strong id="spread">—</strong></div><div class="detail-row"><span>Model probabilities</span><strong id="model-probabilities" class="muted" hidden>Waiting</strong></div><div class="detail-row"><span>Market data status</span><strong id="book-status">Waiting</strong></div><details class="mini-book"><summary>Order book</summary><div class="book-title"><span>YES BID · QTY</span><span>YES ASK · QTY</span></div><div id="book-levels" class="book-levels"><p class="muted">No verified order book yet</p></div></details></section>
+diff --git a/btc-prophet/prophet/static/sounds/jackpot.wav b/btc-prophet/prophet/static/sounds/jackpot.wav
+new file mode 100644
+index 0000000..b235a08
+Binary files /dev/null and b/btc-prophet/prophet/static/sounds/jackpot.wav differ
 diff --git a/btc-prophet/prophet/static/style.css b/btc-prophet/prophet/static/style.css
 index 56774e9..c79ab53 100644
 --- a/btc-prophet/prophet/static/style.css
@@ -1035,6 +1299,19 @@ index 8eb161f..bc406bd 100644
      wb.save(output)
  
  
+diff --git a/btc-prophet/pyproject.toml b/btc-prophet/pyproject.toml
+index 0e5439b..b68e12b 100644
+--- a/btc-prophet/pyproject.toml
++++ b/btc-prophet/pyproject.toml
+@@ -17,7 +17,7 @@ legacy-hmm = ["hmmlearn==0.3.3"]
+ neural = ["torch>=2.5,<3"]
+ 
+ [tool.setuptools.package-data]
+-prophet = ["static/*", "static/vendor/*"]
++prophet = ["static/*", "static/vendor/*", "static/sounds/*"]
+ 
+ [tool.setuptools.packages.find]
+ include = ["prophet*"]
 diff --git a/btc-prophet/tests/test_incumbent_selection.py b/btc-prophet/tests/test_incumbent_selection.py
 new file mode 100644
 index 0000000..43f224c
@@ -1467,10 +1744,10 @@ index 5db6140..e6c49bc 100644
 +        assert rows["stop_loss_50"]["exits"]==1
 diff --git a/btc-prophet/tests/test_win_sound.py b/btc-prophet/tests/test_win_sound.py
 new file mode 100644
-index 0000000..0107312
+index 0000000..4f943d0
 --- /dev/null
 +++ b/btc-prophet/tests/test_win_sound.py
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,31 @@
 +import wave
 +
 +from fastapi.testclient import TestClient
@@ -1489,12 +1766,14 @@ index 0000000..0107312
 +    store = Store(str(tmp_path / "prophet.sqlite3"))
 +    app = create_app(store.path, collect=False, auth_required=False)
 +    with TestClient(app) as client:
-+        assert client.get("/api/win-sound/status").json()["available"] is False
-+        missing = client.get("/api/win-sound")
-+        assert missing.status_code == 404 and "win-sound.mp3" in missing.json()["detail"]
-+        tone(tmp_path / "win-sound.wav")
++        built_in = client.get("/api/win-sound/status").json()
++        assert built_in["available"] and built_in["built_in"] and built_in["file"] == "jackpot.wav"
++        default = client.get("/api/win-sound")
++        assert default.status_code == 200 and default.headers["content-type"] == "audio/wav"
++        assert len(default.content) > 800_000                       # the 10-second jackpot sound
++        tone(tmp_path / "win-sound.wav")                            # the user's own file wins
 +        status = client.get("/api/win-sound/status").json()
-+        assert status == dict(available=True, file="win-sound.wav", folder=str(tmp_path.resolve()))
++        assert status == dict(available=True, file="win-sound.wav", built_in=False, folder=str(tmp_path.resolve()))
 +        song = client.get("/api/win-sound")
 +        assert song.status_code == 200 and song.headers["content-type"] == "audio/wav"
 +        assert song.content == (tmp_path / "win-sound.wav").read_bytes()

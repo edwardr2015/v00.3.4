@@ -392,7 +392,7 @@ $('win-length').value=pref('prophet-win-length','30');
 $('win-length').onchange=e=>setPref('prophet-win-length',e.target.value);
 async function songStatus(){
   try{const s=await getJSON('/api/win-sound/status');songAvailable=s.available;
-    $('win-sound-state').textContent=s.available?'Song ready':'No song file yet';}catch(e){songAvailable=false;}
+    $('win-sound-state').textContent=!s.available?'No song file yet':s.built_in?'Jackpot sound ready':'Your song ready';}catch(e){songAvailable=false;}
 }
 songStatus();setInterval(songStatus,60000);
 function closeWin(){

@@ -753,19 +753,23 @@ def create_app(db_path=None, collect=True, auth_required=True):
 
     WIN_SOUND_TYPES = {".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".aac": "audio/aac", ".wav": "audio/wav"}
 
+    BUILT_IN_SOUND = Path(__file__).resolve().parent / "static" / "sounds" / "jackpot.wav"
+
     def win_sound():
-        """The user's own song, placed next to the database as win-sound.mp3/.m4a/.aac/.wav."""
+        """The user's own song (win-sound.mp3/.m4a/.aac/.wav next to the database) if present,
+        otherwise the built-in original slot-machine jackpot sound."""
         folder = Path(store.path).resolve().parent
         for ext in WIN_SOUND_TYPES:
             path = folder / ("win-sound" + ext)
             if path.is_file() and 0 < path.stat().st_size <= 50 * 1024 * 1024:
                 return path
-        return None
+        return BUILT_IN_SOUND if BUILT_IN_SOUND.is_file() else None
 
     @app.get("/api/win-sound/status")
     def win_sound_status():
         path = win_sound()
         return dict(available=bool(path), file=path.name if path else None,
+                    built_in=bool(path) and path == BUILT_IN_SOUND,
                     folder=str(Path(store.path).resolve().parent))
 
     @app.get("/api/win-sound")
