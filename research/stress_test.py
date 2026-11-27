@@ -82,6 +82,8 @@ def run(by, order, outcome, rule, p, seed=1, outcome_override=None):
                 break
             end = q["t"] + q["left"]
             window = [x["ref"] for x in quotes[: i + 1] if x["t"] >= end - 60]
+            if rule.get("agree") and (q["gap_p"] >= .5) != (q["mid"] >= .5):
+                continue
             pr = probs(q, p, rng, window)[rule["model"]]
             if pr is None:
                 continue

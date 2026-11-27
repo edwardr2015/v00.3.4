@@ -1,0 +1,298 @@
+{
+  "start": 50.0,
+  "stake": 3.0,
+  "markets_per_day": 288,
+  "recorded_markets": 94,
+  "rules": {
+    "Current primary rule (40-70c, EV>=10%)": {
+      "standard": {
+        "replay": {
+          "trades": 51,
+          "wins": 30,
+          "win_rate": 0.588,
+          "pnl_94_markets": -11.62,
+          "per_trade": -0.228,
+          "trades_per_day": 156
+        },
+        "one_day": {
+          "median": 11.31,
+          "p10": 0.98,
+          "p90": 53.14,
+          "chance_of_loss": 0.881,
+          "chance_halved": 0.642,
+          "chance_broke": 0.452,
+          "median_worst_drawdown": 48.22
+        },
+        "one_week": {
+          "median": 1.87,
+          "p10": 0.46,
+          "p90": 2.78,
+          "chance_of_loss": 1.0,
+          "chance_halved": 0.999,
+          "chance_broke": 0.999,
+          "median_worst_drawdown": 56.31
+        }
+      },
+      "realistic": {
+        "replay": {
+          "trades": 40,
+          "wins": 26,
+          "win_rate": 0.65,
+          "pnl_94_markets": 1.6,
+          "per_trade": 0.04,
+          "trades_per_day": 123
+        },
+        "one_day": {
+          "median": 54.92,
+          "p10": 21.7,
+          "p90": 87.05,
+          "chance_of_loss": 0.423,
+          "chance_halved": 0.124,
+          "chance_broke": 0.041,
+          "median_worst_drawdown": 25.47
+        },
+        "one_week": {
+          "median": 76.83,
+          "p10": 1.41,
+          "p90": 166.12,
+          "chance_of_loss": 0.4,
+          "chance_halved": 0.342,
+          "chance_broke": 0.326,
+          "median_worst_drawdown": 56.83
+        }
+      }
+    },
+    "Model + market agree (40-70c, EV>=10%)": {
+      "standard": {
+        "replay": {
+          "trades": 66,
+          "wins": 40,
+          "win_rate": 0.606,
+          "pnl_94_markets": -10.75,
+          "per_trade": -0.163,
+          "trades_per_day": 202
+        },
+        "one_day": {
+          "median": 14.15,
+          "p10": 0.97,
+          "p90": 60.33,
+          "chance_of_loss": 0.831,
+          "chance_halved": 0.6,
+          "chance_broke": 0.448,
+          "median_worst_drawdown": 48.87
+        },
+        "one_week": {
+          "median": 1.86,
+          "p10": 0.48,
+          "p90": 2.8,
+          "chance_of_loss": 0.997,
+          "chance_halved": 0.995,
+          "chance_broke": 0.995,
+          "median_worst_drawdown": 58.66
+        }
+      },
+      "realistic": {
+        "replay": {
+          "trades": 60,
+          "wins": 40,
+          "win_rate": 0.667,
+          "pnl_94_markets": -1.25,
+          "per_trade": -0.021,
+          "trades_per_day": 184
+        },
+        "one_day": {
+          "median": 45.87,
+          "p10": 2.65,
+          "p90": 81.95,
+          "chance_of_loss": 0.56,
+          "chance_halved": 0.245,
+          "chance_broke": 0.125,
+          "median_worst_drawdown": 32.98
+        },
+        "one_week": {
+          "median": 2.56,
+          "p10": 0.64,
+          "p90": 113.33,
+          "chance_of_loss": 0.709,
+          "chance_halved": 0.671,
+          "chance_broke": 0.651,
+          "median_worst_drawdown": 65.35
+        }
+      }
+    },
+    "Minute 3-4 follow (any price)": {
+      "standard": {
+        "replay": {
+          "trades": 76,
+          "wins": 65,
+          "win_rate": 0.855,
+          "pnl_94_markets": 16.87,
+          "per_trade": 0.222,
+          "trades_per_day": 233
+        },
+        "one_day": {
+          "median": 102.1,
+          "p10": 70.76,
+          "p90": 132.75,
+          "chance_of_loss": 0.016,
+          "chance_halved": 0.001,
+          "chance_broke": 0.0,
+          "median_worst_drawdown": 14.48
+        },
+        "one_week": {
+          "median": 409.86,
+          "p10": 330.73,
+          "p90": 493.19,
+          "chance_of_loss": 0.0,
+          "chance_halved": 0.0,
+          "chance_broke": 0.0,
+          "median_worst_drawdown": 24.8
+        }
+      },
+      "realistic": {
+        "replay": {
+          "trades": 71,
+          "wins": 60,
+          "win_rate": 0.845,
+          "pnl_94_markets": 10.02,
+          "per_trade": 0.141,
+          "trades_per_day": 218
+        },
+        "one_day": {
+          "median": 81.01,
+          "p10": 50.72,
+          "p90": 110.15,
+          "chance_of_loss": 0.094,
+          "chance_halved": 0.009,
+          "chance_broke": 0.002,
+          "median_worst_drawdown": 16.73
+        },
+        "one_week": {
+          "median": 267.98,
+          "p10": 193.84,
+          "p90": 342.95,
+          "chance_of_loss": 0.006,
+          "chance_halved": 0.006,
+          "chance_broke": 0.006,
+          "median_worst_drawdown": 30.84
+        }
+      }
+    },
+    "Minute 3-4 follow (price <= 85c)": {
+      "standard": {
+        "replay": {
+          "trades": 42,
+          "wins": 33,
+          "win_rate": 0.786,
+          "pnl_94_markets": 16.93,
+          "per_trade": 0.403,
+          "trades_per_day": 129
+        },
+        "one_day": {
+          "median": 102.0,
+          "p10": 72.44,
+          "p90": 131.48,
+          "chance_of_loss": 0.011,
+          "chance_halved": 0.0,
+          "chance_broke": 0.0,
+          "median_worst_drawdown": 12.96
+        },
+        "one_week": {
+          "median": 413.7,
+          "p10": 333.13,
+          "p90": 493.97,
+          "chance_of_loss": 0.0,
+          "chance_halved": 0.0,
+          "chance_broke": 0.0,
+          "median_worst_drawdown": 22.28
+        }
+      },
+      "realistic": {
+        "replay": {
+          "trades": 38,
+          "wins": 29,
+          "win_rate": 0.763,
+          "pnl_94_markets": 11.24,
+          "per_trade": 0.296,
+          "trades_per_day": 116
+        },
+        "one_day": {
+          "median": 83.79,
+          "p10": 55.56,
+          "p90": 112.59,
+          "chance_of_loss": 0.064,
+          "chance_halved": 0.004,
+          "chance_broke": 0.001,
+          "median_worst_drawdown": 14.5
+        },
+        "one_week": {
+          "median": 294.17,
+          "p10": 218.74,
+          "p90": 362.61,
+          "chance_of_loss": 0.002,
+          "chance_halved": 0.002,
+          "chance_broke": 0.002,
+          "median_worst_drawdown": 26.16
+        }
+      }
+    },
+    "90% late favourite (240 s+, 85-99c)": {
+      "standard": {
+        "replay": {
+          "trades": 32,
+          "wins": 31,
+          "win_rate": 0.969,
+          "pnl_94_markets": 3.18,
+          "per_trade": 0.099,
+          "trades_per_day": 98
+        },
+        "one_day": {
+          "median": 60.1,
+          "p10": 51.81,
+          "p90": 66.83,
+          "chance_of_loss": 0.063,
+          "chance_halved": 0.0,
+          "chance_broke": 0.0,
+          "median_worst_drawdown": 4.07
+        },
+        "one_week": {
+          "median": 118.13,
+          "p10": 96.25,
+          "p90": 137.3,
+          "chance_of_loss": 0.0,
+          "chance_halved": 0.0,
+          "chance_broke": 0.0,
+          "median_worst_drawdown": 8.13
+        }
+      },
+      "realistic": {
+        "replay": {
+          "trades": 23,
+          "wins": 22,
+          "win_rate": 0.957,
+          "pnl_94_markets": 1.73,
+          "per_trade": 0.075,
+          "trades_per_day": 70
+        },
+        "one_day": {
+          "median": 55.56,
+          "p10": 48.03,
+          "p90": 62.13,
+          "chance_of_loss": 0.166,
+          "chance_halved": 0.0,
+          "chance_broke": 0.0,
+          "median_worst_drawdown": 4.57
+        },
+        "one_week": {
+          "median": 87.12,
+          "p10": 67.8,
+          "p90": 105.99,
+          "chance_of_loss": 0.005,
+          "chance_halved": 0.0,
+          "chance_broke": 0.0,
+          "median_worst_drawdown": 9.97
+        }
+      }
+    }
+  }
+}
