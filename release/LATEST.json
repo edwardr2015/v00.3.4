@@ -1,1 +1,1 @@
-{"build": 14, "file": "ai-btc-prophet-0.3.23-dev14.zip", "sha256": "940016ef818092f44336fd9df22746be4eefe89e2eb5ed129c2e3424d714fafd", "notes": "Reality-check test accounts, 40-49c account, price feed check"}
+{"build": 15, "file": "ai-btc-prophet-0.3.23-dev15.zip", "sha256": "0a52d6b323fe8114f1f92ddb0829dee5c32cb5c2d65b80194723ebabae9d328f", "notes": "dev14 features plus working self-restart"}

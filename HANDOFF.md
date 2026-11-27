@@ -55,3 +55,6 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 - Simulation (research, not in app): 60 days of Binance 1-second BTC (17,276 rounds); walk-forward GBM with momentum/volume/hour/path features + UP/DOWN mirror augmentation only tied the plain gap formula (Brier 0.1536 vs 0.1534). No extra predictive signal in BTC itself.
 - On 174 live trades the bot's forecast averaged 68% vs market 58% vs actual 56% wins: overconfident; bigger "edge" lost more. Binance opening price differed from the bot's by ~$77 and gaps barely correlated, so the feed vs settlement source is suspect.
 - dev14 adds shadow accounts reality_check / reality_check_hold (blend = market + 0.3*(model-market), 3% edge, 30-70c) and gap_40_49, plus `prophet/feed_check.py` and the "Price Feed Check" report sheet. Main account unchanged. Tests: 228 passed.
+
+## dev15
+- Fix: remote.Updater.restart used asyncio.get_event_loop() from a sync endpoint (thread pool); on Python 3.14 that raises, so dev13/14 installs staged and selected the release but never restarted (bot left paused, restart marker left behind). Now a threading.Timer sends SIGTERM.

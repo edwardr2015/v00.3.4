@@ -6,8 +6,8 @@
  },
  {
   "path": "README.md",
-  "sha256": "afd9526b45def33ee28e75d9a46bc92546a42c3f680b6e7b6f699c51c762eb66",
-  "bytes": 22885
+  "sha256": "931bad32e5bab94a6cb34727334e5088585f3ef2f8cb2d4a58dbcc2267dc6d55",
+  "bytes": 23007
  },
  {
   "path": "Start Prophet.command",
@@ -226,8 +226,8 @@
  },
  {
   "path": "prophet/remote.py",
-  "sha256": "dc3189b10f422a0e7a22e6905d5bba01d4aea29dea7b9501cc8ac81062eb968a",
-  "bytes": 8680
+  "sha256": "92555e57c6a24ead39ce69a368b963836e07df7d0712d4d8cc7a8cd1351a7711",
+  "bytes": 8902
  },
  {
   "path": "prophet/reporting.py",
@@ -566,8 +566,8 @@
  },
  {
   "path": "tests/test_remote_update.py",
-  "sha256": "531372c86f838bd40f2658731f6ed7dc138b8fd3f2193fd9a24ccdad7f0d1b2b",
-  "bytes": 4326
+  "sha256": "2218038053b18f9540de30b0575b660ee9eda7f3e2a80a4508e88bca4e567113",
+  "bytes": 5006
  },
  {
   "path": "tests/test_report_simplify.py",

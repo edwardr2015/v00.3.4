@@ -126,6 +126,9 @@ The 90-second shadow records a call only when the Momentum score meets 65% and a
 - Updates never install on their own. On the phone page press **Check for update** (reads `release/LATEST.json` on GitHub), then **Install now** when ready. It pauses, backs up the database, installs, restarts and resumes paper trading.
 - Real-money trading stays locked.
 
+## dev15 (includes dev14)
+- Fix: Install now / Restart now really restart the bot (dev13–14 could not on Python 3.14).
+
 ## dev14
 - New test accounts ($50, $3 trades, paper only): **Reality check** (model pulled 70% toward the market price, sells early), **Reality check, holds**, and **Main rule, pays 40–49¢ only**. They show in Test Accounts on the dashboard, phone page and report.
 - New report sheet **Price Feed Check**: the bot's opening/last price vs Polymarket's official opening/closing price for every settled round.

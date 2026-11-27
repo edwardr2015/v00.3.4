@@ -104,3 +104,21 @@ def test_feed_rejects_odd_file_names():
     import pytest
     with pytest.raises(ValueError):
         remote.parse_feed(json.dumps(dict(build=99, file="../evil.zip", sha256="a" * 64)), "https://x/LATEST.json")
+
+
+def test_restart_works_from_a_worker_thread(tmp_path, monkeypatch):
+    """Sync FastAPI endpoints run in a thread pool; restart must not need an event loop there."""
+    import threading
+    app = client(tmp_path)
+    sent = []
+    monkeypatch.setattr(remote.os, "kill", lambda pid, sig: sent.append(sig))
+    errors = []
+    def run():
+        try:
+            app.state.updater.restart()
+        except Exception as exc:  # noqa: BLE001
+            errors.append(exc)
+    t = threading.Thread(target=run); t.start(); t.join()
+    import time; time.sleep(2.5)
+    assert not errors and sent == [remote.signal.SIGTERM]
+    assert remote.restart_marker(app.state.store).exists()

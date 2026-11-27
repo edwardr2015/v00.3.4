@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import re
 import signal
+import threading
 import time
 
 import httpx
@@ -23,8 +24,8 @@ import httpx
 from . import updates
 from .operations import journal
 
-BUILD = 14
-RELEASE_NAME = "ai-btc-prophet-0.3.23-dev14"
+BUILD = 15
+RELEASE_NAME = "ai-btc-prophet-0.3.23-dev15"
 DEFAULT_FEED = ("https://raw.githubusercontent.com/edwardr2015/v00.3.4/"
                 "claude/btc-prophet-completion-9ym8j7/release/LATEST.json")
 CHECK_EVERY = int(os.getenv("PROPHET_UPDATE_EVERY", "120"))
@@ -160,8 +161,11 @@ class Updater:
         marker.write_text(str(time.time()))
         with self.store.connect() as db:
             journal(db, time.time(), "remote-restart", "REQUESTED", dict(build=BUILD))
-        loop = asyncio.get_event_loop()
-        loop.call_later(2, os.kill, os.getpid(), signal.SIGTERM)
+        # A plain timer thread works from any thread. (dev13-14 used asyncio.get_event_loop(),
+        # which raises in a worker thread on Python 3.14, so the restart never happened.)
+        timer = threading.Timer(2, os.kill, (os.getpid(), signal.SIGTERM))
+        timer.daemon = True
+        timer.start()
 
     def resume_after_restart(self):
         """After an automatic update the bot goes back to the mode it was in."""
