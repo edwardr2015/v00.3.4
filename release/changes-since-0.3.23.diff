@@ -464,7 +464,7 @@ index 0000000..d4479f2
 +    z = math.log(mean / opening) / math.sqrt(max(var, 1e-14))
 +    return min(.99, max(.01, .5 * (1 + math.erf(z / math.sqrt(2)))))
 diff --git a/btc-prophet/prophet/static/app.js b/btc-prophet/prophet/static/app.js
-index 765e8c7..94f1e45 100644
+index 765e8c7..9f9a5b8 100644
 --- a/btc-prophet/prophet/static/app.js
 +++ b/btc-prophet/prophet/static/app.js
 @@ -85,7 +85,7 @@ function render(s) {
@@ -502,7 +502,7 @@ index 765e8c7..94f1e45 100644
      const streak=game.streaks;
      $('games-streak').textContent=game.played
        ? `${(100*game.wins/game.played).toFixed(1)}% wins · Current ${streak.current||'flat'} ${streak.length} · Best win ${streak.longest.WIN} · Worst loss ${streak.longest.LOSS}`
-@@ -369,3 +381,125 @@ $('request-training').onclick=async()=>{
+@@ -369,3 +381,132 @@ $('request-training').onclick=async()=>{
      $('training-result').textContent=result.message||result.detail;
    }catch(error){$('training-result').textContent='Unable to request training.';}
  };
@@ -591,6 +591,13 @@ index 765e8c7..94f1e45 100644
 +  else{setWheel('spin');st.textContent='MODEL DECIDING…';st.className='wheel-state';window.prophetPending='Deciding…';}
 +  window.prophetSkipNote=(!c.side&&last&&!last.side)?`Last round skipped · ${skipWords(last.reason)}`:null;
 +  if(!c.side&&over)window.prophetSkipNote=`Skipped this round · ${skipWords(c.reason)}`;
++  // Update the pick card now instead of waiting for the next state refresh (unless it shows a live UP/DOWN).
++  const card=$('ai-decision');
++  if(card.dataset.direction!=='UP'&&card.dataset.direction!=='DOWN'){
++    card.textContent=window.prophetPending||'Waiting';
++    card.dataset.direction=window.prophetPending==='SKIP'?'skip':'waiting';
++    if(typeof latest!=='undefined'&&latest&&latest.mode!=='OFF')$('ai-reason').textContent=window.prophetSkipNote||'Waiting for a qualifying entry';
++  }
 +}
 +function renderHistory(history){
 +  const box=$('vegas-history');box.replaceChildren();
