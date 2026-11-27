@@ -466,6 +466,13 @@ function renderRound(game){
   else{setWheel('spin');st.textContent='MODEL DECIDING…';st.className='wheel-state';window.prophetPending='Deciding…';}
   window.prophetSkipNote=(!c.side&&last&&!last.side)?`Last round skipped · ${skipWords(last.reason)}`:null;
   if(!c.side&&over)window.prophetSkipNote=`Skipped this round · ${skipWords(c.reason)}`;
+  // Update the pick card now instead of waiting for the next state refresh (unless it shows a live UP/DOWN).
+  const card=$('ai-decision');
+  if(card.dataset.direction!=='UP'&&card.dataset.direction!=='DOWN'){
+    card.textContent=window.prophetPending||'Waiting';
+    card.dataset.direction=window.prophetPending==='SKIP'?'skip':'waiting';
+    if(typeof latest!=='undefined'&&latest&&latest.mode!=='OFF')$('ai-reason').textContent=window.prophetSkipNote||'Waiting for a qualifying entry';
+  }
 }
 function renderHistory(history){
   const box=$('vegas-history');box.replaceChildren();
