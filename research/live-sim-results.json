@@ -1,0 +1,765 @@
+{
+  "start": 50.0,
+  "stake": 3.0,
+  "daily_stop": 15.0,
+  "markets": 94,
+  "rules": {
+    "Minute 3-4 follow": {
+      "paper (instant, no competition)": {
+        "signals": 86,
+        "fills": 79,
+        "wins": 70,
+        "reasons": {
+          "FILLED": 79,
+          "NOT_ENOUGH_SIZE": 7
+        },
+        "pnl_94": 26.01,
+        "win_rate": 0.886,
+        "fill_rate": 0.919,
+        "one_day": {
+          "median": 129.69,
+          "p10": 98.65,
+          "p90": 158.73,
+          "chance_of_loss": 0.015,
+          "hit_daily_stop": 0.014
+        },
+        "one_week": {
+          "median": 599.84,
+          "p10": 513.52,
+          "p90": 687.82,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.01
+        }
+      },
+      "good connection: 0.5 s, +1 tick limit": {
+        "signals": 86,
+        "fills": 69,
+        "wins": 60,
+        "reasons": {
+          "FILLED": 69,
+          "REJECTED_PRICE_MOVED": 7,
+          "MISSED_ROUND_ENDED": 3,
+          "NOT_ENOUGH_SIZE": 7
+        },
+        "pnl_94": 18.07,
+        "win_rate": 0.87,
+        "fill_rate": 0.802,
+        "one_day": {
+          "median": 105.7,
+          "p10": 74.36,
+          "p90": 135.04,
+          "chance_of_loss": 0.041,
+          "hit_daily_stop": 0.037
+        },
+        "one_week": {
+          "median": 419.92,
+          "p10": 325.13,
+          "p90": 502.89,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.035
+        }
+      },
+      "home internet: 1 s, +1 tick": {
+        "signals": 86,
+        "fills": 69,
+        "wins": 60,
+        "reasons": {
+          "FILLED": 69,
+          "REJECTED_PRICE_MOVED": 7,
+          "MISSED_ROUND_ENDED": 3,
+          "NOT_ENOUGH_SIZE": 7
+        },
+        "pnl_94": 18.07,
+        "win_rate": 0.87,
+        "fill_rate": 0.802,
+        "one_day": {
+          "median": 104.62,
+          "p10": 72.69,
+          "p90": 135.03,
+          "chance_of_loss": 0.039,
+          "hit_daily_stop": 0.035
+        },
+        "one_week": {
+          "median": 428.79,
+          "p10": 346.54,
+          "p90": 517.89,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.035
+        }
+      },
+      "home internet: 2 s, +1 tick": {
+        "signals": 86,
+        "fills": 69,
+        "wins": 60,
+        "reasons": {
+          "FILLED": 69,
+          "REJECTED_PRICE_MOVED": 7,
+          "MISSED_ROUND_ENDED": 3,
+          "NOT_ENOUGH_SIZE": 7
+        },
+        "pnl_94": 18.07,
+        "win_rate": 0.87,
+        "fill_rate": 0.802,
+        "one_day": {
+          "median": 105.54,
+          "p10": 73.44,
+          "p90": 135.08,
+          "chance_of_loss": 0.043,
+          "hit_daily_stop": 0.04
+        },
+        "one_week": {
+          "median": 428.06,
+          "p10": 334.56,
+          "p90": 517.35,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.036
+        }
+      },
+      "2 s, exact price (no extra tick)": {
+        "signals": 86,
+        "fills": 69,
+        "wins": 60,
+        "reasons": {
+          "FILLED": 69,
+          "REJECTED_PRICE_MOVED": 7,
+          "MISSED_ROUND_ENDED": 3,
+          "NOT_ENOUGH_SIZE": 7
+        },
+        "pnl_94": 18.07,
+        "win_rate": 0.87,
+        "fill_rate": 0.802,
+        "one_day": {
+          "median": 105.36,
+          "p10": 72.97,
+          "p90": 133.92,
+          "chance_of_loss": 0.038,
+          "hit_daily_stop": 0.035
+        },
+        "one_week": {
+          "median": 429.46,
+          "p10": 323.52,
+          "p90": 509.03,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.044
+        }
+      },
+      "2 s, +2 ticks": {
+        "signals": 86,
+        "fills": 70,
+        "wins": 61,
+        "reasons": {
+          "FILLED": 70,
+          "REJECTED_PRICE_MOVED": 6,
+          "MISSED_ROUND_ENDED": 3,
+          "NOT_ENOUGH_SIZE": 7
+        },
+        "pnl_94": 18.82,
+        "win_rate": 0.871,
+        "fill_rate": 0.814,
+        "one_day": {
+          "median": 107.26,
+          "p10": 75.81,
+          "p90": 137.5,
+          "chance_of_loss": 0.037,
+          "hit_daily_stop": 0.034
+        },
+        "one_week": {
+          "median": 443.98,
+          "p10": 358.52,
+          "p90": 521.82,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.033
+        }
+      },
+      "2 s, +1 tick, 25% taken by faster bots": {
+        "signals": 86,
+        "fills": 49,
+        "wins": 43,
+        "reasons": {
+          "FILLED": 49,
+          "TAKEN_BY_FASTER_BOT": 20,
+          "REJECTED_PRICE_MOVED": 7,
+          "MISSED_ROUND_ENDED": 3,
+          "NOT_ENOUGH_SIZE": 7
+        },
+        "pnl_94": 14.52,
+        "win_rate": 0.878,
+        "fill_rate": 0.57,
+        "one_day": {
+          "median": 94.31,
+          "p10": 69.8,
+          "p90": 120.1,
+          "chance_of_loss": 0.024,
+          "hit_daily_stop": 0.018
+        },
+        "one_week": {
+          "median": 358.88,
+          "p10": 287.53,
+          "p90": 426.26,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.022
+        }
+      },
+      "2 s, +1 tick, 50% taken by faster bots": {
+        "signals": 86,
+        "fills": 31,
+        "wins": 27,
+        "reasons": {
+          "TAKEN_BY_FASTER_BOT": 39,
+          "FILLED": 31,
+          "REJECTED_PRICE_MOVED": 7,
+          "MISSED_ROUND_ENDED": 3,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 11.76,
+        "win_rate": 0.871,
+        "fill_rate": 0.36,
+        "one_day": {
+          "median": 85.64,
+          "p10": 63.65,
+          "p90": 108.56,
+          "chance_of_loss": 0.028,
+          "hit_daily_stop": 0.016
+        },
+        "one_week": {
+          "median": 300.22,
+          "p10": 240.48,
+          "p90": 359.21,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.016
+        }
+      },
+      "slow: 5 s, +1 tick, 25% taken": {
+        "signals": 86,
+        "fills": 44,
+        "wins": 36,
+        "reasons": {
+          "FILLED": 44,
+          "TAKEN_BY_FASTER_BOT": 19,
+          "REJECTED_PRICE_MOVED": 15,
+          "MISSED_ROUND_ENDED": 4,
+          "NOT_ENOUGH_SIZE": 4
+        },
+        "pnl_94": -0.88,
+        "win_rate": 0.818,
+        "fill_rate": 0.512,
+        "one_day": {
+          "median": 44.52,
+          "p10": 33.17,
+          "p90": 70.61,
+          "chance_of_loss": 0.585,
+          "hit_daily_stop": 0.419
+        },
+        "one_week": {
+          "median": 32.71,
+          "p10": 1.45,
+          "p90": 92.65,
+          "chance_of_loss": 0.666,
+          "hit_daily_stop": 0.362
+        }
+      }
+    },
+    "Minute 3-4 follow (max 85c)": {
+      "paper (instant, no competition)": {
+        "signals": 52,
+        "fills": 46,
+        "wins": 38,
+        "reasons": {
+          "FILLED": 46,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 25.34,
+        "win_rate": 0.826,
+        "fill_rate": 0.885,
+        "one_day": {
+          "median": 128.17,
+          "p10": 98.78,
+          "p90": 157.72,
+          "chance_of_loss": 0.009,
+          "hit_daily_stop": 0.008
+        },
+        "one_week": {
+          "median": 584.69,
+          "p10": 502.25,
+          "p90": 671.43,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.012
+        }
+      },
+      "good connection: 0.5 s, +1 tick limit": {
+        "signals": 52,
+        "fills": 39,
+        "wins": 31,
+        "reasons": {
+          "FILLED": 39,
+          "REJECTED_PRICE_MOVED": 7,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 17.57,
+        "win_rate": 0.795,
+        "fill_rate": 0.75,
+        "one_day": {
+          "median": 103.46,
+          "p10": 73.16,
+          "p90": 131.82,
+          "chance_of_loss": 0.038,
+          "hit_daily_stop": 0.032
+        },
+        "one_week": {
+          "median": 418.58,
+          "p10": 332.44,
+          "p90": 494.63,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.031
+        }
+      },
+      "home internet: 1 s, +1 tick": {
+        "signals": 52,
+        "fills": 39,
+        "wins": 31,
+        "reasons": {
+          "FILLED": 39,
+          "REJECTED_PRICE_MOVED": 7,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 17.57,
+        "win_rate": 0.795,
+        "fill_rate": 0.75,
+        "one_day": {
+          "median": 102.87,
+          "p10": 71.94,
+          "p90": 132.09,
+          "chance_of_loss": 0.032,
+          "hit_daily_stop": 0.029
+        },
+        "one_week": {
+          "median": 417.0,
+          "p10": 333.74,
+          "p90": 494.69,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.032
+        }
+      },
+      "home internet: 2 s, +1 tick": {
+        "signals": 52,
+        "fills": 39,
+        "wins": 31,
+        "reasons": {
+          "FILLED": 39,
+          "REJECTED_PRICE_MOVED": 7,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 17.57,
+        "win_rate": 0.795,
+        "fill_rate": 0.75,
+        "one_day": {
+          "median": 102.58,
+          "p10": 71.61,
+          "p90": 132.86,
+          "chance_of_loss": 0.042,
+          "hit_daily_stop": 0.038
+        },
+        "one_week": {
+          "median": 416.57,
+          "p10": 324.8,
+          "p90": 498.08,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.033
+        }
+      },
+      "2 s, exact price (no extra tick)": {
+        "signals": 52,
+        "fills": 39,
+        "wins": 31,
+        "reasons": {
+          "FILLED": 39,
+          "REJECTED_PRICE_MOVED": 7,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 17.57,
+        "win_rate": 0.795,
+        "fill_rate": 0.75,
+        "one_day": {
+          "median": 103.14,
+          "p10": 71.88,
+          "p90": 131.64,
+          "chance_of_loss": 0.04,
+          "hit_daily_stop": 0.036
+        },
+        "one_week": {
+          "median": 414.72,
+          "p10": 330.38,
+          "p90": 492.85,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.033
+        }
+      },
+      "2 s, +2 ticks": {
+        "signals": 52,
+        "fills": 40,
+        "wins": 32,
+        "reasons": {
+          "FILLED": 40,
+          "REJECTED_PRICE_MOVED": 6,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 18.32,
+        "win_rate": 0.8,
+        "fill_rate": 0.769,
+        "one_day": {
+          "median": 106.18,
+          "p10": 75.82,
+          "p90": 134.89,
+          "chance_of_loss": 0.032,
+          "hit_daily_stop": 0.03
+        },
+        "one_week": {
+          "median": 436.49,
+          "p10": 351.43,
+          "p90": 510.59,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.031
+        }
+      },
+      "2 s, +1 tick, 25% taken by faster bots": {
+        "signals": 52,
+        "fills": 24,
+        "wins": 20,
+        "reasons": {
+          "FILLED": 24,
+          "TAKEN_BY_FASTER_BOT": 16,
+          "REJECTED_PRICE_MOVED": 7,
+          "NOT_ENOUGH_SIZE": 5
+        },
+        "pnl_94": 13.56,
+        "win_rate": 0.833,
+        "fill_rate": 0.462,
+        "one_day": {
+          "median": 90.98,
+          "p10": 68.75,
+          "p90": 114.29,
+          "chance_of_loss": 0.011,
+          "hit_daily_stop": 0.007
+        },
+        "one_week": {
+          "median": 336.26,
+          "p10": 272.31,
+          "p90": 397.68,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.012
+        }
+      },
+      "2 s, +1 tick, 50% taken by faster bots": {
+        "signals": 52,
+        "fills": 13,
+        "wins": 12,
+        "reasons": {
+          "TAKEN_BY_FASTER_BOT": 28,
+          "FILLED": 13,
+          "REJECTED_PRICE_MOVED": 7,
+          "NOT_ENOUGH_SIZE": 4
+        },
+        "pnl_94": 10.64,
+        "win_rate": 0.923,
+        "fill_rate": 0.25,
+        "one_day": {
+          "median": 82.59,
+          "p10": 70.75,
+          "p90": 94.59,
+          "chance_of_loss": 0.001,
+          "hit_daily_stop": 0.0
+        },
+        "one_week": {
+          "median": 277.08,
+          "p10": 247.77,
+          "p90": 310.32,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.0
+        }
+      },
+      "slow: 5 s, +1 tick, 25% taken": {
+        "signals": 52,
+        "fills": 21,
+        "wins": 17,
+        "reasons": {
+          "FILLED": 21,
+          "TAKEN_BY_FASTER_BOT": 15,
+          "REJECTED_PRICE_MOVED": 14,
+          "NOT_ENOUGH_SIZE": 2
+        },
+        "pnl_94": 6.81,
+        "win_rate": 0.81,
+        "fill_rate": 0.404,
+        "one_day": {
+          "median": 71.7,
+          "p10": 52.67,
+          "p90": 88.37,
+          "chance_of_loss": 0.077,
+          "hit_daily_stop": 0.031
+        },
+        "one_week": {
+          "median": 196.96,
+          "p10": 148.08,
+          "p90": 243.82,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.03
+        }
+      }
+    },
+    "90% late favourite": {
+      "paper (instant, no competition)": {
+        "signals": 51,
+        "fills": 45,
+        "wins": 44,
+        "reasons": {
+          "FILLED": 45,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 4.15,
+        "win_rate": 0.978,
+        "fill_rate": 0.882,
+        "one_day": {
+          "median": 63.17,
+          "p10": 55.11,
+          "p90": 69.74,
+          "chance_of_loss": 0.021,
+          "hit_daily_stop": 0.0
+        },
+        "one_week": {
+          "median": 139.33,
+          "p10": 118.79,
+          "p90": 158.1,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.0
+        }
+      },
+      "good connection: 0.5 s, +1 tick limit": {
+        "signals": 51,
+        "fills": 41,
+        "wins": 40,
+        "reasons": {
+          "FILLED": 41,
+          "MISSED_ROUND_ENDED": 3,
+          "REJECTED_PRICE_MOVED": 1,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 3.12,
+        "win_rate": 0.976,
+        "fill_rate": 0.804,
+        "one_day": {
+          "median": 60.0,
+          "p10": 52.1,
+          "p90": 66.67,
+          "chance_of_loss": 0.053,
+          "hit_daily_stop": 0.001
+        },
+        "one_week": {
+          "median": 117.38,
+          "p10": 99.64,
+          "p90": 134.05,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.001
+        }
+      },
+      "home internet: 1 s, +1 tick": {
+        "signals": 51,
+        "fills": 41,
+        "wins": 40,
+        "reasons": {
+          "FILLED": 41,
+          "MISSED_ROUND_ENDED": 3,
+          "REJECTED_PRICE_MOVED": 1,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 3.12,
+        "win_rate": 0.976,
+        "fill_rate": 0.804,
+        "one_day": {
+          "median": 59.99,
+          "p10": 51.95,
+          "p90": 66.61,
+          "chance_of_loss": 0.057,
+          "hit_daily_stop": 0.001
+        },
+        "one_week": {
+          "median": 119.04,
+          "p10": 98.25,
+          "p90": 137.45,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.0
+        }
+      },
+      "home internet: 2 s, +1 tick": {
+        "signals": 51,
+        "fills": 41,
+        "wins": 40,
+        "reasons": {
+          "FILLED": 41,
+          "MISSED_ROUND_ENDED": 3,
+          "REJECTED_PRICE_MOVED": 1,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 3.12,
+        "win_rate": 0.976,
+        "fill_rate": 0.804,
+        "one_day": {
+          "median": 59.91,
+          "p10": 52.27,
+          "p90": 66.67,
+          "chance_of_loss": 0.053,
+          "hit_daily_stop": 0.001
+        },
+        "one_week": {
+          "median": 117.79,
+          "p10": 99.04,
+          "p90": 135.92,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.001
+        }
+      },
+      "2 s, exact price (no extra tick)": {
+        "signals": 51,
+        "fills": 40,
+        "wins": 39,
+        "reasons": {
+          "FILLED": 40,
+          "MISSED_ROUND_ENDED": 3,
+          "REJECTED_PRICE_MOVED": 2,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 3.07,
+        "win_rate": 0.975,
+        "fill_rate": 0.784,
+        "one_day": {
+          "median": 59.73,
+          "p10": 51.61,
+          "p90": 66.33,
+          "chance_of_loss": 0.068,
+          "hit_daily_stop": 0.0
+        },
+        "one_week": {
+          "median": 116.79,
+          "p10": 97.07,
+          "p90": 135.29,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.001
+        }
+      },
+      "2 s, +2 ticks": {
+        "signals": 51,
+        "fills": 41,
+        "wins": 40,
+        "reasons": {
+          "FILLED": 41,
+          "MISSED_ROUND_ENDED": 3,
+          "REJECTED_PRICE_MOVED": 1,
+          "NOT_ENOUGH_SIZE": 6
+        },
+        "pnl_94": 3.12,
+        "win_rate": 0.976,
+        "fill_rate": 0.804,
+        "one_day": {
+          "median": 59.99,
+          "p10": 51.77,
+          "p90": 66.47,
+          "chance_of_loss": 0.06,
+          "hit_daily_stop": 0.001
+        },
+        "one_week": {
+          "median": 116.76,
+          "p10": 97.48,
+          "p90": 135.1,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.0
+        }
+      },
+      "2 s, +1 tick, 25% taken by faster bots": {
+        "signals": 51,
+        "fills": 27,
+        "wins": 27,
+        "reasons": {
+          "FILLED": 27,
+          "MISSED_ROUND_ENDED": 3,
+          "TAKEN_BY_FASTER_BOT": 16,
+          "REJECTED_PRICE_MOVED": 1,
+          "NOT_ENOUGH_SIZE": 4
+        },
+        "pnl_94": 5.17,
+        "win_rate": 1.0,
+        "fill_rate": 0.529,
+        "one_day": {
+          "median": 65.78,
+          "p10": 63.41,
+          "p90": 68.45,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.0
+        },
+        "one_week": {
+          "median": 160.47,
+          "p10": 154.13,
+          "p90": 168.16,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.0
+        }
+      },
+      "2 s, +1 tick, 50% taken by faster bots": {
+        "signals": 51,
+        "fills": 17,
+        "wins": 17,
+        "reasons": {
+          "TAKEN_BY_FASTER_BOT": 28,
+          "MISSED_ROUND_ENDED": 3,
+          "FILLED": 17,
+          "REJECTED_PRICE_MOVED": 1,
+          "NOT_ENOUGH_SIZE": 2
+        },
+        "pnl_94": 2.39,
+        "win_rate": 1.0,
+        "fill_rate": 0.333,
+        "one_day": {
+          "median": 57.26,
+          "p10": 55.75,
+          "p90": 58.91,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.0
+        },
+        "one_week": {
+          "median": 101.18,
+          "p10": 97.29,
+          "p90": 105.18,
+          "chance_of_loss": 0.0,
+          "hit_daily_stop": 0.0
+        }
+      },
+      "slow: 5 s, +1 tick, 25% taken": {
+        "signals": 51,
+        "fills": 24,
+        "wins": 23,
+        "reasons": {
+          "FILLED": 24,
+          "MISSED_ROUND_ENDED": 5,
+          "TAKEN_BY_FASTER_BOT": 16,
+          "REJECTED_PRICE_MOVED": 1,
+          "NOT_ENOUGH_SIZE": 5
+        },
+        "pnl_94": 0.53,
+        "win_rate": 0.958,
+        "fill_rate": 0.471,
+        "one_day": {
+          "median": 51.9,
+          "p10": 43.99,
+          "p90": 58.47,
+          "chance_of_loss": 0.364,
+          "hit_daily_stop": 0.009
+        },
+        "one_week": {
+          "median": 60.53,
+          "p10": 42.11,
+          "p90": 79.19,
+          "chance_of_loss": 0.218,
+          "hit_daily_stop": 0.009
+        }
+      }
+    }
+  }
+}
