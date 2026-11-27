@@ -27,7 +27,7 @@ from .providers import timestamp, validate_market
 from .store import Store
 from .v2paper import Engine as PaperEngine
 from .auth import Auth
-from . import analytics, competition, intervention, operations, updates
+from . import analytics, competition, intervention, operations, remote, updates
 from .learning import Learning, matched_forecasts
 from . import model_paper, pooled_consensus, selective_forecast, unified, corrective
 from .lab import Lab
@@ -70,6 +70,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
     runtime = Runtime(store, collector, paper)
     alerts = Alerts(store)
     corrective_research = corrective.Research(store,paper)
+    updater = remote.Updater(store, paper)
     export_lock = asyncio.Lock()
     quick_export_lock = asyncio.Lock()
 
@@ -85,16 +86,19 @@ def create_app(db_path=None, collect=True, auth_required=True):
         try:
             if collect:
                 paper.recover_startup()
+                updater.resume_after_restart()
                 collector.enabled = True
                 await collector.start()
                 await paper.start()
                 await learning.start()
                 await alerts.start()
                 corrective_research.start()
+                updater.start()
             yield
         finally:
             await runtime.close(release=False)
             try:
+                await updater.close()
                 await corrective_research.close()
                 await alerts.close()
                 await learning.close()
@@ -110,6 +114,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
     app.state.agreement = agreement
     app.state.learning = learning
     app.state.auth = auth
+    app.state.updater = updater
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=["127.0.0.1", "localhost", "[::1]", "testserver"]
@@ -142,6 +147,8 @@ def create_app(db_path=None, collect=True, auth_required=True):
         if auth_required and not public and not display and not role:
             if request.url.path == "/":
                 return RedirectResponse("/login", status_code=303)
+            if request.url.path == "/remote":
+                return RedirectResponse("/login?next=/remote", status_code=303)
             return JSONResponse({"detail": "Sign in required"}, status_code=401)
         if (
             role == "viewer"
@@ -481,6 +488,39 @@ def create_app(db_path=None, collect=True, auth_required=True):
         except (OSError,ValueError) as exc:
             raise HTTPException(409,str(exc)) from exc
 
+    @app.get("/remote")
+    def remote_page():
+        return FileResponse(STATIC / "remote.html")
+
+    @app.get("/api/remote/status")
+    def remote_status():
+        return updater.status()
+
+    @app.post("/api/remote/check")
+    async def remote_check():
+        if updater.busy.locked():
+            raise HTTPException(409, "An update check is already running.")
+        async with updater.busy:
+            return await updater.check()
+
+    @app.post("/api/remote/install")
+    def remote_install():
+        state = store.get("auto_update_status", None) or {}
+        if not state.get("pending"):
+            raise HTTPException(409, "No verified update is waiting. Press Check for update first.")
+        if store.get("emergency", False):
+            raise HTTPException(409, "Clear the safety lock before installing an update.")
+        return updater.install(state["pending"])
+
+    @app.post("/api/remote/restart")
+    def remote_restart():
+        if not remote.supervised():
+            raise HTTPException(409, "Restart from the phone needs the dev13 launcher. Quit and reopen Start Prophet.")
+        if store.get("mode", "OFF") != "OFF":
+            raise HTTPException(409, "Pause before restarting.")
+        updater.restart()
+        return dict(ok=True, message="Restarting. This page reconnects in about a minute.")
+
     @app.get("/api/pick")
     def pick():
         now = time.time()
@@ -805,6 +845,50 @@ def create_app(db_path=None, collect=True, auth_required=True):
     def competition_preflight():
         with store.connect() as db:
             return competition.preflight(db, time.time())
+
+    MODEL_LEARNING = {
+        "logistic": "Retrains every hour", "random_forest": "Retrains every hour",
+        "gradient_boosting": "Retrains every hour", "ensemble": "Retrains every hour",
+        "xgboost": "Retrains every hour", "lightgbm": "Retrains every hour",
+        "pattern_odds": "Learns from settled rounds",
+        "momentum": "Fixed rule, does not learn", "model_vote": "Fixed rule, does not learn",
+        "market_odds_adjustment": "Fixed rule, does not learn",
+        "volatility_reference_gap": "Fixed rule, does not learn",
+        "reference_gap_agreement": "Fixed rule, does not learn",
+    }
+
+    @app.get("/api/models-overview")
+    def models_overview():
+        """One read-only view of every model account, whether it learns, and the learning record."""
+        with store.connect() as db:
+            db.execute("BEGIN")
+            models = []
+            for m in model_paper.standings(db):
+                closed = m.get("closed") or 0
+                models.append(dict(family=m["family"], label=m["label"],
+                    learning=MODEL_LEARNING.get(m["family"], "Fixed rule, does not learn"),
+                    version=(m.get("latest") or {}).get("version"), trades=closed,
+                    wins=m.get("wins", 0), losses=m.get("losses", 0), pnl=m.get("pnl", 0),
+                    cash=m.get("cash"), win_rate=(m.get("wins", 0)/closed) if closed else None))
+            runs = [dict(r) for r in db.execute(
+                "SELECT time,brier,baseline_brier FROM model_runs ORDER BY id DESC LIMIT 200")]
+            day = time.time()-86400
+            minute = db.execute("""SELECT f.minute, count(*) FROM unified_minute_forecasts f
+                JOIN unified_rounds r ON r.slug=f.slug JOIN verified_markets v ON v.slug=f.slug AND v.end=r.end
+                GROUP BY f.minute ORDER BY f.minute""").fetchall()
+            latest = db.execute("SELECT details FROM unified_rounds WHERE reason='ENTERED' ORDER BY start DESC LIMIT 1").fetchone()
+            source = json.loads(latest[0]).get("calibration_source", "first_forecast") if latest else None
+        status = store.get("learning_status") or {}
+        return dict(
+            primary=dict(model="Volatility Reference Gap", exit=unified.primary_exit(),
+                         learning="Adjusts its confidence", calibration_source=source,
+                         minute_labels={str(k): n for k, n in minute}, minute_labels_needed=unified.MINUTE_LABELS),
+            learning=dict(last_trained=runs[0]["time"] if runs else None,
+                          trainings_last_24h=sum(r["time"] >= day for r in runs),
+                          examples=status.get("examples"), brier=runs[0]["brier"] if runs else None,
+                          baseline_brier=runs[0]["baseline_brier"] if runs else None, coin_flip_brier=.25,
+                          first_brier=runs[-1]["brier"] if runs else None, trades_main_account=False),
+            models=models)
 
     @app.get("/api/learning")
     def learning_state():

@@ -243,6 +243,7 @@ async function scoreboard(){
     $('games-pnl').textContent=money(game.net);
     $('game-balance').textContent=money(game.balance)+' cash';
     vegas(game);
+    shadowTable(game);
     const sel=game.selective50;
     if(sel){$('sel50-balance').textContent=money(sel.balance);$('sel50-trades').textContent=sel.trades;
       $('sel50-wins').textContent=sel.wins;$('sel50-losses').textContent=sel.losses;$('sel50-net').textContent=money(sel.net);
@@ -329,7 +330,38 @@ async function settingsStatus(){
 }
 $('sms-test').onclick=async()=>{const r=await fetch('/api/alerts/test',{method:'POST',headers:{'X-Prophet-Control':'local-dashboard'}});alert((await r.json()).message||'SMS test unavailable');};
 $('rollback').onclick=async()=>{const r=await fetch(`/api/shadow-rollback/${encodeURIComponent($('shadow-version').value)}`,{method:'POST',headers:{'X-Prophet-Control':'local-dashboard'}});if(!r.ok)alert((await r.json()).detail);research();};
-setInterval(settingsStatus,10000);setInterval(tick,1000);setInterval(candles,3000);setInterval(paper,5000);setInterval(scoreboard,3000);refresh();candles();scoreboard();
+
+function cell(text,cls){const td=document.createElement('td');td.textContent=text;if(cls)td.className=cls;return td;}
+function signed(n){return n==null?'—':money(n);}
+function tone(n){return n>0?'pnl-up':n<0?'pnl-down':'';}
+function shadowTable(game){
+  const rows=[];
+  const add=(name,rule,a)=>{const tr=document.createElement('tr');
+    tr.append(cell(name),cell(rule),cell(a.trades),cell(`${a.wins}–${a.losses}`),cell(signed(a.net),tone(a.net)),cell(a.balance==null?'—':money(a.balance)));rows.push(tr);};
+  const main={trades:game.all_time.played,wins:game.all_time.wins,losses:game.all_time.losses,net:game.all_time.net,balance:game.balance};
+  add('Main $1,000 account','Current rule · $5 trades · all time',main);
+  if(game.selective50)add('Selective $50','Minute 3–4 · all 3 agree · ≤90¢',game.selective50);
+  if(game.selective1000)add('Selective $1,000 at $50','Same rule · $50 trades · only full fills, never forced',game.selective1000);
+  for(const r of game.shadow_rules||[])add(r.name,r.describe+(r.open?' · 1 open':''),r);
+  $('shadow-rows').replaceChildren(...rows);
+}
+async function modelsOverview(){
+  try{
+    const o=await getJSON('/api/models-overview');if(!o)return;
+    const badge=$('exit-badge');const on=o.primary.exit==='probability';
+    badge.textContent=on?'Early exit: ON':'Early exit: OFF';badge.className=on?'on':'off';
+    const l=o.learning;const when=l.last_trained?new Date(l.last_trained*1000).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'never';
+    const score=l.brier==null?'no score yet':`score ${l.brier.toFixed(3)} (coin flip = 0.250, lower is better)`;
+    const verdict=l.brier==null?'':l.brier<0.24?' · clearly better than guessing':l.brier<0.25?' · only slightly better than guessing':' · not better than guessing yet';
+    const mins=o.primary.minute_labels;const have=Math.max(0,...Object.values(mins),0);
+    $('learning-summary').textContent=`Hourly models last trained ${when} · ${l.trainings_last_24h} trainings in 24 h · ${l.examples??'—'} rounds learned from · ${score}${verdict}. They are tested on paper only and do not trade the main account. `+
+      `Main account model: adjusts its confidence from results; per-minute learning ${o.primary.calibration_source==='minute'?'is ON':`starts after ${o.primary.minute_labels_needed} settled rounds per minute (${have} so far)`}.`;
+    const rows=o.models.map(m=>{const tr=document.createElement('tr');
+      tr.append(cell(m.label),cell(m.learning),cell(m.trades),cell(`${m.wins}–${m.losses}`),cell(m.win_rate==null?'—':Math.round(100*m.win_rate)+'%'),cell(signed(m.pnl),tone(m.pnl)));return tr;});
+    $('model-rows').replaceChildren(...rows);
+  }catch(e){}
+}
+setInterval(modelsOverview,30000);modelsOverview();setInterval(settingsStatus,10000);setInterval(tick,1000);setInterval(candles,3000);setInterval(paper,5000);setInterval(scoreboard,3000);refresh();candles();scoreboard();
 
 
 let testedUpdate;

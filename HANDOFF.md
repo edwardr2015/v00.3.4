@@ -42,3 +42,11 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 ## dev10 (latest)
 - New `prophet/selective50.py`: a separate paper account that starts at $50 and makes $3 trades with the best research rule (minute 3–4, all 3 agree, ≤90¢, reversal exit). It never goes below $0 and never adds money. It shows on the dashboard ("Selective $50 account") and in the Excel sheet "Selective $50 Account". The main $1,000 account is untouched. Tests are in `tests/test_selective50.py`.
 - `scripts/polymarket_readonly_check.py`: a read-only connection test. The cloud session's network blocks gateway.polymarket.us and api.polymarket.us.
+
+## dev13 (latest; built from the owner's dev12 ZIP, so it includes dev11–12)
+- Owner was running dev12 (has Test Accounts and Selective $1000 at $50); dev11–12 were never pushed, so `btc-prophet/` now holds dev13 source built on the uploaded dev12.
+- `prophet/remote.py` + `/remote` phone page: status, Pause/Resume, Quick report, **Check for update** and **Install now**. Nothing checks or installs on its own (owner's choice).
+- Update feed: `release/LATEST.json` on this branch (build number, ZIP name, SHA-256). To ship dev14: build the ZIP (no directory entries: `zip -r -X -D`; no `data/` folder), add it to `release/`, update `LATEST.json` and `SHA256SUMS`, push. The owner then presses Check and Install on the phone.
+- Launcher: restarts itself after Install/Restart (restart-requested marker in `data/timing/updates/`), resumes the prior paper mode. Phone access over Wi-Fi only when `data/timing/phone-remote-on` exists; it then requires a password.
+- Not yet done: dev13 is not installed on the Mac. One-time install via the dev12 dashboard's Software updates page (ZIP + SHA-256 above), then quit and reopen Start Prophet.
+- Tests: 222 passed, 3 skipped. The launcher restart loop has not been tested on a Mac yet.

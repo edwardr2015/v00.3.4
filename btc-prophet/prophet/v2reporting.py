@@ -166,6 +166,23 @@ def add_unified(sheets, db, *, quick):
         [r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],utc(r["closed"]) if r["closed"] else None,
          r["proceeds"],r["pnl"],r["outcome"],r["details"]]
         for r in db.execute("SELECT * FROM selective50_trades ORDER BY time DESC LIMIT ?",(limit,))])
+    big = selective50.summary(db, "selective1000")
+    sheets.table("Selective $1000 at $50", ["Market","Entry UTC","Side","Quantity","Cost","Status","Exit UTC",
+        "Proceeds","Paper P&L","Official outcome","Evidence"], [
+        ["Summary",big["name"],"Balance",big["balance"],"Trades",big["trades"],"Wins",big["wins"],
+         "Losses",big["losses"],"Net "+str(big["net"])]] + [
+        [r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],utc(r["closed"]) if r["closed"] else None,
+         r["proceeds"],r["pnl"],r["outcome"],r["details"]]
+        for r in db.execute("SELECT * FROM selective1000_trades ORDER BY time DESC LIMIT ?",(limit,))])
+    from . import shadow_rules
+    names = {k: v["label"] for k, v in shadow_rules.RULES.items()}
+    sheets.table("Test Accounts", ["Account","Market","Entry UTC","Side","Quantity","Cost","Status","Exit UTC",
+        "Proceeds","Paper P&L","Official outcome","Evidence"], [
+        ["Summary: "+a["name"],a["describe"],"Balance",a["balance"],"Trades",a["trades"],"Wins",a["wins"],
+         "Losses",a["losses"],"Net",a["net"],"Sold early "+str(a["early_exits"])] for a in shadow_rules.summary(db)] + [
+        [names.get(r["rule"],r["rule"]),r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],
+         utc(r["closed"]) if r["closed"] else None,r["proceeds"],r["pnl"],r["outcome"],r["details"]]
+        for r in db.execute("SELECT * FROM shadow_rule_trades ORDER BY time DESC LIMIT ?",(limit,))])
     sheets.table("Exit Shadow Comparison", ["Exit policy","Settled trades","Shadow exits","Wins","Net P&L",
         "Primary exit setting"], (
         [r["policy"],r["trades"],r["exits"],r["wins"],r["pnl"],unified.primary_exit()]

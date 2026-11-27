@@ -242,8 +242,8 @@ def test_data_blocks_alone_still_record_the_latest_block(tmp_path):
         assert db.execute("SELECT reason FROM unified_rounds").fetchone()[0]=="NO_LIQUIDITY"
 
 
-def test_default_holds_to_settlement_and_records_shadow_exits(tmp_path, monkeypatch):
-    monkeypatch.delenv("PROPHET_PRIMARY_EXIT", raising=False)
+def test_hold_setting_holds_to_settlement_and_records_shadow_exits(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROPHET_PRIMARY_EXIT", "hold")
     store,engine = initialize(tmp_path)
     with store.connect() as db:
         observe(db)                                           # enters UP
@@ -254,10 +254,10 @@ def test_default_holds_to_settlement_and_records_shadow_exits(tmp_path, monkeypa
         trade = db.execute("SELECT * FROM unified_trades").fetchone()
         assert trade["status"]=="OPEN"
         assert {r[0] for r in db.execute("SELECT policy FROM unified_exit_shadows")} == {
-            "probability_exit","stop_loss_50"}
+            "probability_exit","stop_loss_50","reversal_exit"}
         balance = db.execute("SELECT balance FROM unified_account").fetchone()[0]
         observe(db,1105,raw=.15,level=book(.72,.75))          # repeated triggers do not duplicate
-        assert db.execute("SELECT count(*) FROM unified_exit_shadows").fetchone()[0]==2
+        assert db.execute("SELECT count(*) FROM unified_exit_shadows").fetchone()[0]==3
         assert db.execute("SELECT balance FROM unified_account").fetchone()[0]==balance
         verify(db,"round",1000,"UP",1305)
     engine.settle(1310)
@@ -268,3 +268,10 @@ def test_default_holds_to_settlement_and_records_shadow_exits(tmp_path, monkeypa
         assert rows["actual"]["pnl"]==rows["hold_to_settlement"]["pnl"]==round(trade["pnl"],4)
         assert rows["probability_exit"]["exits"]==1 and rows["probability_exit"]["pnl"]<rows["actual"]["pnl"]
         assert rows["stop_loss_50"]["exits"]==1
+
+
+def test_early_exit_is_the_default_without_any_setting(monkeypatch):
+    monkeypatch.delenv("PROPHET_PRIMARY_EXIT", raising=False)
+    assert unified.primary_exit() == "probability"
+    monkeypatch.setenv("PROPHET_PRIMARY_EXIT", "HOLD")
+    assert unified.primary_exit() == "hold"

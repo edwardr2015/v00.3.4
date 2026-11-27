@@ -52,3 +52,57 @@ def test_never_goes_negative_or_adds_money(tmp_path):
         tick(db, 1490, start=1300, slug="next")            # under $3 left: no trade
         assert trade(db, "next") is None
         assert selective50.summary(db)["balance"] == 2.5
+
+
+def big(db, slug="round"):
+    return db.execute("SELECT * FROM selective1000_trades WHERE slug=?", (slug,)).fetchone()
+
+
+def test_thousand_dollar_ledger_trades_fifty_with_the_same_rule_and_settles(tmp_path):
+    store, _ = initialize(tmp_path)
+    with store.connect() as db:
+        tick(db, 1100)                                     # too early for both ledgers
+        assert big(db) is None
+        tick(db, 1195)
+        b, s = big(db), trade(db)
+        assert b["side"] == s["side"] == "UP" and 47.5 <= b["cost"] <= 50 and s["cost"] <= 3
+        verify(db, "round", 1000, "UP", 1305); unified.settle(db, 1310)
+        b = big(db)
+        assert b["status"] == "SETTLED" and b["pnl"] > 0
+        summ = selective50.summary(db, "selective1000")
+        assert summ["start"] == 1000 and summ["stake"] == 50 and summ["wins"] == 1
+        assert abs(summ["balance"] - (1000 + b["pnl"])) < 1e-9
+
+
+def test_thousand_dollar_ledger_never_forces_a_partial_fill(tmp_path):
+    store, _ = initialize(tmp_path)
+    with store.connect() as db:
+        tick(db, 1195, level=book(.60, .62, 20))           # book too thin to buy $50
+        assert big(db) is None
+
+
+def test_thousand_dollar_ledger_stops_below_fifty_and_is_isolated(tmp_path, monkeypatch):
+    store, _ = initialize(tmp_path)
+    with store.connect() as db:
+        tick(db, 1100)
+        db.execute("INSERT INTO selective1000_account VALUES (1,900,49.0)")
+        tick(db, 1195)
+        assert big(db) is None and trade(db) is not None   # $1,000 ledger out of money; $50 ledger trades
+        assert selective50.summary(db, "selective1000")["balance"] == 49.0
+
+
+def test_a_failure_in_one_ledger_never_changes_the_other(tmp_path, monkeypatch):
+    store, _ = initialize(tmp_path)
+    real = selective50._act
+
+    def flaky(db, prefix, *args):
+        if prefix == "selective1000":
+            db.execute("INSERT INTO selective1000_account VALUES (1,1,1)")
+            raise RuntimeError("boom")
+        return real(db, prefix, *args)
+    monkeypatch.setattr(selective50, "_act", flaky)
+    with store.connect() as db:
+        tick(db, 1100)
+        tick(db, 1195)
+        assert trade(db) is not None
+        assert not db.execute("SELECT 1 FROM selective1000_account").fetchone()

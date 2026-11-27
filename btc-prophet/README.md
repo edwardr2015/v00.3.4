@@ -2,6 +2,18 @@
 
 See [the 0.3.23 audit and timed-exit notes](docs/0.3.23-research-completion.md) and the [0.3.22 research and verification notes](docs/0.3.22-corrective-research.md) for the synchronized model panel, independent paper comparisons and evidence limits.
 
+## dev12: Selective rule at $50 per trade (paper)
+
+- A second Selective ledger: $1,000 start, $50 per trade, same rule (minute 3–4, all 3 agree, ≤90¢, reversal exit). It never forces a trade: it enters only if at least 95% of the $50 can be bought at ≤90¢ right then, and sells early only if the whole position can be sold. It stops below $50, never adds money and never goes below $0. It shows in the Test accounts table and the Excel sheet "Selective $1000 at $50". Each Selective ledger runs in its own savepoint so one can never change the other.
+
+## dev11: early exit stays on, test accounts, all models on the dashboard
+
+- **Early exit is now the default.** The main account sells early unless `PROPHET_PRIMARY_EXIT=hold` is set. Before dev11 a restart without the setting silently switched to holding (Report 14: 1:58–9:10 PM on Nov 26, −$42.75). The dashboard shows "Early exit: ON/OFF".
+- **Per-minute learning for the main model.** Forecasts are remembered once per minute of every round. After 30 settled same-minute forecasts in a confidence bucket, the bot judges a minute-3 call against earlier minute-3 calls instead of minute-0 calls. Until then it behaves exactly as before.
+- **Reversal exit shadow.** Exit Shadow Comparison now also scores "sell when the model flips to the other side". It is a comparison only.
+- **Three $50 test accounts ($3 trades, never below $0, never topped up, paper only):** main rule without minute-2 entries, main rule at 40–55¢ only, and the 90-second agreement research rule. They are on the dashboard and in the Excel sheet "Test Accounts". The main $1,000 account and the Selective $50 account are unchanged.
+- **All models & learning panel.** Every model account, whether it retrains, learns from results or is a fixed rule, and the hourly training score compared with a coin flip.
+
 ## 0.3.23 on an existing Mac
 
 Use the verified release ZIP through **Settings → Software updates** with paper decisions paused, or save the accompanying installer and ZIP in Downloads and run `bash "$HOME/Downloads/Install Prophet 000.300.023.command"`. The installer stops an identified Prophet process gracefully if needed, verifies the ZIP, backs up the database, selects 0.3.23 and launches it through the original install. Keep the existing project directory and its database. The scoreboard continues your 0.3.21 unified account. A first unified install starts its ledger at $1,000. Previous paper ledgers and all saved model versions remain available in Research Results and Excel.
@@ -108,3 +120,8 @@ The primary UP/DOWN card shows the model version that produced the fresh forecas
 Open **Research Results** beside **Settings** to review prediction history, model leaderboards, autonomous accounts, pooled comparisons, the paper ledger, and collector activity. The main dashboard retains the primary signal, market and account overview, and one-click Excel export.
 
 The 90-second shadow records a call only when the Momentum score meets 65% and agrees with a move of at least 12 basis points from the official opening reference. It uses 21 completed 15-second candles and allows five seconds for publication. LEARN records calls, and SIMULATE separately models a $3 hold-to-settlement fill only with a fresh book, enough depth, and at least 3% estimated net return using the earlier historical accuracy estimate. Quick Excel includes a scorecard. Full Excel includes the trade and skip audit.
+
+## Phone remote and updates (dev13)
+- Turn on phone access: create an empty file named `phone-remote-on` next to the database (`data/timing/`), then reopen Start Prophet. It asks once for a password and prints the phone address (`http://<your-mac>.local:8000/remote`). Phone and Mac must be on the same Wi-Fi.
+- Updates never install on their own. On the phone page press **Check for update** (reads `release/LATEST.json` on GitHub), then **Install now** when ready. It pauses, backs up the database, installs, restarts and resumes paper trading.
+- Real-money trading stays locked.

@@ -5,7 +5,7 @@ import math
 
 import logging
 
-from . import selective50
+from . import selective50, shadow_rules
 from .analytics import streaks
 from .execution import execute, paper_buy
 
@@ -19,11 +19,12 @@ STOP_LOSS_SHADOW = .50   # shadow only: a full sale at or below 50% of cost
 
 
 def primary_exit():
-    """'hold' (default since 0.3.23-dev): hold every primary position to official settlement.
-    'probability' restores the original early exit. Matched research (2,211 pairs) found every
-    early-exit policy below holding."""
+    """'probability' (default since 0.3.23-dev11): sell early when the bid beats the model's own
+    hold value by EXIT_MARGIN. The owner runs early exit; dev11 makes it the default so a restart
+    without PROPHET_PRIMARY_EXIT can no longer silently switch the bot to holding.
+    Set PROPHET_PRIMARY_EXIT=hold to hold every position to official settlement."""
     import os
-    return "probability" if os.getenv("PROPHET_PRIMARY_EXIT", "hold").lower() == "probability" else "hold"
+    return "hold" if os.getenv("PROPHET_PRIMARY_EXIT", "probability").lower() == "hold" else "probability"
 STRESS_EDGE = .03
 LARGE_MIN_ROUNDS = 100
 LARGE_MAX_DRAWDOWN = 250
@@ -31,6 +32,7 @@ LARGE_MAX_DRAWDOWN = 250
 
 def initialize(db):
     selective50.initialize(db)
+    shadow_rules.initialize(db)
     db.executescript("""
         CREATE TABLE IF NOT EXISTS unified_account (
             id INTEGER PRIMARY KEY CHECK(id=1), started REAL NOT NULL,
@@ -43,6 +45,9 @@ def initialize(db):
             slug TEXT NOT NULL, model TEXT NOT NULL, time REAL NOT NULL,
             raw_up REAL NOT NULL, adjusted_up REAL NOT NULL,
             PRIMARY KEY(slug,model));
+        CREATE TABLE IF NOT EXISTS unified_minute_forecasts (
+            slug TEXT NOT NULL, model TEXT NOT NULL, minute INTEGER NOT NULL, time REAL NOT NULL,
+            raw_up REAL NOT NULL, PRIMARY KEY(slug,model,minute));
         CREATE TABLE IF NOT EXISTS unified_trades (
             slug TEXT PRIMARY KEY REFERENCES unified_rounds(slug), time REAL NOT NULL,
             side TEXT NOT NULL CHECK(side IN ('UP','DOWN')), model TEXT NOT NULL, up REAL NOT NULL,
@@ -62,12 +67,33 @@ def initialize(db):
     """)
 
 
-def calibrate(db, slug, model, raw_up, midpoint, now):
-    """Fit an auditable confidence bucket with at most one causal label per market."""
+MINUTE_LABELS = 30   # settled same-minute forecasts needed before per-minute learning takes over
+
+
+def calibrate(db, slug, model, raw_up, midpoint, now, minute=None):
+    """Fit an auditable confidence bucket with at most one causal label per market.
+
+    dev11: forecasts are also remembered once per minute of every round. When at least
+    MINUTE_LABELS settled forecasts exist for the same model, minute and confidence bucket, the
+    bot learns from those (a 70% call at minute 3 is judged against earlier minute-3 calls, not
+    against minute-0 calls). Until then it uses the original first-forecast labels.
+    Returns (probability, label count, source)."""
     side = raw_up >= .5
     confidence = max(raw_up, 1 - raw_up)
     low = min(.9, math.floor(confidence * 10) / 10)
     hi = 1.00000001 if low == .9 else low + .1
+    prior = min(.99, max(.01, .5 * raw_up + .5 * midpoint))
+    if minute is not None:
+        rows = db.execute("""SELECT f.raw_up, v.outcome FROM unified_minute_forecasts f
+            JOIN unified_rounds r ON r.slug=f.slug
+            JOIN verified_markets v ON v.slug=f.slug AND v.end=r.end
+            WHERE f.model=? AND f.minute=? AND f.slug<>? AND f.time<r.end AND v.end<=?
+            AND v.verified_at<? AND max(f.raw_up,1-f.raw_up)>=? AND max(f.raw_up,1-f.raw_up)<?
+            ORDER BY v.end DESC LIMIT 150""", (model, minute, slug, now, now, low, hi)).fetchall()
+        if len(rows) >= MINUTE_LABELS:
+            matches = sum((row["raw_up"] >= .5) == (row["outcome"] == "UP") for row in rows)
+            adjusted_side = (matches + 30 * (prior if side else 1-prior)) / (len(rows) + 30)
+            return (adjusted_side if side else 1-adjusted_side), len(rows), "minute"
     rows = db.execute("""SELECT f.raw_up, v.outcome FROM unified_forecasts f
         JOIN unified_rounds r ON r.slug=f.slug
         JOIN verified_markets v ON v.slug=f.slug AND v.end=r.end
@@ -76,11 +102,10 @@ def calibrate(db, slug, model, raw_up, midpoint, now):
         AND max(f.raw_up,1-f.raw_up)<?
         ORDER BY v.end DESC LIMIT 150""", (model, slug, now, now, low, hi)).fetchall()
     # Until similar settled forecasts accumulate, shrink raw confidence toward market odds.
-    prior = min(.99, max(.01, .5 * raw_up + .5 * midpoint))
     matches = sum((row["raw_up"] >= .5) == (row["outcome"] == "UP") for row in rows)
     weight = len(rows)
     adjusted_side = (matches + 30 * (prior if side else 1-prior)) / (weight + 30)
-    return adjusted_side if side else 1-adjusted_side, weight
+    return (adjusted_side if side else 1-adjusted_side), weight, "first_forecast"
 
 
 def candidate(book, side, stake, probability, terms, low, high, edge, *, stressed=False):
@@ -138,6 +163,10 @@ def settle(db, now):
         selective50.settle(db, now)
     except Exception as exc:  # noqa: BLE001
         log.warning("Selective $50 settlement skipped: %s", exc)
+    try:
+        shadow_rules.settle(db, now)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Shadow test accounts settlement skipped: %s", exc)
 
 
 def premium_trial(db, slug, start, now, book, terms, audit, commit_time):
@@ -186,15 +215,26 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
         audit["data_block"] = True
     if not reason:
         midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
-        up, labels = calibrate(db,slug,model,raw_up,midpoint,now)
-        audit.update(calibration_labels=labels, midpoint=midpoint)
+        minute = min(4, max(0, int((now-start)//60)))
+        up, labels, source = calibrate(db,slug,model,raw_up,midpoint,now,minute)
+        audit.update(calibration_labels=labels, calibration_source=source, midpoint=midpoint)
         db.execute("INSERT OR IGNORE INTO unified_forecasts VALUES (?,?,?,?,?)", (slug,model,now,raw_up,up))
+        db.execute("INSERT OR IGNORE INTO unified_minute_forecasts VALUES (?,?,?,?,?)",
+                   (slug,model,minute,now,raw_up))
     if mode != "SIMULATE":
         return
     try:
         selective50.observe(db,slug,now,start,end,details,raw_up,book,terms,bool(reason))
     except Exception as exc:  # noqa: BLE001 - the shadow account must never stop the main bot
         log.warning("Selective $50 account skipped %s: %s", slug, exc)
+    db.execute("SAVEPOINT shadow_rules")
+    try:
+        shadow_rules.observe(db,slug,now,start,end,raw_up,up,book,terms,bool(reason))
+        db.execute("RELEASE shadow_rules")
+    except Exception as exc:  # noqa: BLE001 - shadow accounts must never stop the main bot
+        db.execute("ROLLBACK TO shadow_rules")
+        db.execute("RELEASE shadow_rules")
+        log.warning("Shadow test accounts skipped %s: %s", slug, exc)
     premium = None if reason else premium_trial(db,slug,start,now,book,terms,audit,commit_time)
     if order and order["status"]!="OPEN":
         return
@@ -213,6 +253,10 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
             triggered.append("probability_exit")
         if sale["total"] <= STOP_LOSS_SHADOW*order["cost"]:
             triggered.append("stop_loss_50")
+        if up is not None and held < .5:
+            # Shadow only: the model now favours the other side (the "reversal exit" that held up
+            # in research for the Selective rule). Compared in Exit Shadow Comparison.
+            triggered.append("reversal_exit")
         if not triggered:
             return
         checked = commit_time()
@@ -285,7 +329,7 @@ def exit_comparison(db):
                      wins=sum(v>0 for v in hold), pnl=round(sum(hold),4)))
     rows.append(dict(policy="actual", trades=len(trades), exits=None,
                      wins=sum(t["pnl"]>0 for t in trades), pnl=round(sum(t["pnl"] for t in trades),4)))
-    for policy in ("probability_exit", "stop_loss_50"):
+    for policy in ("probability_exit", "stop_loss_50", "reversal_exit"):
         fired = shadows.get(policy, {})
         values = [(fired[t["slug"]]-t["cost"]) if t["slug"] in fired else h for t,h in zip(trades,hold)]
         rows.append(dict(policy=policy, trades=len(trades), exits=sum(t["slug"] in fired for t in trades),
@@ -351,4 +395,4 @@ def summary(db, now):
                 wins=results.count("WIN"),losses=results.count("LOSS"),net=sum(pnl),
                 streaks=streaks(results,"WIN","LOSS"),position=dict(pos) if pos else None,
                 latest=dict(latest) if latest else None,recent=recent,
-                selective50=selective50.summary(db))
+                selective50=selective50.summary(db), selective1000=selective50.summary(db,"selective1000"), shadow_rules=shadow_rules.summary(db))

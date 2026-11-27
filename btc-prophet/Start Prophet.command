@@ -10,6 +10,8 @@ fi
 python3 -c 'import sys; assert sys.version_info >= (3,11), "Python 3.11 or newer is required"'
 export PROPHET_DB="${PROPHET_DB:-$PWD/data/timing/prophet.sqlite3}"
 export PROPHET_HISTORY_DB="${PROPHET_HISTORY_DB:-$PWD/data/timing/history.sqlite3}"
+# Early exit is the owner's setting; a restart must never silently switch to holding.
+export PROPHET_PRIMARY_EXIT="${PROPHET_PRIMARY_EXIT:-probability}"
 if [ "${1:-}" = "--rollback" ]; then
   python3 - <<'PY_ROLLBACK'
 import os
@@ -107,10 +109,35 @@ if [ "${PROPHET_ENABLE_NEURAL:-0}" = "1" ]; then
     *) export PROPHET_RESEARCH_MODELS="$PROPHET_RESEARCH_MODELS,lstm" ;;
   esac
 fi
+# Phone remote: the file phone-remote-on next to the database (or PROPHET_REMOTE=1) opens
+# the dashboard to this Wi-Fi network. A password is then always required.
+host=127.0.0.1
+if [ "${PROPHET_REMOTE:-0}" = "1" ] || [ -f "$(dirname "$PROPHET_DB")/phone-remote-on" ]; then
+  export PROPHET_AUTH_REQUIRED=1
+  host=0.0.0.0
+  lan_name="$(scutil --get LocalHostName 2>/dev/null || hostname -s)"
+  lan_ip="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true)"
+  export PROPHET_HOSTS="${PROPHET_HOSTS:+$PROPHET_HOSTS,}${lan_name}.local${lan_ip:+,$lan_ip}"
+fi
 export PROPHET_AUTH_REQUIRED="${PROPHET_AUTH_REQUIRED:-0}"
 if [ "$PROPHET_AUTH_REQUIRED" = "1" ] && [ ! -f "$(dirname "$PROPHET_DB")/auth.json" ]; then
+  echo "Create the password you will type on your phone."
   .venv/bin/python -m scripts.setup_auth
 fi
 echo "Open http://127.0.0.1:8000 if the browser does not open. Keep this window open."
+if [ "$host" = "0.0.0.0" ]; then
+  echo "PHONE (same Wi-Fi): http://${lan_name}.local:8000/remote${lan_ip:+   or   http://$lan_ip:8000/remote}"
+fi
 (sleep 2; open http://127.0.0.1:8000) &
-exec .venv/bin/python -m uvicorn prophet.app:app --host 127.0.0.1 --port 8000 --workers 1
+# The phone's Install now / Restart buttons stop the app with a restart request.
+# This launcher then starts again, which opens the newly selected release.
+export PROPHET_SUPERVISED=1
+marker="$(dirname "$PROPHET_DB")/updates/restart-requested"
+status=0
+.venv/bin/python -m uvicorn prophet.app:app --host "$host" --port 8000 --workers 1 || status=$?
+if [ -f "$marker" ]; then
+  echo "Restarting BTC Prophet for the update you approved..."
+  unset PROPHET_STAGED_LAUNCH
+  exec bash "$PWD/Start Prophet.command"
+fi
+exit "$status"

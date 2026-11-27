@@ -8,17 +8,30 @@ Rule (research/verify_logic.py, +$30.62 on 94 replayed markets at $3):
 Money rules: starts with $50, $3 per trade, one trade per round, never spends money it does not have,
 so the balance can never go below zero and nothing is ever added. Paper only; it never sends orders
 and never touches the main dashboard account.
+
+dev12 adds a second, separate paper ledger with the same rule at a bigger size: $1,000 start,
+$50 per trade. It never forces a trade: it enters only when the same signals agree AND at least
+95% of the $50 can be bought at <= 90c from the order book at that moment; otherwise it skips.
+An early sale happens only if the whole position can be sold; otherwise it holds to the end.
 """
 import json
+import logging
 import math
 
 from .execution import execute, paper_buy
+
+log = logging.getLogger(__name__)
 
 STARTING_CASH = 50.0
 STAKE = 3.0
 ENTRY_FROM, ENTRY_TO = 180, 240
 MAX_PRICE = .90
 NAME = "Selective $50 (min 3-4, all 3 agree, <=90c, reversal exit)"
+# Ledgers sharing the rule: prefix -> (name, starting cash, stake, minimum share of stake filled)
+LEDGERS = {
+    "selective50": (NAME, STARTING_CASH, STAKE, 0.0),
+    "selective1000": ("Selective $1,000 at $50 (same rule, full fills only)", 1000.0, 50.0, .95),
+}
 
 
 def initialize(db):
@@ -31,6 +44,14 @@ def initialize(db):
         CREATE TABLE IF NOT EXISTS selective50_trades (
             slug TEXT PRIMARY KEY, time REAL NOT NULL, end REAL NOT NULL, side TEXT NOT NULL,
             quantity REAL NOT NULL CHECK(quantity>0), cost REAL NOT NULL CHECK(cost>0 AND cost<=3),
+            status TEXT NOT NULL, closed REAL, proceeds REAL, pnl REAL, outcome TEXT,
+            details TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS selective1000_account (
+            id INTEGER PRIMARY KEY CHECK(id=1), started REAL NOT NULL,
+            balance REAL NOT NULL CHECK(balance>=0));
+        CREATE TABLE IF NOT EXISTS selective1000_trades (
+            slug TEXT PRIMARY KEY, time REAL NOT NULL, end REAL NOT NULL, side TEXT NOT NULL,
+            quantity REAL NOT NULL CHECK(quantity>0), cost REAL NOT NULL CHECK(cost>0 AND cost<=50),
             status TEXT NOT NULL, closed REAL, proceeds REAL, pnl REAL, outcome TEXT,
             details TEXT NOT NULL);""")
 
@@ -64,57 +85,74 @@ def observe(db, slug, now, start, end, details, raw_up, book, terms, blocked):
         db.execute("INSERT OR IGNORE INTO selective50_ticks VALUES (?,?,?)", (slug, now, ref))
     if s is None:
         return
-    trade = db.execute("SELECT * FROM selective50_trades WHERE slug=?", (slug,)).fetchone()
+    for prefix in LEDGERS:
+        # Each ledger in its own savepoint: a problem in one can never change the other.
+        db.execute(f"SAVEPOINT {prefix}")
+        try:
+            _act(db, prefix, slug, now, end, s, book, terms)
+            db.execute(f"RELEASE {prefix}")
+        except Exception as exc:  # noqa: BLE001
+            db.execute(f"ROLLBACK TO {prefix}")
+            db.execute(f"RELEASE {prefix}")
+            log.warning("%s skipped %s: %s", prefix, slug, exc)
+
+
+def _act(db, prefix, slug, now, end, s, book, terms):
+    _, cash, stake, min_share = LEDGERS[prefix]
+    trade = db.execute(f"SELECT * FROM {prefix}_trades WHERE slug=?", (slug,)).fetchone()
     if trade:
         if trade["status"] == "OPEN" and (s["gap_up"] >= .5) != (trade["side"] == "UP"):
             sale = execute(book, trade["side"], quantity=trade["quantity"], buying=False, **terms)
             if sale["quantity"] + 1e-9 >= trade["quantity"]:
-                _close(db, trade, now, sale["total"], "SOLD", None)
+                _close(db, trade, now, sale["total"], "SOLD", None, prefix)
         return
     if not ENTRY_FROM <= s["elapsed"] < ENTRY_TO:
         return
     side = "UP" if s["gap_up"] >= .5 else "DOWN"
     if (s["market_up"] >= .5) != (side == "UP") or (s["speed_up"] >= .5) != (side == "UP"):
         return
-    balance = db.execute("SELECT balance FROM selective50_account WHERE id=1").fetchone()
+    balance = db.execute(f"SELECT balance FROM {prefix}_account WHERE id=1").fetchone()
     if balance is None:
-        db.execute("INSERT INTO selective50_account VALUES (1,?,?)", (now, STARTING_CASH))
-        balance = STARTING_CASH
+        db.execute(f"INSERT INTO {prefix}_account VALUES (1,?,?)", (now, cash))
+        balance = cash
     else:
         balance = balance[0]
-    if balance < STAKE:
+    if balance < stake:
         return                                       # out of money: stop, never borrow or top up
-    fill, _ = paper_buy(book, side, STAKE, **terms)
-    if not fill or fill["total"] > balance or fill["total"] / fill["quantity"] > MAX_PRICE:
-        return
-    db.execute("""INSERT INTO selective50_trades(slug,time,end,side,quantity,cost,status,details)
+    fill, _ = paper_buy(book, side, stake, **terms)
+    if (not fill or fill["total"] > balance or fill["total"] / fill["quantity"] > MAX_PRICE
+            or fill["total"] < min_share * stake):
+        return                                       # never force a trade: skip thin or costly books
+    db.execute(f"""INSERT INTO {prefix}_trades(slug,time,end,side,quantity,cost,status,details)
         VALUES (?,?,?,?,?,?,'OPEN',?)""", (slug, now, end, side, fill["quantity"], fill["total"],
                                            json.dumps(dict(s, fee=fill["fee"]))))
-    db.execute("UPDATE selective50_account SET balance=round(balance-?,10) WHERE id=1", (fill["total"],))
+    db.execute(f"UPDATE {prefix}_account SET balance=round(balance-?,10) WHERE id=1", (fill["total"],))
 
 
-def _close(db, trade, now, proceeds, status, outcome):
-    done = db.execute("""UPDATE selective50_trades SET status=?,closed=?,proceeds=?,pnl=?,outcome=?
+def _close(db, trade, now, proceeds, status, outcome, prefix="selective50"):
+    done = db.execute(f"""UPDATE {prefix}_trades SET status=?,closed=?,proceeds=?,pnl=?,outcome=?
         WHERE slug=? AND status='OPEN'""", (status, now, proceeds, round(proceeds - trade["cost"], 10),
                                             outcome, trade["slug"]))
     if done.rowcount == 1:
-        db.execute("UPDATE selective50_account SET balance=round(balance+?,10) WHERE id=1", (proceeds,))
+        db.execute(f"UPDATE {prefix}_account SET balance=round(balance+?,10) WHERE id=1", (proceeds,))
 
 
 def settle(db, now):
-    for t in db.execute("""SELECT t.*,v.outcome AS verified FROM selective50_trades t
-        JOIN verified_markets v ON v.slug=t.slug AND v.end=t.end
-        WHERE t.status='OPEN' AND v.end<=? AND v.verified_at<=?""", (now, now)).fetchall():
-        _close(db, t, now, t["quantity"] if t["side"] == t["verified"] else 0.0, "SETTLED", t["verified"])
+    for prefix in LEDGERS:
+        for t in db.execute(f"""SELECT t.*,v.outcome AS verified FROM {prefix}_trades t
+            JOIN verified_markets v ON v.slug=t.slug AND v.end=t.end
+            WHERE t.status='OPEN' AND v.end<=? AND v.verified_at<=?""", (now, now)).fetchall():
+            _close(db, t, now, t["quantity"] if t["side"] == t["verified"] else 0.0, "SETTLED", t["verified"], prefix)
     db.execute("DELETE FROM selective50_ticks WHERE t<?", (now - 3600,))
 
 
-def summary(db):
-    acct = db.execute("SELECT * FROM selective50_account WHERE id=1").fetchone()
-    rows = db.execute("SELECT pnl,status FROM selective50_trades WHERE status!='OPEN'").fetchall()
+def summary(db, prefix="selective50"):
+    name, cash, stake, _ = LEDGERS[prefix]
+    acct = db.execute(f"SELECT * FROM {prefix}_account WHERE id=1").fetchone()
+    rows = db.execute(f"SELECT pnl,status FROM {prefix}_trades WHERE status!='OPEN'").fetchall()
     pnl = [r["pnl"] for r in rows]
-    return dict(name=NAME, start=STARTING_CASH, stake=STAKE,
-                balance=acct["balance"] if acct else STARTING_CASH, trades=len(pnl),
+    return dict(name=name, start=cash, stake=stake,
+                balance=acct["balance"] if acct else cash, trades=len(pnl),
                 wins=sum(p > 0 for p in pnl), losses=sum(p <= 0 for p in pnl), net=round(sum(pnl), 4),
                 early_exits=sum(r["status"] == "SOLD" for r in rows),
-                open=db.execute("SELECT COUNT(*) FROM selective50_trades WHERE status='OPEN'").fetchone()[0])
+                open=db.execute(f"SELECT COUNT(*) FROM {prefix}_trades WHERE status='OPEN'").fetchone()[0])
