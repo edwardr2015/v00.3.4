@@ -85,7 +85,7 @@ function render(s) {
   $('model-probabilities').hidden=!call || primary.up==null;
   $('ai-reason').textContent=call
     ? `${money(primary.stake)} paper · ${primary.model || 'Unknown model'}`
-    : s.mode==='OFF'?'Paper paused':'Waiting for a qualifying entry';
+    : s.mode==='OFF'?'Paper paused':(window.prophetSkipNote||'Waiting for a qualifying entry');
   $('model-probabilities').textContent=call && primary.up!=null
     ? `${primary.kind==='ENTRY'?'At entry · ':''}${(primary.up*100).toFixed(1)}% UP / ${((1-primary.up)*100).toFixed(1)}% DOWN`
     : 'Unavailable';
@@ -423,13 +423,68 @@ function showWin(text){
 $('win-close').onclick=closeWin;
 $('win-overlay').onclick=e=>{if(e.target===$('win-overlay'))closeWin();};
 $('win-video-test').onclick=()=>{const was=$('win-video-on').checked;$('win-video-on').checked=true;showWin('Test celebration');$('win-video-on').checked=was;};
-function spinTo(outcome){
-  // 12 slices of 30°: green (UP) starts at 0°, red (DOWN) at 30°, alternating. Pointer at the top.
-  const slice=Math.floor(Math.random()*6)*60+(outcome==='UP'?15:45);
-  const target=wheelAngle+3*360+((360-((wheelAngle+slice)%360))%360);
-  wheelAngle=target;$('wheel').style.transform=`rotate(${target}deg)`;
+const SKIP_WORDS={PRICE_OUTSIDE_BAND:'price outside 40–70¢',EDGE_TOO_SMALL:'expected profit too small',
+  NO_EXECUTABLE_DEPTH:'not enough to buy',NO_LIQUIDITY:'no buyers or sellers',PRIOR_POSITION_OPEN:'a trade was still open',
+  INSUFFICIENT_CASH:'not enough cash',WAITING:'no qualifying moment',STALE_BOOK:'stale prices',STALE_REFERENCE:'stale BTC price',
+  PROVIDER_ERROR_MARKET:'market feed error',PROVIDER_ERROR_REFERENCE:'BTC feed error',UNDERSIZED_FILL:'not enough to buy'};
+function skipWords(reason){
+  const codes=[...new Set(String(reason||'WAITING').replace(/^SKIP:\s*/,'').split('/').map(x=>x.split(':').pop().trim()))];
+  return codes.map(c=>SKIP_WORDS[c]||c.toLowerCase().replaceAll('_',' ')).join(' · ');
+}
+function currentAngle(){
+  const m=getComputedStyle($('wheel')).transform;
+  if(!m||m==='none')return wheelAngle;
+  const v=m.match(/matrix\(([^)]+)\)/);if(!v)return wheelAngle;
+  const [a,b]=v[1].split(',').map(Number);return (Math.atan2(b,a)*180/Math.PI+360)%360;
+}
+let wheelMode=null;
+function setWheel(mode){                       // mode: 'spin' | 'UP' | 'DOWN' | 'SKIP'
+  if(mode===wheelMode)return;
+  wheelMode=mode;
+  const wheel=$('wheel');
+  if(mode==='spin'){wheel.style.setProperty('--from',`${wheelAngle%360}deg`);wheel.classList.add('spinning');return;}
+  const from=wheel.classList.contains('spinning')?currentAngle():wheelAngle;
+  wheel.classList.remove('spinning');wheel.style.transition='none';wheel.style.transform=`rotate(${from}deg)`;
+  void wheel.offsetWidth;                        // continue from where the spin was
+  wheel.style.transition='';
+  // slice centres: SKIP 15°, green (UP) 45+60k°, red (DOWN) 75+60k°; pointer at the top
+  const slice=mode==='SKIP'?15:(Math.floor(Math.random()*5)*60+(mode==='UP'?45:75));
+  wheelAngle=from+2*360+((360-((from+slice)%360))%360);
+  wheel.style.transform=`rotate(${wheelAngle}deg)`;
+}
+function renderRound(game){
+  const c=game.current, st=$('wheel-state');
+  if(!c){setWheel('SKIP');st.textContent='—';st.className='wheel-state';window.prophetPending=null;return;}
+  const over=c.now>=c.end;
+  const last=(game.history||[])[0];
+  // A skipped round is only "final" at its close and the next round starts seconds later:
+  // keep showing SKIP for the first 8 seconds of the next round so it is visible.
+  const justSkipped=!c.side&&!over&&last&&!last.side&&last.slug!==c.slug&&(c.now-last.end)<8;
+  if(justSkipped){setWheel('SKIP');st.textContent='SKIPPED';st.className='wheel-state skip';window.prophetPending='SKIP';}
+  else if(c.side){setWheel(c.side);st.textContent=`BOUGHT ${c.side}`;st.className='wheel-state '+c.side.toLowerCase();window.prophetPending=null;}
+  else if(over){setWheel('SKIP');st.textContent='SKIPPED';st.className='wheel-state skip';window.prophetPending='SKIP';}
+  else{setWheel('spin');st.textContent='MODEL DECIDING…';st.className='wheel-state';window.prophetPending='Deciding…';}
+  window.prophetSkipNote=(!c.side&&last&&!last.side)?`Last round skipped · ${skipWords(last.reason)}`:null;
+  if(!c.side&&over)window.prophetSkipNote=`Skipped this round · ${skipWords(c.reason)}`;
+}
+function renderHistory(history){
+  const box=$('vegas-history');box.replaceChildren();
+  for(const h of history||[]){
+    const cell=document.createElement('div');
+    const outcome=h.outcome?h.outcome.toLowerCase():'unknown';
+    const won=h.pnl!=null&&h.pnl>0;
+    cell.className=`cell ${outcome}${h.side?(won?' win':''):' skip'}`;
+    const top=document.createElement('span');top.textContent=h.outcome?h.outcome[0]:'?';
+    const bottom=document.createElement('span');
+    bottom.textContent=h.side?(h.side==='UP'?'▲':'▼')+(h.pnl==null?'…':won?'✓':'✗'):'S';
+    cell.append(top,document.createElement('br'),bottom);
+    const t=new Date(h.start*1000).toISOString().slice(11,16);
+    cell.title=`${t} UTC · market ${h.outcome||'not settled'} · `+(h.side?`bought ${h.side}${h.pnl!=null?` · ${money(h.pnl)}`:''}`:`skipped (${skipWords(h.reason)})`);
+    box.append(cell);
+  }
 }
 function vegas(game){
+  renderRound(game);renderHistory(game.history);
   const s=game.streaks||{current:null,length:0,longest:{WIN:0,LOSS:0}};
   $('vegas-streak').textContent=s.current==='WIN'?s.length:0;
   $('vegas-best').textContent=`Best ${s.longest.WIN} · Worst losing run ${s.longest.LOSS}`;
@@ -439,8 +494,7 @@ function vegas(game){
   if(lastSettled===undefined){lastSettled=key;if(last)showResult(last,false);return;}
   if(!last||key===lastSettled)return;
   lastSettled=key;
-  if(last.outcome)spinTo(last.outcome);
-  setTimeout(()=>showResult(last,true),4100);
+  showResult(last,true);
 }
 function showResult(last,celebrate){
   const won=last.pnl>0;

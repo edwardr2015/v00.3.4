@@ -54,3 +54,29 @@ def test_reset_endpoint_requires_dashboard_header(tmp_path):
         assert r.status_code == 200 and r.json()["counting_since"] > 0
         state = client.get("/api/unified").json()
         assert state["reset"] and state["played"] == 0
+
+
+def test_summary_reports_current_round_and_last_25_history(tmp_path):
+    store = Store(str(tmp_path / "prophet.sqlite3"))
+    app = create_app(store.path, collect=False, auth_required=False)
+    app.state.paper.recover_startup(1000)
+    with store.connect() as db:
+        play(db, "won", 1000, "UP")                      # bought UP, market UP
+        play(db, "lost", 2000, "DOWN")                   # bought UP, market DOWN
+        details = dict(window_start=3000, window_end=3300, book_checked=3100, reference_timestamp=3100)
+        unified.observe(db, "skipped", 3100, "SIMULATE", "fixture", .9, None, details,
+                        book(bid=.10, ask=.12), TERMS, lambda: 3100)       # price outside band: no entry
+        verify(db, "skipped", 3000, "UP", 3305)
+        details = dict(window_start=4000, window_end=4300, book_checked=4050, reference_timestamp=4050)
+        unified.observe(db, "live", 4050, "SIMULATE", "fixture", .9, None, details,
+                        book(bid=.10, ask=.12), TERMS, lambda: 4050)       # current round, still deciding
+        s = unified.summary(db, 4100)
+        assert s["current"]["slug"] == "live" and s["current"]["side"] is None and s["current"]["end"] == 4300
+        assert [h["slug"] for h in s["history"]] == ["skipped", "lost", "won"]       # newest first, ended only
+        skipped, lost, won = s["history"]
+        assert skipped["side"] is None and "PRICE_OUTSIDE_BAND" in skipped["reason"] and skipped["outcome"] == "UP"
+        assert lost["side"] == "UP" and lost["outcome"] == "DOWN" and lost["pnl"] < 0
+        assert won["side"] == "UP" and won["outcome"] == "UP" and won["pnl"] > 0
+        for i in range(30):
+            play(db, f"r{i}", 5000 + i * 400, "UP")
+        assert len(unified.summary(db, 20000)["history"]) == 25

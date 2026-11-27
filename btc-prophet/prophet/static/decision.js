@@ -3,8 +3,9 @@
 function renderDirection(card, tally, data) {
   const side = data?.call?.decision;
   const known = side === 'UP' || side === 'DOWN';
-  card.textContent = known ? side : 'Waiting';
-  card.dataset.direction = known ? side : 'waiting';
+  const pending = window.prophetPending || 'Waiting';
+  card.textContent = known ? side : pending;
+  card.dataset.direction = known ? side : (pending === 'SKIP' ? 'skip' : 'waiting');
   tally.hidden = !known || !data.count;
   tally.textContent = tally.hidden ? '' :
     `Last ${data.count} of up to 20 calls · UP ${data.up_percent.toFixed(0)}% (${data.up_count}) · DOWN ${data.down_percent.toFixed(0)}% (${data.down_count})`;

@@ -24,10 +24,13 @@
     </section>
     <section class="panel vegas" aria-label="Win streak and roulette">
       <div class="vegas-streak"><span>WIN STREAK</span><strong id="vegas-streak">0</strong><small id="vegas-best">Best 0 · Worst losing run 0</small></div>
-      <div class="wheel-wrap" aria-hidden="true"><div class="wheel-pointer">▼</div><div id="wheel" class="wheel"><span class="wheel-hub">₿</span></div></div>
+      <div class="wheel-col"><div class="wheel-wrap" aria-hidden="true"><div class="wheel-pointer">▼</div><div id="wheel" class="wheel"><span class="wheel-hub">₿</span></div></div>
+        <div id="wheel-state" class="wheel-state" aria-live="polite">—</div></div>
       <div class="vegas-side">
         <div id="wheel-result" class="wheel-result" aria-live="polite">Waiting for a result</div>
         <div class="vegas-tally"><div><span>Won</span><strong id="vegas-won" class="profit">0</strong></div><div><span>Lost</span><strong id="vegas-lost" class="loss">0</strong></div><div><span>Games</span><strong id="vegas-games">0</strong></div></div>
+        <div class="vegas-history-wrap"><span>Last 25 rounds (newest first)</span><div id="vegas-history" class="vegas-history" aria-label="Last 25 rounds"></div>
+          <small>Colour = what the market did (green UP, red DOWN) · ▲▼ = what the bot bought · ✓ won · ✗ lost · S = skipped</small></div>
         <div class="vegas-controls"><label><input type="checkbox" id="win-video-on" checked> Play win song</label>
           <select id="win-length" aria-label="Song length"><option value="15">15 s</option><option value="30" selected>30 s</option><option value="0">Whole song</option></select>
           <button type="button" class="button subtle" id="win-video-test">Test</button> <span id="win-sound-state"></span></div>

@@ -319,6 +319,12 @@ def summary(db, now):
     recent = [dict(r) for r in db.execute("SELECT slug,time,side,closed,status FROM unified_trades ORDER BY time DESC LIMIT 120")]
     played = len(pnl)
     all_pnl = [r["pnl"] for r in every]
+    current = db.execute("""SELECT r.slug,r.start,r.end,r.reason,t.side,t.status FROM unified_rounds r
+        LEFT JOIN unified_trades t ON t.slug=r.slug ORDER BY r.start DESC LIMIT 1""").fetchone()
+    history = [dict(h) for h in db.execute("""SELECT r.slug,r.start,r.end,r.reason,t.side,t.pnl,t.status,v.outcome
+        FROM unified_rounds r LEFT JOIN unified_trades t ON t.slug=r.slug
+        LEFT JOIN verified_markets v ON v.slug=r.slug AND v.end=r.end
+        WHERE r.end<=? ORDER BY r.start DESC LIMIT 25""", (now,))]
     last = db.execute("""SELECT t.slug,t.side,t.pnl,t.closed,v.outcome FROM unified_trades t
         JOIN unified_rounds r ON r.slug=t.slug
         LEFT JOIN verified_markets v ON v.slug=t.slug AND v.end=r.end
@@ -326,6 +332,7 @@ def summary(db, now):
     return dict(start=account["started"],balance=account["balance"],played=played,
                 counting_since=since or account["started"],reset=since is not None,
                 last_settled=dict(last) if last else None,
+                current=dict(current, now=now) if current else None, history=history,
                 all_time=dict(played=len(all_pnl),wins=sum(p>0 for p in all_pnl),
                               losses=sum(p<0 for p in all_pnl),net=sum(all_pnl)),
                 wins=results.count("WIN"),losses=results.count("LOSS"),net=sum(pnl),
