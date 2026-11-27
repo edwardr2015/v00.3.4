@@ -753,11 +753,11 @@ def create_app(db_path=None, collect=True, auth_required=True):
 
     WIN_SOUND_TYPES = {".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".aac": "audio/aac", ".wav": "audio/wav"}
 
-    BUILT_IN_SOUND = Path(__file__).resolve().parent / "static" / "sounds" / "jackpot.wav"
+    BUILT_IN_SOUND = Path(__file__).resolve().parent / "static" / "sounds" / "jackpot.mp3"
 
     def win_sound():
         """The user's own song (win-sound.mp3/.m4a/.aac/.wav next to the database) if present,
-        otherwise the built-in original slot-machine jackpot sound."""
+        otherwise the built-in casino jackpot recording (Pixabay, free licence)."""
         folder = Path(store.path).resolve().parent
         for ext in WIN_SOUND_TYPES:
             path = folder / ("win-sound" + ext)

@@ -17,10 +17,10 @@ def test_win_song_served_only_from_the_data_folder(tmp_path):
     app = create_app(store.path, collect=False, auth_required=False)
     with TestClient(app) as client:
         built_in = client.get("/api/win-sound/status").json()
-        assert built_in["available"] and built_in["built_in"] and built_in["file"] == "jackpot.wav"
+        assert built_in["available"] and built_in["built_in"] and built_in["file"] == "jackpot.mp3"
         default = client.get("/api/win-sound")
-        assert default.status_code == 200 and default.headers["content-type"] == "audio/wav"
-        assert len(default.content) > 800_000                       # the 10-second jackpot sound
+        assert default.status_code == 200 and default.headers["content-type"] == "audio/mpeg"
+        assert len(default.content) > 100_000                       # the built-in casino jackpot recording
         tone(tmp_path / "win-sound.wav")                            # the user's own file wins
         status = client.get("/api/win-sound/status").json()
         assert status == dict(available=True, file="win-sound.wav", built_in=False, folder=str(tmp_path.resolve()))

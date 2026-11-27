@@ -81,8 +81,8 @@
   },
   {
     "path": "prophet/app.py",
-    "bytes": 42997,
-    "sha256": "eef38fba6f363b236d0da762ea2a0f01bb1b4399d13e8699875f8ae099258db3"
+    "bytes": 43010,
+    "sha256": "c79631c62031c81fc0a1453acd59a5cf63b2f21e2dac0baa318f4be5ded419c2"
   },
   {
     "path": "prophet/auth.py",
@@ -295,9 +295,9 @@
     "sha256": "eba301dc9c501e4792d50f2c5a3283701c42563b4e5415b34bb1ce0601f11302"
   },
   {
-    "path": "prophet/static/sounds/jackpot.wav",
-    "bytes": 882044,
-    "sha256": "a706c959a8d85197650f43c23e65868c49ac95ba5418ff07888d1b133d52a445"
+    "path": "prophet/static/sounds/jackpot.mp3",
+    "bytes": 182061,
+    "sha256": "7894296d0c9563759cc0db3adbb554d0e3b6e8f066b9d8cfeffaa42a4b449199"
   },
   {
     "path": "prophet/static/style.css",
@@ -591,7 +591,7 @@
   },
   {
     "path": "tests/test_win_sound.py",
-    "bytes": 1538,
-    "sha256": "4214398326a9c558895f97705314943c4a3ea4c76f38a1331a597af0c788975d"
+    "bytes": 1549,
+    "sha256": "86618ec3a4203a7684034c1dfb4c7bc858d5a999ae61e4902f00130d69837660"
   }
 ]

@@ -33,7 +33,7 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 - The `polymarket-us` SDK 2.4.1 has no deposit or withdraw calls and no idempotency key, so never retry an order POST.
 
 ## Open items
-1. **The win sound isn't good enough.** The owner says it doesn't sound like a Vegas jackpot. They want loud sirens, an alarm bell and lots of coins falling. Make a louder, fuller original synthesized sound (no copyrighted audio), or let them drop in any free MP3 they find as `data/timing/win-sound.mp3`.
+1. DONE in dev9: the built-in win sound is now the owner's Pixabay casino jackpot MP3, made louder.
 2. Confirm the owner is running dev8 with `PROPHET_PRIMARY_EXIT=probability`.
 3. Next research build: run the "minute 3–4 + all-3-agree + ≤90¢ + reversal exit" rule as a separate shadow paper account, and compare it on fresh reports.
 4. Optional: add read-only and dry-run Polymarket connection modes with the money rules above. Run `continuity_audit` and `import_learning` on the old 177 MB database.

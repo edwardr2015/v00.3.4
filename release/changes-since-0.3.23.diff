@@ -1,5 +1,5 @@
 diff --git a/btc-prophet/MANIFEST.json b/btc-prophet/MANIFEST.json
-index 6bcbed6..106fb75 100644
+index 6bcbed6..c50fa44 100644
 --- a/btc-prophet/MANIFEST.json
 +++ b/btc-prophet/MANIFEST.json
 @@ -61,8 +61,8 @@
@@ -19,8 +19,8 @@ index 6bcbed6..106fb75 100644
      "path": "prophet/app.py",
 -    "bytes": 41269,
 -    "sha256": "21bbfd632fc78b7d890ed2ddb0fa9c0b66d134e8bfc8184d18071459b6c20204"
-+    "bytes": 42997,
-+    "sha256": "eef38fba6f363b236d0da762ea2a0f01bb1b4399d13e8699875f8ae099258db3"
++    "bytes": 43010,
++    "sha256": "c79631c62031c81fc0a1453acd59a5cf63b2f21e2dac0baa318f4be5ded419c2"
    },
    {
      "path": "prophet/auth.py",
@@ -125,9 +125,9 @@ index 6bcbed6..106fb75 100644
      "sha256": "eba301dc9c501e4792d50f2c5a3283701c42563b4e5415b34bb1ce0601f11302"
    },
 +  {
-+    "path": "prophet/static/sounds/jackpot.wav",
-+    "bytes": 882044,
-+    "sha256": "a706c959a8d85197650f43c23e65868c49ac95ba5418ff07888d1b133d52a445"
++    "path": "prophet/static/sounds/jackpot.mp3",
++    "bytes": 182061,
++    "sha256": "7894296d0c9563759cc0db3adbb554d0e3b6e8f066b9d8cfeffaa42a4b449199"
 +  },
    {
      "path": "prophet/static/style.css",
@@ -250,8 +250,8 @@ index 6bcbed6..106fb75 100644
 +  },
 +  {
 +    "path": "tests/test_win_sound.py",
-+    "bytes": 1538,
-+    "sha256": "4214398326a9c558895f97705314943c4a3ea4c76f38a1331a597af0c788975d"
++    "bytes": 1549,
++    "sha256": "86618ec3a4203a7684034c1dfb4c7bc858d5a999ae61e4902f00130d69837660"
    }
  ]
 diff --git a/btc-prophet/prophet/adaptive_entry.py b/btc-prophet/prophet/adaptive_entry.py
@@ -267,7 +267,7 @@ index a3e2848..77e4057 100644
                  midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
                  raw = probabilities_from_market(midpoint,context["reference_price"],opening,
 diff --git a/btc-prophet/prophet/app.py b/btc-prophet/prophet/app.py
-index 92100b5..e7dfdce 100644
+index 92100b5..f989110 100644
 --- a/btc-prophet/prophet/app.py
 +++ b/btc-prophet/prophet/app.py
 @@ -751,6 +751,43 @@ def create_app(db_path=None, collect=True, auth_required=True):
@@ -276,11 +276,11 @@ index 92100b5..e7dfdce 100644
  
 +    WIN_SOUND_TYPES = {".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".aac": "audio/aac", ".wav": "audio/wav"}
 +
-+    BUILT_IN_SOUND = Path(__file__).resolve().parent / "static" / "sounds" / "jackpot.wav"
++    BUILT_IN_SOUND = Path(__file__).resolve().parent / "static" / "sounds" / "jackpot.mp3"
 +
 +    def win_sound():
 +        """The user's own song (win-sound.mp3/.m4a/.aac/.wav next to the database) if present,
-+        otherwise the built-in original slot-machine jackpot sound."""
++        otherwise the built-in casino jackpot recording (Pixabay, free licence)."""
 +        folder = Path(store.path).resolve().parent
 +        for ext in WIN_SOUND_TYPES:
 +            path = folder / ("win-sound" + ext)
@@ -948,10 +948,10 @@ index 9d3861c..fc315d8 100644
      <div class="workspace-grid">
        <section class="panel chart-panel"><div class="panel-heading"><div><h2>Bitcoin reference price <span class="gold">↗</span></h2><p>Official settlement reference</p></div><div class="segments" aria-label="Candle interval"><button class="selected" data-interval="15">15s</button><button data-interval="30">30s</button><button data-interval="60">1m</button></div></div><div class="chart-legend"><span class="legend-gold">━</span> Reference candlesticks <span class="legend-blue">┄</span> Contract opening reference</div><div class="chart-wrap"><div id="chart"></div><div id="chart-empty">Waiting for verified candles…</div></div><div class="chart-footer"><span id="candle-info">No fabricated or interpolated candles</span><a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">Charts by TradingView ↗</a></div></section>
        <section class="panel contract-panel"><div class="panel-heading"><div><h2>Five-minute BTC contract <span class="tiny-tag">5 MIN</span></h2></div><span class="dot" id="market-dot"></span></div><p class="contract-sub" id="contract-status">Verifying an open contract…</p><div class="reference-box"><span>Official price to beat</span><strong id="price-to-beat">—</strong><small>60-second average · ties settle UP</small></div><div class="outcomes" id="direction-quotes" hidden><div class="outcome up"><span>↗ UP / YES</span><strong id="up-price">—</strong><small>Observed buy ask</small></div><div class="outcome down"><span>↘ DOWN / NO</span><strong id="down-price">—</strong><small>1 − observed YES bid</small></div></div><div class="detail-row"><span>Bid / ask spread</span><strong id="spread">—</strong></div><div class="detail-row"><span>Model probabilities</span><strong id="model-probabilities" class="muted" hidden>Waiting</strong></div><div class="detail-row"><span>Market data status</span><strong id="book-status">Waiting</strong></div><details class="mini-book"><summary>Order book</summary><div class="book-title"><span>YES BID · QTY</span><span>YES ASK · QTY</span></div><div id="book-levels" class="book-levels"><p class="muted">No verified order book yet</p></div></details></section>
-diff --git a/btc-prophet/prophet/static/sounds/jackpot.wav b/btc-prophet/prophet/static/sounds/jackpot.wav
+diff --git a/btc-prophet/prophet/static/sounds/jackpot.mp3 b/btc-prophet/prophet/static/sounds/jackpot.mp3
 new file mode 100644
-index 0000000..b235a08
-Binary files /dev/null and b/btc-prophet/prophet/static/sounds/jackpot.wav differ
+index 0000000..1651edb
+Binary files /dev/null and b/btc-prophet/prophet/static/sounds/jackpot.mp3 differ
 diff --git a/btc-prophet/prophet/static/style.css b/btc-prophet/prophet/static/style.css
 index 56774e9..c79ab53 100644
 --- a/btc-prophet/prophet/static/style.css
@@ -1744,7 +1744,7 @@ index 5db6140..e6c49bc 100644
 +        assert rows["stop_loss_50"]["exits"]==1
 diff --git a/btc-prophet/tests/test_win_sound.py b/btc-prophet/tests/test_win_sound.py
 new file mode 100644
-index 0000000..4f943d0
+index 0000000..f76896b
 --- /dev/null
 +++ b/btc-prophet/tests/test_win_sound.py
 @@ -0,0 +1,31 @@
@@ -1767,10 +1767,10 @@ index 0000000..4f943d0
 +    app = create_app(store.path, collect=False, auth_required=False)
 +    with TestClient(app) as client:
 +        built_in = client.get("/api/win-sound/status").json()
-+        assert built_in["available"] and built_in["built_in"] and built_in["file"] == "jackpot.wav"
++        assert built_in["available"] and built_in["built_in"] and built_in["file"] == "jackpot.mp3"
 +        default = client.get("/api/win-sound")
-+        assert default.status_code == 200 and default.headers["content-type"] == "audio/wav"
-+        assert len(default.content) > 800_000                       # the 10-second jackpot sound
++        assert default.status_code == 200 and default.headers["content-type"] == "audio/mpeg"
++        assert len(default.content) > 100_000                       # the built-in casino jackpot recording
 +        tone(tmp_path / "win-sound.wav")                            # the user's own file wins
 +        status = client.get("/api/win-sound/status").json()
 +        assert status == dict(available=True, file="win-sound.wav", built_in=False, folder=str(tmp_path.resolve()))
