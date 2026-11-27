@@ -1,0 +1,213 @@
+{
+  "rounds": 94,
+  "evaluation_rounds": 64,
+  "models": {
+    "1. Gap + speed": {
+      "brier": {
+        "0-60s": 0.2652,
+        "60-120s": 0.2563,
+        "120-180s": 0.1703,
+        "180-240s": 0.1441,
+        "240-300s": 0.0583
+      },
+      "follow": {
+        "trades": 31,
+        "wins": 27,
+        "win_rate": 0.871,
+        "pnl": 15.19,
+        "per_trade": 0.49
+      },
+      "value": {
+        "trades": 36,
+        "wins": 28,
+        "win_rate": 0.778,
+        "pnl": 11.6,
+        "per_trade": 0.322
+      }
+    },
+    "2. Real-volatility gap": {
+      "brier": {
+        "0-60s": 0.2652,
+        "60-120s": 0.2968,
+        "120-180s": 0.1936,
+        "180-240s": 0.1679,
+        "240-300s": 0.092
+      },
+      "follow": {
+        "trades": 31,
+        "wins": 27,
+        "win_rate": 0.871,
+        "pnl": 15.19,
+        "per_trade": 0.49
+      },
+      "value": {
+        "trades": 39,
+        "wins": 31,
+        "win_rate": 0.795,
+        "pnl": 10.8,
+        "per_trade": 0.277
+      }
+    },
+    "3. Market momentum": {
+      "brier": {
+        "0-60s": 0.2535,
+        "60-120s": 0.1981,
+        "120-180s": 0.1799,
+        "180-240s": 0.1386,
+        "240-300s": 0.0752
+      },
+      "follow": {
+        "trades": 32,
+        "wins": 27,
+        "win_rate": 0.844,
+        "pnl": 11.36,
+        "per_trade": 0.355
+      },
+      "value": {
+        "trades": 27,
+        "wins": 21,
+        "win_rate": 0.778,
+        "pnl": 6.21,
+        "per_trade": 0.23
+      }
+    },
+    "4. History table": {
+      "brier": {
+        "0-60s": 0.2623,
+        "60-120s": 0.2257,
+        "120-180s": 0.171,
+        "180-240s": 0.1587,
+        "240-300s": 0.089
+      },
+      "follow": {
+        "trades": 31,
+        "wins": 27,
+        "win_rate": 0.871,
+        "pnl": 15.19,
+        "per_trade": 0.49
+      },
+      "value": {
+        "trades": 37,
+        "wins": 27,
+        "win_rate": 0.73,
+        "pnl": 0.8,
+        "per_trade": 0.022
+      }
+    },
+    "5. Blended learner": {
+      "brier": {
+        "0-60s": 0.2689,
+        "60-120s": 0.2121,
+        "120-180s": 0.1626,
+        "180-240s": 0.131,
+        "240-300s": 0.0685
+      },
+      "follow": {
+        "trades": 31,
+        "wins": 27,
+        "win_rate": 0.871,
+        "pnl": 13.08,
+        "per_trade": 0.422
+      },
+      "value": {
+        "trades": 28,
+        "wins": 23,
+        "win_rate": 0.821,
+        "pnl": 11.66,
+        "per_trade": 0.416
+      }
+    },
+    "6. Boosted learner (ML)": {
+      "brier": {
+        "0-60s": 0.2755,
+        "60-120s": 0.234,
+        "120-180s": 0.1908,
+        "180-240s": 0.1363,
+        "240-300s": 0.0828
+      },
+      "follow": {
+        "trades": 31,
+        "wins": 26,
+        "win_rate": 0.839,
+        "pnl": 10.35,
+        "per_trade": 0.334
+      },
+      "value": {
+        "trades": 35,
+        "wins": 28,
+        "win_rate": 0.8,
+        "pnl": 5.09,
+        "per_trade": 0.145
+      }
+    },
+    "7. Order-book pressure": {
+      "brier": {
+        "0-60s": 0.2602,
+        "60-120s": 0.2099,
+        "120-180s": 0.1631,
+        "180-240s": 0.1334,
+        "240-300s": 0.0772
+      },
+      "follow": {
+        "trades": 31,
+        "wins": 26,
+        "win_rate": 0.839,
+        "pnl": 8.99,
+        "per_trade": 0.29
+      },
+      "value": {
+        "trades": 0,
+        "wins": 0,
+        "win_rate": null,
+        "pnl": 0.0,
+        "per_trade": null
+      }
+    },
+    "Market price": {
+      "brier": {
+        "0-60s": 0.2535,
+        "60-120s": 0.2076,
+        "120-180s": 0.1642,
+        "180-240s": 0.1271,
+        "240-300s": 0.075
+      },
+      "follow": {
+        "trades": 32,
+        "wins": 27,
+        "win_rate": 0.844,
+        "pnl": 11.36,
+        "per_trade": 0.355
+      },
+      "value": {
+        "trades": 0,
+        "wins": 0,
+        "win_rate": null,
+        "pnl": 0.0,
+        "per_trade": null
+      }
+    },
+    "Reference Gap (current)": {
+      "brier": {
+        "0-60s": 0.2652,
+        "60-120s": 0.2427,
+        "120-180s": 0.1747,
+        "180-240s": 0.145,
+        "240-300s": 0.0862
+      },
+      "follow": {
+        "trades": 31,
+        "wins": 27,
+        "win_rate": 0.871,
+        "pnl": 15.19,
+        "per_trade": 0.49
+      },
+      "value": {
+        "trades": 38,
+        "wins": 30,
+        "win_rate": 0.789,
+        "pnl": 13.29,
+        "per_trade": 0.35
+      }
+    }
+  }
+}
