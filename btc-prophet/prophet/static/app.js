@@ -447,9 +447,11 @@ function setWheel(mode){                       // mode: 'spin' | 'UP' | 'DOWN' |
   wheel.classList.remove('spinning');wheel.style.transition='none';wheel.style.transform=`rotate(${from}deg)`;
   void wheel.offsetWidth;                        // continue from where the spin was
   wheel.style.transition='';
-  // slice centres: SKIP 15°, green (UP) 45+60k°, red (DOWN) 75+60k°; pointer at the top
-  const slice=mode==='SKIP'?15:(Math.floor(Math.random()*5)*60+(mode==='UP'?45:75));
-  wheelAngle=from+2*360+((360-((from+slice)%360))%360);
+  // 12 slices of 30°: green (UP) centres 15+60k°, red (DOWN) centres 45+60k°; pointer at the top.
+  // SKIP has no slice: the wheel just coasts to a stop on a slice boundary (neither colour).
+  if(mode==='SKIP'){wheelAngle=from+360+((360-((from+Math.floor(Math.random()*12)*30)%360))%360);}
+  else{const slice=Math.floor(Math.random()*6)*60+(mode==='UP'?15:45);
+       wheelAngle=from+2*360+((360-((from+slice)%360))%360);}
   wheel.style.transform=`rotate(${wheelAngle}deg)`;
 }
 function renderRound(game){
