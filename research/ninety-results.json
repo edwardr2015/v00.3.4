@@ -1,0 +1,354 @@
+{
+  "markets": 94,
+  "rules_tested": 62370,
+  "targets": {
+    "80%": {
+      "rules_meeting_target_on_first_half": 22992,
+      "chosen_on_first_half": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 33,
+        "share_of_rounds": 0.7,
+        "wins": 32,
+        "win_rate": 0.97,
+        "win_ci95": [
+          0.85,
+          0.99
+        ],
+        "pnl": 35.45,
+        "per_trade": 1.074,
+        "avg_price": 0.816
+      },
+      "untouched_second_half": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 35,
+        "share_of_rounds": 0.74,
+        "wins": 28,
+        "win_rate": 0.8,
+        "win_ci95": [
+          0.64,
+          0.9
+        ],
+        "pnl": 16.74,
+        "per_trade": 0.478,
+        "avg_price": 0.75
+      },
+      "all_94": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 68,
+        "share_of_rounds": 0.72,
+        "wins": 60,
+        "win_rate": 0.882,
+        "win_ci95": [
+          0.78,
+          0.94
+        ],
+        "pnl": 52.19,
+        "per_trade": 0.767,
+        "avg_price": 0.782
+      },
+      "typical_rule_whole_sample": {
+        "rules": 2729,
+        "median_per_trade": 0.355,
+        "median_avg_price": 0.841,
+        "median_share_of_rounds": 0.46
+      }
+    },
+    "85%": {
+      "rules_meeting_target_on_first_half": 19288,
+      "chosen_on_first_half": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 33,
+        "share_of_rounds": 0.7,
+        "wins": 32,
+        "win_rate": 0.97,
+        "win_ci95": [
+          0.85,
+          0.99
+        ],
+        "pnl": 35.45,
+        "per_trade": 1.074,
+        "avg_price": 0.816
+      },
+      "untouched_second_half": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 35,
+        "share_of_rounds": 0.74,
+        "wins": 28,
+        "win_rate": 0.8,
+        "win_ci95": [
+          0.64,
+          0.9
+        ],
+        "pnl": 16.74,
+        "per_trade": 0.478,
+        "avg_price": 0.75
+      },
+      "all_94": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 68,
+        "share_of_rounds": 0.72,
+        "wins": 60,
+        "win_rate": 0.882,
+        "win_ci95": [
+          0.78,
+          0.94
+        ],
+        "pnl": 52.19,
+        "per_trade": 0.767,
+        "avg_price": 0.782
+      },
+      "typical_rule_whole_sample": {
+        "rules": 3055,
+        "median_per_trade": 0.362,
+        "median_avg_price": 0.851,
+        "median_share_of_rounds": 0.45
+      }
+    },
+    "90%": {
+      "rules_meeting_target_on_first_half": 16576,
+      "chosen_on_first_half": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 33,
+        "share_of_rounds": 0.7,
+        "wins": 32,
+        "win_rate": 0.97,
+        "win_ci95": [
+          0.85,
+          0.99
+        ],
+        "pnl": 35.45,
+        "per_trade": 1.074,
+        "avg_price": 0.816
+      },
+      "untouched_second_half": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 35,
+        "share_of_rounds": 0.74,
+        "wins": 28,
+        "win_rate": 0.8,
+        "win_ci95": [
+          0.64,
+          0.9
+        ],
+        "pnl": 16.74,
+        "per_trade": 0.478,
+        "avg_price": 0.75
+      },
+      "all_94": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 68,
+        "share_of_rounds": 0.72,
+        "wins": 60,
+        "win_rate": 0.882,
+        "win_ci95": [
+          0.78,
+          0.94
+        ],
+        "pnl": 52.19,
+        "per_trade": 0.767,
+        "avg_price": 0.782
+      },
+      "typical_rule_whole_sample": {
+        "rules": 2653,
+        "median_per_trade": 0.33,
+        "median_avg_price": 0.87,
+        "median_share_of_rounds": 0.45
+      }
+    },
+    "95%": {
+      "rules_meeting_target_on_first_half": 9121,
+      "chosen_on_first_half": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 33,
+        "share_of_rounds": 0.7,
+        "wins": 32,
+        "win_rate": 0.97,
+        "win_ci95": [
+          0.85,
+          0.99
+        ],
+        "pnl": 35.45,
+        "per_trade": 1.074,
+        "avg_price": 0.816
+      },
+      "untouched_second_half": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 35,
+        "share_of_rounds": 0.74,
+        "wins": 28,
+        "win_rate": 0.8,
+        "win_ci95": [
+          0.64,
+          0.9
+        ],
+        "pnl": 16.74,
+        "per_trade": 0.478,
+        "avg_price": 0.75
+      },
+      "all_94": {
+        "rule": {
+          "signal": "gap",
+          "window_s": [
+            180,
+            240
+          ],
+          "min_conf": 0.5,
+          "price": [
+            0,
+            0.99
+          ],
+          "min_edge": 0
+        },
+        "trades": 68,
+        "share_of_rounds": 0.72,
+        "wins": 60,
+        "win_rate": 0.882,
+        "win_ci95": [
+          0.78,
+          0.94
+        ],
+        "pnl": 52.19,
+        "per_trade": 0.767,
+        "avg_price": 0.782
+      },
+      "typical_rule_whole_sample": {
+        "rules": 1121,
+        "median_per_trade": 0.247,
+        "median_avg_price": 0.91,
+        "median_share_of_rounds": 0.34
+      }
+    }
+  }
+}

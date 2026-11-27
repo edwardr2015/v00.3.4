@@ -23,6 +23,8 @@ from quotes import load  # noqa: E402
 from replay_sim import wilson  # noqa: E402
 
 RULES = {
+    "Minute 3-4 follow (gap side, 180-240 s, any price)": dict(model="gap", start=180, end=240, edge=-9, kind="follow"),
+    "Minute 3-4 follow, price <= 85c": dict(model="gap", start=180, end=240, edge=-9, kind="follow", cap=.85),
     "Late Gap (180 s, +10c)": dict(model="gap", start=180, edge=.10, kind="abs"),
     "Late Settle (180 s, +10c)": dict(model="settle", start=180, edge=.10, kind="abs"),
     "Primary-like (40-70c, EV>=10%, hold)": dict(model="shrink", start=0, edge=.10, kind="rel", band=(.40, .70)),
@@ -55,7 +57,9 @@ def fill(q, side, p):
 def qualifies(rule, prob, f, p):
     qty, cost, avg = f
     edge = rule["edge"] + p["edge_shift"]
-    if rule["kind"] == "abs":
+    if rule.get("cap") and cost / qty > rule["cap"]:
+        return False
+    if rule["kind"] in ("abs", "follow"):
         return prob - cost / qty >= edge
     if rule["kind"] == "rel":
         lo, hi = rule["band"]
@@ -74,12 +78,15 @@ def run(by, order, outcome, rule, p, seed=1, outcome_override=None):
         for i, q in enumerate(quotes):
             if done or q["elapsed"] < rule["start"] + p["start_shift"]:
                 continue
+            if q["elapsed"] >= rule.get("end", 300) + p["start_shift"]:
+                break
             end = q["t"] + q["left"]
             window = [x["ref"] for x in quotes[: i + 1] if x["t"] >= end - 60]
             pr = probs(q, p, rng, window)[rule["model"]]
             if pr is None:
                 continue
-            sides = (("UP", pr), ("DOWN", 1 - pr)) if rule["kind"] != "fav" else ((("UP", pr) if pr >= .5 else ("DOWN", 1 - pr)),)
+            # "fav"/"follow": only the side the signal favours; "abs"/"rel": either side that passes.
+            sides = (("UP", pr), ("DOWN", 1 - pr)) if rule["kind"] not in ("fav", "follow") else ((("UP", pr) if pr >= .5 else ("DOWN", 1 - pr)),)
             for side, ps in sides:
                 f = fill(q, side, p)
                 if not f or not qualifies(rule, ps, f, p):
