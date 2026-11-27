@@ -1,0 +1,240 @@
+{
+  "A. Current primary rule": {
+    "trades": 40,
+    "coverage": 0.426,
+    "wins": 26,
+    "win_rate": 0.65,
+    "win_ci95": [
+      0.495,
+      0.779
+    ],
+    "pnl": 1.6,
+    "per_trade": 0.04,
+    "per_dollar": 0.0134,
+    "max_drawdown": 13.82,
+    "worst_loss_streak": 2,
+    "first_half_pnl": 3.23,
+    "second_half_pnl": -1.62
+  },
+  "B. Minute 3-4 follow": {
+    "trades": 71,
+    "coverage": 0.755,
+    "wins": 60,
+    "win_rate": 0.845,
+    "win_ci95": [
+      0.743,
+      0.911
+    ],
+    "pnl": 10.02,
+    "per_trade": 0.141,
+    "per_dollar": 0.0471,
+    "max_drawdown": 11.61,
+    "worst_loss_streak": 1,
+    "first_half_pnl": 9.41,
+    "second_half_pnl": 0.61
+  },
+  "C. Minute 3-4, max 85c": {
+    "trades": 38,
+    "coverage": 0.404,
+    "wins": 29,
+    "win_rate": 0.763,
+    "win_ci95": [
+      0.608,
+      0.87
+    ],
+    "pnl": 11.24,
+    "per_trade": 0.296,
+    "per_dollar": 0.0988,
+    "max_drawdown": 7.19,
+    "worst_loss_streak": 2,
+    "first_half_pnl": 6.63,
+    "second_half_pnl": 4.62
+  },
+  "D. Minute 3-4, max 90c": {
+    "trades": 43,
+    "coverage": 0.457,
+    "wins": 34,
+    "win_rate": 0.791,
+    "win_ci95": [
+      0.648,
+      0.886
+    ],
+    "pnl": 12.49,
+    "per_trade": 0.29,
+    "per_dollar": 0.097,
+    "max_drawdown": 7.37,
+    "worst_loss_streak": 2,
+    "first_half_pnl": 6.95,
+    "second_half_pnl": 5.54
+  },
+  "E. Minute 3-4, model+market agree": {
+    "trades": 70,
+    "coverage": 0.745,
+    "wins": 62,
+    "win_rate": 0.886,
+    "win_ci95": [
+      0.79,
+      0.941
+    ],
+    "pnl": 13.56,
+    "per_trade": 0.194,
+    "per_dollar": 0.0647,
+    "max_drawdown": 9.15,
+    "worst_loss_streak": 1,
+    "first_half_pnl": 9.74,
+    "second_half_pnl": 3.81
+  },
+  "E2. Minute 3-4, agree + max 90c": {
+    "trades": 42,
+    "coverage": 0.447,
+    "wins": 36,
+    "win_rate": 0.857,
+    "win_ci95": [
+      0.722,
+      0.933
+    ],
+    "pnl": 16.03,
+    "per_trade": 0.382,
+    "per_dollar": 0.1274,
+    "max_drawdown": 4.92,
+    "worst_loss_streak": 1,
+    "first_half_pnl": 7.29,
+    "second_half_pnl": 8.74
+  },
+  "E3. Minute 3-4, agree + max 85c": {
+    "trades": 37,
+    "coverage": 0.394,
+    "wins": 31,
+    "win_rate": 0.838,
+    "win_ci95": [
+      0.689,
+      0.923
+    ],
+    "pnl": 14.78,
+    "per_trade": 0.399,
+    "per_dollar": 0.1334,
+    "max_drawdown": 4.73,
+    "worst_loss_streak": 1,
+    "first_half_pnl": 6.96,
+    "second_half_pnl": 7.82
+  },
+  "F. 3:15-4:00 follow": {
+    "trades": 62,
+    "coverage": 0.66,
+    "wins": 54,
+    "win_rate": 0.871,
+    "win_ci95": [
+      0.766,
+      0.933
+    ],
+    "pnl": 8.66,
+    "per_trade": 0.14,
+    "per_dollar": 0.0466,
+    "max_drawdown": 9.83,
+    "worst_loss_streak": 1,
+    "first_half_pnl": 9.23,
+    "second_half_pnl": -0.57
+  },
+  "G. 3:00-4:30 follow": {
+    "trades": 72,
+    "coverage": 0.766,
+    "wins": 61,
+    "win_rate": 0.847,
+    "win_ci95": [
+      0.747,
+      0.912
+    ],
+    "pnl": 10.37,
+    "per_trade": 0.144,
+    "per_dollar": 0.0481,
+    "max_drawdown": 11.61,
+    "worst_loss_streak": 1,
+    "first_half_pnl": 9.41,
+    "second_half_pnl": 0.96
+  },
+  "H. Primary rule only at 30-60 s": {
+    "trades": 13,
+    "coverage": 0.138,
+    "wins": 8,
+    "win_rate": 0.615,
+    "win_ci95": [
+      0.355,
+      0.823
+    ],
+    "pnl": -3.02,
+    "per_trade": -0.232,
+    "per_dollar": -0.0774,
+    "max_drawdown": 8.97,
+    "worst_loss_streak": 2,
+    "first_half_pnl": -2.58,
+    "second_half_pnl": -0.44
+  },
+  "I. Primary at 30-60 s, else minute 3-4": {
+    "trades": 72,
+    "coverage": 0.766,
+    "wins": 59,
+    "win_rate": 0.819,
+    "win_ci95": [
+      0.715,
+      0.891
+    ],
+    "pnl": 5.17,
+    "per_trade": 0.072,
+    "per_dollar": 0.024,
+    "max_drawdown": 14.73,
+    "worst_loss_streak": 2,
+    "first_half_pnl": 5.3,
+    "second_half_pnl": -0.13
+  },
+  "J. Primary at 30-60 s, else minute 3-4 max 85c": {
+    "trades": 42,
+    "coverage": 0.447,
+    "wins": 31,
+    "win_rate": 0.738,
+    "win_ci95": [
+      0.589,
+      0.847
+    ],
+    "pnl": 6.82,
+    "per_trade": 0.162,
+    "per_dollar": 0.0542,
+    "max_drawdown": 10.26,
+    "worst_loss_streak": 2,
+    "first_half_pnl": 2.88,
+    "second_half_pnl": 3.95
+  },
+  "K. 90% late favourite": {
+    "trades": 23,
+    "coverage": 0.245,
+    "wins": 22,
+    "win_rate": 0.957,
+    "win_ci95": [
+      0.79,
+      0.992
+    ],
+    "pnl": 1.73,
+    "per_trade": 0.075,
+    "per_dollar": 0.0251,
+    "max_drawdown": 2.99,
+    "worst_loss_streak": 1,
+    "first_half_pnl": 2.4,
+    "second_half_pnl": -0.67
+  },
+  "L. Minute 3-4, else 90% favourite": {
+    "trades": 73,
+    "coverage": 0.777,
+    "wins": 62,
+    "win_rate": 0.849,
+    "win_ci95": [
+      0.75,
+      0.914
+    ],
+    "pnl": 10.8,
+    "per_trade": 0.148,
+    "per_dollar": 0.0494,
+    "max_drawdown": 11.61,
+    "worst_loss_streak": 1,
+    "first_half_pnl": 9.83,
+    "second_half_pnl": 0.96
+  }
+}
