@@ -464,7 +464,7 @@ index 0000000..d4479f2
 +    z = math.log(mean / opening) / math.sqrt(max(var, 1e-14))
 +    return min(.99, max(.01, .5 * (1 + math.erf(z / math.sqrt(2)))))
 diff --git a/btc-prophet/prophet/static/app.js b/btc-prophet/prophet/static/app.js
-index 765e8c7..9f9a5b8 100644
+index 765e8c7..ade6d82 100644
 --- a/btc-prophet/prophet/static/app.js
 +++ b/btc-prophet/prophet/static/app.js
 @@ -85,7 +85,7 @@ function render(s) {
@@ -502,7 +502,7 @@ index 765e8c7..9f9a5b8 100644
      const streak=game.streaks;
      $('games-streak').textContent=game.played
        ? `${(100*game.wins/game.played).toFixed(1)}% wins · Current ${streak.current||'flat'} ${streak.length} · Best win ${streak.longest.WIN} · Worst loss ${streak.longest.LOSS}`
-@@ -369,3 +381,132 @@ $('request-training').onclick=async()=>{
+@@ -369,3 +381,134 @@ $('request-training').onclick=async()=>{
      $('training-result').textContent=result.message||result.detail;
    }catch(error){$('training-result').textContent='Unable to request training.';}
  };
@@ -572,9 +572,11 @@ index 765e8c7..9f9a5b8 100644
 +  wheel.classList.remove('spinning');wheel.style.transition='none';wheel.style.transform=`rotate(${from}deg)`;
 +  void wheel.offsetWidth;                        // continue from where the spin was
 +  wheel.style.transition='';
-+  // slice centres: SKIP 15°, green (UP) 45+60k°, red (DOWN) 75+60k°; pointer at the top
-+  const slice=mode==='SKIP'?15:(Math.floor(Math.random()*5)*60+(mode==='UP'?45:75));
-+  wheelAngle=from+2*360+((360-((from+slice)%360))%360);
++  // 12 slices of 30°: green (UP) centres 15+60k°, red (DOWN) centres 45+60k°; pointer at the top.
++  // SKIP has no slice: the wheel just coasts to a stop on a slice boundary (neither colour).
++  if(mode==='SKIP'){wheelAngle=from+360+((360-((from+Math.floor(Math.random()*12)*30)%360))%360);}
++  else{const slice=Math.floor(Math.random()*6)*60+(mode==='UP'?15:45);
++       wheelAngle=from+2*360+((360-((from+slice)%360))%360);}
 +  wheel.style.transform=`rotate(${wheelAngle}deg)`;
 +}
 +function renderRound(game){
@@ -687,7 +689,7 @@ index 9d3861c..fc315d8 100644
        <section class="panel chart-panel"><div class="panel-heading"><div><h2>Bitcoin reference price <span class="gold">↗</span></h2><p>Official settlement reference</p></div><div class="segments" aria-label="Candle interval"><button class="selected" data-interval="15">15s</button><button data-interval="30">30s</button><button data-interval="60">1m</button></div></div><div class="chart-legend"><span class="legend-gold">━</span> Reference candlesticks <span class="legend-blue">┄</span> Contract opening reference</div><div class="chart-wrap"><div id="chart"></div><div id="chart-empty">Waiting for verified candles…</div></div><div class="chart-footer"><span id="candle-info">No fabricated or interpolated candles</span><a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">Charts by TradingView ↗</a></div></section>
        <section class="panel contract-panel"><div class="panel-heading"><div><h2>Five-minute BTC contract <span class="tiny-tag">5 MIN</span></h2></div><span class="dot" id="market-dot"></span></div><p class="contract-sub" id="contract-status">Verifying an open contract…</p><div class="reference-box"><span>Official price to beat</span><strong id="price-to-beat">—</strong><small>60-second average · ties settle UP</small></div><div class="outcomes" id="direction-quotes" hidden><div class="outcome up"><span>↗ UP / YES</span><strong id="up-price">—</strong><small>Observed buy ask</small></div><div class="outcome down"><span>↘ DOWN / NO</span><strong id="down-price">—</strong><small>1 − observed YES bid</small></div></div><div class="detail-row"><span>Bid / ask spread</span><strong id="spread">—</strong></div><div class="detail-row"><span>Model probabilities</span><strong id="model-probabilities" class="muted" hidden>Waiting</strong></div><div class="detail-row"><span>Market data status</span><strong id="book-status">Waiting</strong></div><details class="mini-book"><summary>Order book</summary><div class="book-title"><span>YES BID · QTY</span><span>YES ASK · QTY</span></div><div id="book-levels" class="book-levels"><p class="muted">No verified order book yet</p></div></details></section>
 diff --git a/btc-prophet/prophet/static/style.css b/btc-prophet/prophet/static/style.css
-index 56774e9..412b0a6 100644
+index 56774e9..c79ab53 100644
 --- a/btc-prophet/prophet/static/style.css
 +++ b/btc-prophet/prophet/static/style.css
 @@ -73,3 +73,41 @@
@@ -703,7 +705,7 @@ index 56774e9..412b0a6 100644
 +.wheel-wrap{position:relative;width:170px;height:170px}
 +.wheel-pointer{position:absolute;top:-14px;left:50%;transform:translateX(-50%);color:#f5c862;font-size:1.4rem;z-index:2}
 +.wheel{width:170px;height:170px;border-radius:50%;border:6px solid #c9a24a;box-shadow:0 0 24px rgba(201,162,74,.35),inset 0 0 18px rgba(0,0,0,.6);
-+  background:conic-gradient(#6b7280 0 30deg,#1f9d55 30deg 60deg,#b3262e 60deg 90deg,#1f9d55 90deg 120deg,#b3262e 120deg 150deg,#1f9d55 150deg 180deg,#b3262e 180deg 210deg,#1f9d55 210deg 240deg,#b3262e 240deg 270deg,#1f9d55 270deg 300deg,#b3262e 300deg 330deg,#1f9d55 330deg 360deg);
++  background:conic-gradient(#1f9d55 0 30deg,#b3262e 30deg 60deg,#1f9d55 60deg 90deg,#b3262e 90deg 120deg,#1f9d55 120deg 150deg,#b3262e 150deg 180deg,#1f9d55 180deg 210deg,#b3262e 210deg 240deg,#1f9d55 240deg 270deg,#b3262e 270deg 300deg,#1f9d55 300deg 330deg,#b3262e 330deg 360deg);
 +  transition:transform 4s cubic-bezier(.12,.6,.1,1);display:grid;place-items:center}
 +.wheel-hub{width:46px;height:46px;border-radius:50%;background:#0b101b;border:3px solid #c9a24a;display:grid;place-items:center;color:#f5c862;font-weight:700}
 +.wheel-result{font-size:1.5rem;font-weight:700;margin-bottom:8px}.wheel-result.win{color:#3ddc84}.wheel-result.loss{color:#ff6b6b}
