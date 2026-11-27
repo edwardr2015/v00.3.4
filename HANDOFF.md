@@ -38,3 +38,7 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 3. Next research build: run the "minute 3–4 + all-3-agree + ≤90¢ + reversal exit" rule as a separate shadow paper account, and compare it on fresh reports.
 4. Optional: add read-only and dry-run Polymarket connection modes with the money rules above. Run `continuity_audit` and `import_learning` on the old 177 MB database.
 5. The owner will upload new Excel Quick and Paper reports. Analyse wins, losses and P&L since dev8.
+
+## dev10 (latest)
+- New `prophet/selective50.py`: a separate paper account that starts at $50 and makes $3 trades with the best research rule (minute 3–4, all 3 agree, ≤90¢, reversal exit). It never goes below $0 and never adds money. It shows on the dashboard ("Selective $50 account") and in the Excel sheet "Selective $50 Account". The main $1,000 account is untouched. Tests are in `tests/test_selective50.py`.
+- `scripts/polymarket_readonly_check.py`: a read-only connection test. The cloud session's network blocks gateway.polymarket.us and api.polymarket.us.

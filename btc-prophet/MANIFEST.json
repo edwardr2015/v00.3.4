@@ -245,6 +245,11 @@
     "sha256": "081acc2418364aafb99aec8c6365f4344cb77a91ad89ca314f75d34afba84bed"
   },
   {
+    "path": "prophet/selective50.py",
+    "bytes": 6286,
+    "sha256": "4bf82af93f5464acc0f169d8da3d3019140d60019141d5c14b6bf5bcd266de7d"
+  },
+  {
     "path": "prophet/selective_forecast.py",
     "bytes": 5426,
     "sha256": "a4cc055aa733a761dbdffaaf494d0a97db98e4038bfeae5c03357818105aeea2"
@@ -261,8 +266,8 @@
   },
   {
     "path": "prophet/static/app.js",
-    "bytes": 33866,
-    "sha256": "bc08f2e80a3c0fd7fa73fde94519415635751892c606416e43294ced143052b2"
+    "bytes": 34493,
+    "sha256": "cf26e083d262b7c42fd8f70c6769f6de2e029b2d4964bb06178a35aca789fd7e"
   },
   {
     "path": "prophet/static/decision.js",
@@ -281,8 +286,8 @@
   },
   {
     "path": "prophet/static/index.html",
-    "bytes": 19485,
-    "sha256": "89c951501f5399d49e37feef41699628e8167cb1ae924b9e8665978718052fe6"
+    "bytes": 20236,
+    "sha256": "4e40e82809f0107314c16c9215777f14f9c4dfbf6fab59858d9ae79213e73dfd"
   },
   {
     "path": "prophet/static/login.html",
@@ -341,8 +346,8 @@
   },
   {
     "path": "prophet/unified.py",
-    "bytes": 18047,
-    "sha256": "8ba3c41df31dea0eb4b06679389c8b2ca04b7f733c6f5e1a8ab80515661646ba"
+    "bytes": 18627,
+    "sha256": "fc53a4201952c73b69003070c88cdec15f915b5b8ede4d497ff9dbd83c34aee1"
   },
   {
     "path": "prophet/updates.py",
@@ -356,8 +361,8 @@
   },
   {
     "path": "prophet/v2reporting.py",
-    "bytes": 83978,
-    "sha256": "b973919ced4557cc9a39f8bdbb3719ad097c347b53e143e0c7c65b635c9899b1"
+    "bytes": 84661,
+    "sha256": "4f5fd0e727be1455802ef61e0b6acb208b8457a043254aacf66a3c794c7c6b6f"
   },
   {
     "path": "prophet/v2risk.py",
@@ -408,6 +413,11 @@
     "path": "scripts/package_release.py",
     "bytes": 4142,
     "sha256": "5f96900eb7e22e54de7a26aff840226de695d0e5d14a3c7f7e0170cf2d591b52"
+  },
+  {
+    "path": "scripts/polymarket_readonly_check.py",
+    "bytes": 2217,
+    "sha256": "9d0bd9dce458a9b5e1149a6d00f5fc531a23c54435b2a8a5adf3a0e177cf9b45"
   },
   {
     "path": "scripts/replay_unified.py",
@@ -563,6 +573,11 @@
     "path": "tests/test_scoreboard_reset.py",
     "bytes": 4565,
     "sha256": "bb87c220e1c98491bf21dd56a5fbe99f9862ee94ce98d2f4c9d5c9a8ac9aef21"
+  },
+  {
+    "path": "tests/test_selective50.py",
+    "bytes": 2555,
+    "sha256": "514f124f9313258fe0697ac2ef529538bc70bdb187b055f9399cd571066a4033"
   },
   {
     "path": "tests/test_timing_update.py",

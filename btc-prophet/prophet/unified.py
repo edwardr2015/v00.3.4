@@ -3,9 +3,13 @@
 import json
 import math
 
+import logging
+
+from . import selective50
 from .analytics import streaks
 from .execution import execute, paper_buy
 
+log = logging.getLogger(__name__)
 STARTING_CASH = 1000
 BASE_STAKE = 5
 LARGE_STAKE = 100
@@ -26,6 +30,7 @@ LARGE_MAX_DRAWDOWN = 250
 
 
 def initialize(db):
+    selective50.initialize(db)
     db.executescript("""
         CREATE TABLE IF NOT EXISTS unified_account (
             id INTEGER PRIMARY KEY CHECK(id=1), started REAL NOT NULL,
@@ -129,6 +134,10 @@ def settle(db, now):
         WHERE t.status='OPEN' AND v.end<=? AND v.verified_at<=?""", (now,now)).fetchall():
         payout = row["quantity"] if row["side"]==row["outcome"] else 0
         close(db,row,now,payout,"SETTLED",dict(outcome=row["outcome"],verified_at=row["verified_at"]))
+    try:
+        selective50.settle(db, now)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Selective $50 settlement skipped: %s", exc)
 
 
 def premium_trial(db, slug, start, now, book, terms, audit, commit_time):
@@ -182,6 +191,10 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
         db.execute("INSERT OR IGNORE INTO unified_forecasts VALUES (?,?,?,?,?)", (slug,model,now,raw_up,up))
     if mode != "SIMULATE":
         return
+    try:
+        selective50.observe(db,slug,now,start,end,details,raw_up,book,terms,bool(reason))
+    except Exception as exc:  # noqa: BLE001 - the shadow account must never stop the main bot
+        log.warning("Selective $50 account skipped %s: %s", slug, exc)
     premium = None if reason else premium_trial(db,slug,start,now,book,terms,audit,commit_time)
     if order and order["status"]!="OPEN":
         return
@@ -337,4 +350,5 @@ def summary(db, now):
                               losses=sum(p<0 for p in all_pnl),net=sum(all_pnl)),
                 wins=results.count("WIN"),losses=results.count("LOSS"),net=sum(pnl),
                 streaks=streaks(results,"WIN","LOSS"),position=dict(pos) if pos else None,
-                latest=dict(latest) if latest else None,recent=recent)
+                latest=dict(latest) if latest else None,recent=recent,
+                selective50=selective50.summary(db))

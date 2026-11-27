@@ -157,6 +157,15 @@ def add_unified(sheets, db, *, quick):
         [r["slug"],utc(r["observed"]), "SKIP: "+r["reason"] if r["end"]<=now and r["reason"]!="ENTERED"
          else r["reason"],r["model"],r["up"],r["details"]]
         for r in db.execute("SELECT * FROM unified_rounds ORDER BY start DESC LIMIT ?",(limit,))))
+    from . import selective50
+    sel = selective50.summary(db)
+    sheets.table("Selective $50 Account", ["Market","Entry UTC","Side","Quantity","Cost","Status","Exit UTC",
+        "Proceeds","Paper P&L","Official outcome","Evidence"], [
+        ["Summary",sel["name"],"Balance",sel["balance"],"Trades",sel["trades"],"Wins",sel["wins"],
+         "Losses",sel["losses"],"Net "+str(sel["net"])]] + [
+        [r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],utc(r["closed"]) if r["closed"] else None,
+         r["proceeds"],r["pnl"],r["outcome"],r["details"]]
+        for r in db.execute("SELECT * FROM selective50_trades ORDER BY time DESC LIMIT ?",(limit,))])
     sheets.table("Exit Shadow Comparison", ["Exit policy","Settled trades","Shadow exits","Wins","Net P&L",
         "Primary exit setting"], (
         [r["policy"],r["trades"],r["exits"],r["wins"],r["pnl"],unified.primary_exit()]

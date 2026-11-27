@@ -1,5 +1,5 @@
 diff --git a/btc-prophet/MANIFEST.json b/btc-prophet/MANIFEST.json
-index 6bcbed6..c50fa44 100644
+index 6bcbed6..401ebf4 100644
 --- a/btc-prophet/MANIFEST.json
 +++ b/btc-prophet/MANIFEST.json
 @@ -61,8 +61,8 @@
@@ -79,7 +79,17 @@ index 6bcbed6..c50fa44 100644
    },
    {
      "path": "prophet/research_audit.py",
-@@ -249,6 +249,11 @@
+@@ -244,11 +244,21 @@
+     "bytes": 4401,
+     "sha256": "081acc2418364aafb99aec8c6365f4344cb77a91ad89ca314f75d34afba84bed"
+   },
++  {
++    "path": "prophet/selective50.py",
++    "bytes": 6286,
++    "sha256": "4bf82af93f5464acc0f169d8da3d3019140d60019141d5c14b6bf5bcd266de7d"
++  },
+   {
+     "path": "prophet/selective_forecast.py",
      "bytes": 5426,
      "sha256": "a4cc055aa733a761dbdffaaf494d0a97db98e4038bfeae5c03357818105aeea2"
    },
@@ -91,14 +101,14 @@ index 6bcbed6..c50fa44 100644
    {
      "path": "prophet/smart.py",
      "bytes": 8365,
-@@ -256,13 +261,13 @@
+@@ -256,13 +266,13 @@
    },
    {
      "path": "prophet/static/app.js",
 -    "bytes": 24988,
 -    "sha256": "a2688d7d7cbbe94f1e34f6315a78a2f2274ffc35370774f237c95615353f6dfb"
-+    "bytes": 33866,
-+    "sha256": "bc08f2e80a3c0fd7fa73fde94519415635751892c606416e43294ced143052b2"
++    "bytes": 34493,
++    "sha256": "cf26e083d262b7c42fd8f70c6769f6de2e029b2d4964bb06178a35aca789fd7e"
    },
    {
      "path": "prophet/static/decision.js",
@@ -109,18 +119,18 @@ index 6bcbed6..c50fa44 100644
    },
    {
      "path": "prophet/static/excel.html",
-@@ -276,8 +281,8 @@
+@@ -276,8 +286,8 @@
    },
    {
      "path": "prophet/static/index.html",
 -    "bytes": 17339,
 -    "sha256": "ac2d376e72172e10b84744130f16264f8af75a8cb8a228b9839d8a77cecad80b"
-+    "bytes": 19485,
-+    "sha256": "89c951501f5399d49e37feef41699628e8167cb1ae924b9e8665978718052fe6"
++    "bytes": 20236,
++    "sha256": "4e40e82809f0107314c16c9215777f14f9c4dfbf6fab59858d9ae79213e73dfd"
    },
    {
      "path": "prophet/static/login.html",
-@@ -289,10 +294,15 @@
+@@ -289,10 +299,15 @@
      "bytes": 508,
      "sha256": "eba301dc9c501e4792d50f2c5a3283701c42563b4e5415b34bb1ce0601f11302"
    },
@@ -138,7 +148,7 @@ index 6bcbed6..c50fa44 100644
    },
    {
      "path": "prophet/static/v2.js",
-@@ -324,10 +334,15 @@
+@@ -324,10 +339,15 @@
      "bytes": 3183,
      "sha256": "6f99c2b4ffefa206b182a7239ca7b28da70291fd71fd0dfd9c1c606545b0cb30"
    },
@@ -151,23 +161,23 @@ index 6bcbed6..c50fa44 100644
      "path": "prophet/unified.py",
 -    "bytes": 12869,
 -    "sha256": "957428b29645714cc7aeab7f158b292e78f7e6ddd1106e1f7f8a928e6ca9ac6c"
-+    "bytes": 18047,
-+    "sha256": "8ba3c41df31dea0eb4b06679389c8b2ca04b7f733c6f5e1a8ab80515661646ba"
++    "bytes": 18627,
++    "sha256": "fc53a4201952c73b69003070c88cdec15f915b5b8ede4d497ff9dbd83c34aee1"
    },
    {
      "path": "prophet/updates.py",
-@@ -341,8 +356,8 @@
+@@ -341,8 +361,8 @@
    },
    {
      "path": "prophet/v2reporting.py",
 -    "bytes": 81762,
 -    "sha256": "2b8bbbc14af77b157393844a2ca7615d400e818ef4733bb4ef2975cb956be884"
-+    "bytes": 83978,
-+    "sha256": "b973919ced4557cc9a39f8bdbb3719ad097c347b53e143e0c7c65b635c9899b1"
++    "bytes": 84661,
++    "sha256": "4f5fd0e727be1455802ef61e0b6acb208b8457a043254aacf66a3c794c7c6b6f"
    },
    {
      "path": "prophet/v2risk.py",
-@@ -356,8 +371,8 @@
+@@ -356,8 +376,8 @@
    },
    {
      "path": "pyproject.toml",
@@ -178,7 +188,19 @@ index 6bcbed6..c50fa44 100644
    },
    {
      "path": "scripts/backfill_verified.py",
-@@ -479,10 +494,15 @@
+@@ -394,6 +414,11 @@
+     "bytes": 4142,
+     "sha256": "5f96900eb7e22e54de7a26aff840226de695d0e5d14a3c7f7e0170cf2d591b52"
+   },
++  {
++    "path": "scripts/polymarket_readonly_check.py",
++    "bytes": 2217,
++    "sha256": "9d0bd9dce458a9b5e1149a6d00f5fc531a23c54435b2a8a5adf3a0e177cf9b45"
++  },
+   {
+     "path": "scripts/replay_unified.py",
+     "bytes": 8989,
+@@ -479,10 +504,15 @@
      "bytes": 4793,
      "sha256": "05019e3331cf1185805bf09e4de8995b684ee69837bc3e352f896743f8376808"
    },
@@ -196,7 +218,7 @@ index 6bcbed6..c50fa44 100644
    },
    {
      "path": "tests/test_model_paper.py",
-@@ -504,6 +524,11 @@
+@@ -504,6 +534,11 @@
      "bytes": 5492,
      "sha256": "de059e2204cc5abe89fac47fb9af7a44dc92e2bfae550b74150f65842140a937"
    },
@@ -208,7 +230,7 @@ index 6bcbed6..c50fa44 100644
    {
      "path": "tests/test_reporting_backtest.py",
      "bytes": 3207,
-@@ -519,6 +544,11 @@
+@@ -519,6 +554,11 @@
      "bytes": 3467,
      "sha256": "7a12dabc2cb2134f19d27534593ef0cf81c117c79cade8817a75b0632c5c7e41"
    },
@@ -220,7 +242,7 @@ index 6bcbed6..c50fa44 100644
    {
      "path": "tests/test_research_protocol.py",
      "bytes": 2374,
-@@ -529,6 +559,11 @@
+@@ -529,6 +569,16 @@
      "bytes": 3975,
      "sha256": "c58860d21784660765573e289fd606d840a5231d95b84064de5094f537009500"
    },
@@ -229,10 +251,15 @@ index 6bcbed6..c50fa44 100644
 +    "bytes": 4565,
 +    "sha256": "bb87c220e1c98491bf21dd56a5fbe99f9862ee94ce98d2f4c9d5c9a8ac9aef21"
 +  },
++  {
++    "path": "tests/test_selective50.py",
++    "bytes": 2555,
++    "sha256": "514f124f9313258fe0697ac2ef529538bc70bdb187b055f9399cd571066a4033"
++  },
    {
      "path": "tests/test_timing_update.py",
      "bytes": 13040,
-@@ -541,8 +576,8 @@
+@@ -541,8 +591,8 @@
    },
    {
      "path": "tests/test_unified_v321.py",
@@ -243,7 +270,7 @@ index 6bcbed6..c50fa44 100644
    },
    {
      "path": "tests/test_v2.py",
-@@ -553,5 +588,10 @@
+@@ -553,5 +603,10 @@
      "path": "tests/test_viability_tracking.py",
      "bytes": 5385,
      "sha256": "3386dbe6ea34f74dada32b3eac5a5881df6c45e6ac10aa1a17dd84a49c96ecde"
@@ -679,6 +706,132 @@ index 3ceb03a..6c15f42 100644
      # Preprocessing sees training data only. Fixed hyperparameters: no test-set search.
      means = [statistics.mean(r["x"][j] for r in train) for j in range(3)]
      scales = [max(statistics.pstdev(r["x"][j] for r in train), 1e-8) for j in range(3)]
+diff --git a/btc-prophet/prophet/selective50.py b/btc-prophet/prophet/selective50.py
+new file mode 100644
+index 0000000..213d5f4
+--- /dev/null
++++ b/btc-prophet/prophet/selective50.py
+@@ -0,0 +1,120 @@
++"""Selective $50 paper account: the best rule found in research, run live as its own shadow ledger.
++
++Rule (research/verify_logic.py, +$30.62 on 94 replayed markets at $3):
++  * enter only between 3:00 and 4:00 into the round,
++  * Reference Gap side, the market price agrees, and gap+speed agrees (all three),
++  * all-in price per contract <= 90 cents,
++  * sell early if the Reference Gap signal flips to the other side (reversal exit), otherwise hold.
++Money rules: starts with $50, $3 per trade, one trade per round, never spends money it does not have,
++so the balance can never go below zero and nothing is ever added. Paper only; it never sends orders
++and never touches the main dashboard account.
++"""
++import json
++import math
++
++from .execution import execute, paper_buy
++
++STARTING_CASH = 50.0
++STAKE = 3.0
++ENTRY_FROM, ENTRY_TO = 180, 240
++MAX_PRICE = .90
++NAME = "Selective $50 (min 3-4, all 3 agree, <=90c, reversal exit)"
++
++
++def initialize(db):
++    db.executescript("""
++        CREATE TABLE IF NOT EXISTS selective50_account (
++            id INTEGER PRIMARY KEY CHECK(id=1), started REAL NOT NULL,
++            balance REAL NOT NULL CHECK(balance>=0));
++        CREATE TABLE IF NOT EXISTS selective50_ticks (
++            slug TEXT NOT NULL, t REAL NOT NULL, ref REAL NOT NULL, PRIMARY KEY(slug,t));
++        CREATE TABLE IF NOT EXISTS selective50_trades (
++            slug TEXT PRIMARY KEY, time REAL NOT NULL, end REAL NOT NULL, side TEXT NOT NULL,
++            quantity REAL NOT NULL CHECK(quantity>0), cost REAL NOT NULL CHECK(cost>0 AND cost<=3),
++            status TEXT NOT NULL, closed REAL, proceeds REAL, pnl REAL, outcome TEXT,
++            details TEXT NOT NULL);""")
++
++
++def _phi(x):
++    return .5 * (1 + math.erf(x / math.sqrt(2)))
++
++
++def signals(db, slug, now, start, end, details, raw_up, book):
++    """The three votes, using only this observation and earlier ones from the same round."""
++    ref, opening, vol = details.get("reference_price"), details.get("opening_price"), details.get("volatility")
++    if not (ref and opening and vol and raw_up is not None):
++        return None
++    left = max(end - now, 1.0)
++    old = db.execute("""SELECT t,ref FROM selective50_ticks WHERE slug=? AND t>=? AND t<? ORDER BY t LIMIT 1""",
++                     (slug, now - 30, now)).fetchone()
++    vel = math.log(ref / old["ref"]) / (now - old["t"]) if old and now - old["t"] >= 5 else 0.0
++    sigma = max(1e-5, vol * math.sqrt(max(1, left / 15)))
++    gap = math.log(ref / opening)
++    speed_up = min(.98, max(.02, _phi((gap + .5 * vel * min(left, 60)) / sigma)))
++    mid = (book["bids"][0]["price"] + book["asks"][0]["price"]) / 2
++    return dict(gap_up=raw_up, market_up=mid, speed_up=speed_up, elapsed=now - start)
++
++
++def observe(db, slug, now, start, end, details, raw_up, book, terms, blocked):
++    if blocked or not book.get("bids") or not book.get("asks"):
++        return
++    ref = details.get("reference_price")
++    s = signals(db, slug, now, start, end, details, raw_up, book)
++    if ref:
++        db.execute("INSERT OR IGNORE INTO selective50_ticks VALUES (?,?,?)", (slug, now, ref))
++    if s is None:
++        return
++    trade = db.execute("SELECT * FROM selective50_trades WHERE slug=?", (slug,)).fetchone()
++    if trade:
++        if trade["status"] == "OPEN" and (s["gap_up"] >= .5) != (trade["side"] == "UP"):
++            sale = execute(book, trade["side"], quantity=trade["quantity"], buying=False, **terms)
++            if sale["quantity"] + 1e-9 >= trade["quantity"]:
++                _close(db, trade, now, sale["total"], "SOLD", None)
++        return
++    if not ENTRY_FROM <= s["elapsed"] < ENTRY_TO:
++        return
++    side = "UP" if s["gap_up"] >= .5 else "DOWN"
++    if (s["market_up"] >= .5) != (side == "UP") or (s["speed_up"] >= .5) != (side == "UP"):
++        return
++    balance = db.execute("SELECT balance FROM selective50_account WHERE id=1").fetchone()
++    if balance is None:
++        db.execute("INSERT INTO selective50_account VALUES (1,?,?)", (now, STARTING_CASH))
++        balance = STARTING_CASH
++    else:
++        balance = balance[0]
++    if balance < STAKE:
++        return                                       # out of money: stop, never borrow or top up
++    fill, _ = paper_buy(book, side, STAKE, **terms)
++    if not fill or fill["total"] > balance or fill["total"] / fill["quantity"] > MAX_PRICE:
++        return
++    db.execute("""INSERT INTO selective50_trades(slug,time,end,side,quantity,cost,status,details)
++        VALUES (?,?,?,?,?,?,'OPEN',?)""", (slug, now, end, side, fill["quantity"], fill["total"],
++                                           json.dumps(dict(s, fee=fill["fee"]))))
++    db.execute("UPDATE selective50_account SET balance=round(balance-?,10) WHERE id=1", (fill["total"],))
++
++
++def _close(db, trade, now, proceeds, status, outcome):
++    done = db.execute("""UPDATE selective50_trades SET status=?,closed=?,proceeds=?,pnl=?,outcome=?
++        WHERE slug=? AND status='OPEN'""", (status, now, proceeds, round(proceeds - trade["cost"], 10),
++                                            outcome, trade["slug"]))
++    if done.rowcount == 1:
++        db.execute("UPDATE selective50_account SET balance=round(balance+?,10) WHERE id=1", (proceeds,))
++
++
++def settle(db, now):
++    for t in db.execute("""SELECT t.*,v.outcome AS verified FROM selective50_trades t
++        JOIN verified_markets v ON v.slug=t.slug AND v.end=t.end
++        WHERE t.status='OPEN' AND v.end<=? AND v.verified_at<=?""", (now, now)).fetchall():
++        _close(db, t, now, t["quantity"] if t["side"] == t["verified"] else 0.0, "SETTLED", t["verified"])
++    db.execute("DELETE FROM selective50_ticks WHERE t<?", (now - 3600,))
++
++
++def summary(db):
++    acct = db.execute("SELECT * FROM selective50_account WHERE id=1").fetchone()
++    rows = db.execute("SELECT pnl,status FROM selective50_trades WHERE status!='OPEN'").fetchall()
++    pnl = [r["pnl"] for r in rows]
++    return dict(name=NAME, start=STARTING_CASH, stake=STAKE,
++                balance=acct["balance"] if acct else STARTING_CASH, trades=len(pnl),
++                wins=sum(p > 0 for p in pnl), losses=sum(p <= 0 for p in pnl), net=round(sum(pnl), 4),
++                early_exits=sum(r["status"] == "SOLD" for r in rows),
++                open=db.execute("SELECT COUNT(*) FROM selective50_trades WHERE status='OPEN'").fetchone()[0])
 diff --git a/btc-prophet/prophet/settlement_model.py b/btc-prophet/prophet/settlement_model.py
 new file mode 100644
 index 0000000..d4479f2
@@ -724,7 +877,7 @@ index 0000000..d4479f2
 +    z = math.log(mean / opening) / math.sqrt(max(var, 1e-14))
 +    return min(.99, max(.01, .5 * (1 + math.erf(z / math.sqrt(2)))))
 diff --git a/btc-prophet/prophet/static/app.js b/btc-prophet/prophet/static/app.js
-index 765e8c7..0c52230 100644
+index 765e8c7..88d145d 100644
 --- a/btc-prophet/prophet/static/app.js
 +++ b/btc-prophet/prophet/static/app.js
 @@ -85,7 +85,7 @@ function render(s) {
@@ -751,18 +904,24 @@ index 765e8c7..0c52230 100644
  $('collector-pause').onclick=()=>control('collector-pause');
  $('collector-resume').onclick=()=>control('collector-resume');
  
-@@ -234,6 +242,10 @@ async function scoreboard(){
+@@ -234,6 +242,16 @@ async function scoreboard(){
      $('games-lost').textContent=game.losses;
      $('games-pnl').textContent=money(game.net);
      $('game-balance').textContent=money(game.balance)+' cash';
 +    vegas(game);
++    const sel=game.selective50;
++    if(sel){$('sel50-balance').textContent=money(sel.balance);$('sel50-trades').textContent=sel.trades;
++      $('sel50-wins').textContent=sel.wins;$('sel50-losses').textContent=sel.losses;$('sel50-net').textContent=money(sel.net);
++      $('sel50-note').textContent=sel.balance<sel.stake?'Stopped: less than $3 left. It never adds money or goes negative.':
++        sel.trades?`Win rate ${Math.round(100*sel.wins/sel.trades)}% · ${sel.early_exits} sold early${sel.open?' · 1 trade open':''}`:
++        (sel.open?'1 trade open.':'Paper only. Waiting for a round where all three signals agree.');}
 +    $('games-since').textContent=game.reset
 +      ? `Counting since ${new Date(game.counting_since*1000).toISOString().slice(0,16).replace('T',' ')} UTC · all-time ${game.all_time.played} games, ${game.all_time.wins}–${game.all_time.losses}, ${money(game.all_time.net)}`
 +      : 'Counting since the account started';
      const streak=game.streaks;
      $('games-streak').textContent=game.played
        ? `${(100*game.wins/game.played).toFixed(1)}% wins · Current ${streak.current||'flat'} ${streak.length} · Best win ${streak.longest.WIN} · Worst loss ${streak.longest.LOSS}`
-@@ -369,3 +381,134 @@ $('request-training').onclick=async()=>{
+@@ -369,3 +387,134 @@ $('request-training').onclick=async()=>{
      $('training-result').textContent=result.message||result.detail;
    }catch(error){$('training-result').textContent='Unable to request training.';}
  };
@@ -914,10 +1073,10 @@ index 3a7fde3..a55a69c 100644
    tally.textContent = tally.hidden ? '' :
      `Last ${data.count} of up to 20 calls · UP ${data.up_percent.toFixed(0)}% (${data.up_count}) · DOWN ${data.down_percent.toFixed(0)}% (${data.down_count})`;
 diff --git a/btc-prophet/prophet/static/index.html b/btc-prophet/prophet/static/index.html
-index 9d3861c..fc315d8 100644
+index 9d3861c..d2bf43a 100644
 --- a/btc-prophet/prophet/static/index.html
 +++ b/btc-prophet/prophet/static/index.html
-@@ -22,9 +22,29 @@
+@@ -22,9 +22,32 @@
        <article class="stat"><div class="stat-label">CONTRACT SETTLEMENT IN</div><div class="metric mono" id="countdown">—:—</div><div class="stat-foot" id="market-window">Awaiting verified five-minute market</div></article>
        <article class="stat"><div class="stat-label">PROPHET’S PICK</div><div class="direction-call" id="ai-decision" aria-live="polite">Waiting</div><div id="ai-reason" class="stat-foot">Waiting for a paper entry</div><p class="direction-tally" id="ai-tally" hidden></p></article>
      </section>
@@ -940,6 +1099,9 @@ index 9d3861c..fc315d8 100644
 +        <audio id="win-audio" preload="none"></audio>
 +        <p><button type="button" class="button" id="win-close">Close</button></p></div>
 +    </div>
++    <section class="panel game-card" id="sel50-card"><div class="panel-heading"><div><h2>Selective $50 account</h2><p>$3 trades · minute 3–4 · all 3 signals agree · ≤90¢ · sells if the signal flips · never below $0</p></div><strong id="sel50-balance">$50.00</strong></div>
++      <div class="scoreboard" aria-label="Selective $50 account"><div><span>Trades</span><strong id="sel50-trades">0</strong></div><div><span>Wins</span><strong id="sel50-wins" class="profit">0</strong></div><div><span>Losses</span><strong id="sel50-losses" class="loss">0</strong></div><div><span>Net P&amp;L</span><strong id="sel50-net">$0.00</strong></div></div>
++      <p id="sel50-note">Paper only. Waiting for a round where all three signals agree.</p></section>
      <section class="panel game-card"><div class="panel-heading"><div><h2>Paper scoreboard</h2><p>Since 0.3.21 · Starting balance $1,000</p></div><strong id="game-balance">—</strong></div>
        <div class="scoreboard" aria-label="Paper results since 0.3.21"><div><span>Games</span><strong id="games-played">0</strong></div><div><span>Wins</span><strong id="games-won" class="profit">0</strong></div><div><span>Losses</span><strong id="games-lost" class="loss">0</strong></div><div><span>Net P&amp;L</span><strong id="games-pnl">—</strong></div></div>
 -      <p id="games-streak" aria-live="polite">Waiting for the first completed paper trade.</p></section>
@@ -1050,10 +1212,22 @@ index 0000000..faec173
 +                min_fit_examples=min_fit_examples(), retrain_seconds=retrain_seconds(),
 +                original=ORIGINAL, small_sample=n < SMALL_SAMPLE_BELOW, examples=n)
 diff --git a/btc-prophet/prophet/unified.py b/btc-prophet/prophet/unified.py
-index 2effab5..6e8d1dd 100644
+index 2effab5..779cbdc 100644
 --- a/btc-prophet/prophet/unified.py
 +++ b/btc-prophet/prophet/unified.py
-@@ -11,6 +11,15 @@ BASE_STAKE = 5
+@@ -3,20 +3,34 @@
+ import json
+ import math
+ 
++import logging
++
++from . import selective50
+ from .analytics import streaks
+ from .execution import execute, paper_buy
+ 
++log = logging.getLogger(__name__)
+ STARTING_CASH = 1000
+ BASE_STAKE = 5
  LARGE_STAKE = 100
  MIN_EDGE = .10
  EXIT_MARGIN = .03
@@ -1069,7 +1243,14 @@ index 2effab5..6e8d1dd 100644
  STRESS_EDGE = .03
  LARGE_MIN_ROUNDS = 100
  LARGE_MAX_DRAWDOWN = 250
-@@ -37,6 +46,10 @@ def initialize(db):
+ 
+ 
+ def initialize(db):
++    selective50.initialize(db)
+     db.executescript("""
+         CREATE TABLE IF NOT EXISTS unified_account (
+             id INTEGER PRIMARY KEY CHECK(id=1), started REAL NOT NULL,
+@@ -37,6 +51,10 @@ def initialize(db):
              status TEXT NOT NULL CHECK(status IN ('OPEN','SOLD','SETTLED')),
              closed REAL, proceeds REAL, pnl REAL, details TEXT NOT NULL, exit_details TEXT);
          CREATE UNIQUE INDEX IF NOT EXISTS unified_one_open ON unified_trades(status) WHERE status='OPEN';
@@ -1080,7 +1261,18 @@ index 2effab5..6e8d1dd 100644
          CREATE TABLE IF NOT EXISTS unified_large_trials (
              slug TEXT PRIMARY KEY REFERENCES unified_rounds(slug), time REAL NOT NULL,
              side TEXT NOT NULL, quantity REAL NOT NULL, cost REAL NOT NULL,
-@@ -148,6 +161,7 @@ def premium_trial(db, slug, start, now, book, terms, audit, commit_time):
+@@ -116,6 +134,10 @@ def settle(db, now):
+         WHERE t.status='OPEN' AND v.end<=? AND v.verified_at<=?""", (now,now)).fetchall():
+         payout = row["quantity"] if row["side"]==row["outcome"] else 0
+         close(db,row,now,payout,"SETTLED",dict(outcome=row["outcome"],verified_at=row["verified_at"]))
++    try:
++        selective50.settle(db, now)
++    except Exception as exc:  # noqa: BLE001
++        log.warning("Selective $50 settlement skipped: %s", exc)
+ 
+ 
+ def premium_trial(db, slug, start, now, book, terms, audit, commit_time):
+@@ -148,6 +170,7 @@ def premium_trial(db, slug, start, now, book, terms, audit, commit_time):
  def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, commit_time):
      """Evaluate one current observation on the caller's verified book transaction."""
      end, start = details["window_end"], details["window_start"]
@@ -1088,7 +1280,7 @@ index 2effab5..6e8d1dd 100644
      now = commit_time()
      if now is None or not start <= now < end:
          return
-@@ -159,6 +173,8 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
+@@ -159,6 +182,8 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
                                           "volatility","elapsed","reference_price","opening_price",
                                           "model_evidence")}
      audit["raw_up"] = raw_up
@@ -1097,7 +1289,18 @@ index 2effab5..6e8d1dd 100644
      if not reason:
          midpoint = (book["bids"][0]["price"]+book["asks"][0]["price"])/2
          up, labels = calibrate(db,slug,model,raw_up,midpoint,now)
-@@ -177,11 +193,24 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
+@@ -166,6 +191,10 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
+         db.execute("INSERT OR IGNORE INTO unified_forecasts VALUES (?,?,?,?,?)", (slug,model,now,raw_up,up))
+     if mode != "SIMULATE":
+         return
++    try:
++        selective50.observe(db,slug,now,start,end,details,raw_up,book,terms,bool(reason))
++    except Exception as exc:  # noqa: BLE001 - the shadow account must never stop the main bot
++        log.warning("Selective $50 account skipped %s: %s", slug, exc)
+     premium = None if reason else premium_trial(db,slug,start,now,book,terms,audit,commit_time)
+     if order and order["status"]!="OPEN":
+         return
+@@ -177,11 +206,24 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
              return
          held = up if order["side"]=="UP" else 1-up
          sale = execute(book,order["side"],quantity=order["quantity"],buying=False,**terms)
@@ -1127,7 +1330,7 @@ index 2effab5..6e8d1dd 100644
          return
  
      entry = None
-@@ -218,10 +247,39 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
+@@ -218,10 +260,39 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
          if debit.rowcount!=1:
              raise ValueError("Unified paper debit failed")
          now, reason = checked, "ENTERED"
@@ -1167,7 +1370,7 @@ index 2effab5..6e8d1dd 100644
  def history(db, limit=-1):
      return db.execute("""SELECT t.*,r.end,v.outcome,
          CASE WHEN v.outcome IS NOT NULL THEN (t.side=v.outcome)*t.quantity-t.cost END AS hold_pnl
-@@ -230,12 +288,28 @@ def history(db, limit=-1):
+@@ -230,12 +301,28 @@ def history(db, limit=-1):
          ORDER BY t.time DESC LIMIT ?""",(limit,))
  
  
@@ -1197,7 +1400,7 @@ index 2effab5..6e8d1dd 100644
      pnl = [r["pnl"] for r in rows]
      results = ["WIN" if p>0 else "LOSS" if p<0 else "FLAT" for p in pnl]
      pos = db.execute("""SELECT side,model,up,stake,slug,time FROM unified_trades
-@@ -244,7 +318,23 @@ def summary(db, now):
+@@ -244,7 +331,24 @@ def summary(db, now):
          LEFT JOIN unified_trades t ON t.slug=r.slug ORDER BY r.start DESC LIMIT 1""").fetchone()
      recent = [dict(r) for r in db.execute("SELECT slug,time,side,closed,status FROM unified_trades ORDER BY time DESC LIMIT 120")]
      played = len(pnl)
@@ -1220,9 +1423,11 @@ index 2effab5..6e8d1dd 100644
 +                              losses=sum(p<0 for p in all_pnl),net=sum(all_pnl)),
                  wins=results.count("WIN"),losses=results.count("LOSS"),net=sum(pnl),
                  streaks=streaks(results,"WIN","LOSS"),position=dict(pos) if pos else None,
-                 latest=dict(latest) if latest else None,recent=recent)
+-                latest=dict(latest) if latest else None,recent=recent)
++                latest=dict(latest) if latest else None,recent=recent,
++                selective50=selective50.summary(db))
 diff --git a/btc-prophet/prophet/v2reporting.py b/btc-prophet/prophet/v2reporting.py
-index 8eb161f..bc406bd 100644
+index 8eb161f..a484a13 100644
 --- a/btc-prophet/prophet/v2reporting.py
 +++ b/btc-prophet/prophet/v2reporting.py
 @@ -41,6 +41,17 @@ TIMESTAMPS = {
@@ -1277,10 +1482,19 @@ index 8eb161f..bc406bd 100644
          ["$100 matched shadow fills",gate["rounds"]],["$100 after higher costs",gate["stress_net"]],
          ["$100 eligible",gate["qualified"]],["Matched challenger forecasts",c["matched"]],
          ["Baseline correct",c["baseline_right"]],["Challenger correct",c["challenger_right"]],
-@@ -129,6 +157,13 @@ def add_unified(sheets, db, *, quick):
+@@ -129,6 +157,22 @@ def add_unified(sheets, db, *, quick):
          [r["slug"],utc(r["observed"]), "SKIP: "+r["reason"] if r["end"]<=now and r["reason"]!="ENTERED"
           else r["reason"],r["model"],r["up"],r["details"]]
          for r in db.execute("SELECT * FROM unified_rounds ORDER BY start DESC LIMIT ?",(limit,))))
++    from . import selective50
++    sel = selective50.summary(db)
++    sheets.table("Selective $50 Account", ["Market","Entry UTC","Side","Quantity","Cost","Status","Exit UTC",
++        "Proceeds","Paper P&L","Official outcome","Evidence"], [
++        ["Summary",sel["name"],"Balance",sel["balance"],"Trades",sel["trades"],"Wins",sel["wins"],
++         "Losses",sel["losses"],"Net "+str(sel["net"])]] + [
++        [r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],utc(r["closed"]) if r["closed"] else None,
++         r["proceeds"],r["pnl"],r["outcome"],r["details"]]
++        for r in db.execute("SELECT * FROM selective50_trades ORDER BY time DESC LIMIT ?",(limit,))])
 +    sheets.table("Exit Shadow Comparison", ["Exit policy","Settled trades","Shadow exits","Wins","Net P&L",
 +        "Primary exit setting"], (
 +        [r["policy"],r["trades"],r["exits"],r["wins"],r["pnl"],unified.primary_exit()]
@@ -1291,7 +1505,7 @@ index 8eb161f..bc406bd 100644
      if not quick:
          sheets.table("Unified Large Shadows", ["Market","Quote UTC","Side","Cost","Stress cost","Outcome",
              "P&L","Stress P&L","Evidence"], (
-@@ -1204,6 +1239,7 @@ def write_workbook(database, output, *, include_account_equity=True):
+@@ -1204,6 +1248,7 @@ def write_workbook(database, output, *, include_account_equity=True):
              titles_from_data=True,
          )
          dash.add_chart(chart, "D2")
@@ -1312,6 +1526,67 @@ index 0e5439b..b68e12b 100644
  
  [tool.setuptools.packages.find]
  include = ["prophet*"]
+diff --git a/btc-prophet/scripts/polymarket_readonly_check.py b/btc-prophet/scripts/polymarket_readonly_check.py
+new file mode 100644
+index 0000000..338f1c5
+--- /dev/null
++++ b/btc-prophet/scripts/polymarket_readonly_check.py
+@@ -0,0 +1,55 @@
++"""READ-ONLY Polymarket US connection check. It never places, previews or cancels an order.
++
++    .venv/bin/python -m scripts.polymarket_readonly_check          # public prices only, no keys
++    POLYMARKET_KEY_ID=... POLYMARKET_SECRET_KEY=... .venv/bin/python -m scripts.polymarket_readonly_check
++
++Step 1 reads the live price of the current 5-minute BTC market (no keys needed).
++Step 2, only when both key variables are set, reads your account balance and open positions.
++Keys are read from the environment, never saved and never printed.
++"""
++import os
++import sys
++import time
++from datetime import datetime, timezone
++
++
++def slug_for(ts):
++    start = int(ts) // 300 * 300
++    return datetime.fromtimestamp(start, timezone.utc).strftime("cpc-btc-updown-5m-%Y-%m-%d-%H%Mz")
++
++
++def main():
++    try:
++        from polymarket_us import PolymarketUS
++    except ImportError:
++        print("Missing SDK. Run:  .venv/bin/python -m pip install polymarket-us")
++        return 1
++    key, secret = os.environ.get("POLYMARKET_KEY_ID"), os.environ.get("POLYMARKET_SECRET_KEY")
++    client = PolymarketUS(key_id=key, secret_key=secret, max_retries=0)
++    ok = True
++    print("Step 1: public market data (no keys)")
++    for ts in (time.time(), time.time() - 300):
++        slug = slug_for(ts)
++        try:
++            print("  PASS", slug, "best bid/offer:", client.markets.bbo(slug))
++            break
++        except Exception as exc:  # noqa: BLE001
++            print("  could not read", slug, "->", type(exc).__name__, str(exc)[:200])
++    else:
++        ok = False
++    if not (key and secret):
++        print("Step 2 skipped: set POLYMARKET_KEY_ID and POLYMARKET_SECRET_KEY to test your login.")
++        return 0 if ok else 1
++    print("Step 2: your account (read only)")
++    for name, call in (("balance", client.account.balances), ("positions", client.portfolio.positions)):
++        try:
++            print("  PASS", name + ":", call())
++        except Exception as exc:  # noqa: BLE001
++            ok = False
++            print("  FAIL", name, "->", type(exc).__name__, str(exc)[:200])
++    print("No orders were sent. Real-money trading in BTC Prophet stays OFF.")
++    return 0 if ok else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
 diff --git a/btc-prophet/tests/test_incumbent_selection.py b/btc-prophet/tests/test_incumbent_selection.py
 new file mode 100644
 index 0000000..43f224c
@@ -1673,6 +1948,66 @@ index 0000000..7cd4b94
 +        for i in range(30):
 +            play(db, f"r{i}", 5000 + i * 400, "UP")
 +        assert len(unified.summary(db, 20000)["history"]) == 25
+diff --git a/btc-prophet/tests/test_selective50.py b/btc-prophet/tests/test_selective50.py
+new file mode 100644
+index 0000000..3b5917f
+--- /dev/null
++++ b/btc-prophet/tests/test_selective50.py
+@@ -0,0 +1,54 @@
++"""Selective $50 shadow account: rule, money limits and exits. All prices are fixtures."""
++from prophet import selective50, unified
++from test_unified_v321 import TERMS, book, initialize, verify
++
++
++def tick(db, now, *, start=1000, raw=.9, ref=100.1, level=None, slug="round"):
++    details = dict(window_start=start, window_end=start + 300, book_checked=now, reference_timestamp=now,
++                   reference_price=ref, opening_price=100.0, volatility=.0005)
++    unified.observe(db, slug, now, "SIMULATE", "fixture", raw, None, details, level or book(.60, .62), TERMS, lambda: now)
++
++
++def trade(db, slug="round"):
++    return db.execute("SELECT * FROM selective50_trades WHERE slug=?", (slug,)).fetchone()
++
++
++def test_enters_only_in_minute_three_when_all_three_agree(tmp_path):
++    store, _ = initialize(tmp_path)
++    with store.connect() as db:
++        tick(db, 1100)                                     # 1:40 in: too early
++        assert trade(db) is None
++        tick(db, 1190, level=book(.40, .42))               # market disagrees (UP mid 41c)
++        assert trade(db) is None
++        tick(db, 1195, raw=.9)
++        t = trade(db)
++        assert t["side"] == "UP" and t["cost"] <= 3 and t["status"] == "OPEN"
++        s = selective50.summary(db)
++        assert abs(s["balance"] - (50 - t["cost"])) < 1e-9 and s["open"] == 1
++        verify(db, "round", 1000, "UP", 1305); unified.settle(db, 1310)
++        t = trade(db)
++        assert t["status"] == "SETTLED" and t["pnl"] > 0
++        assert abs(selective50.summary(db)["balance"] - (50 - t["cost"] + t["quantity"])) < 1e-9
++
++
++def test_price_cap_and_reversal_exit(tmp_path):
++    store, _ = initialize(tmp_path)
++    with store.connect() as db:
++        tick(db, 1190, level=book(.93, .95))               # costs more than 90c: skip
++        assert trade(db) is None
++        tick(db, 1200, slug="b", start=1010)
++        assert trade(db, "b")["side"] == "UP"
++        tick(db, 1250, slug="b", start=1010, raw=.3, ref=99.9)   # Reference Gap flips to DOWN: sell
++        t = trade(db, "b")
++        assert t["status"] == "SOLD" and t["proceeds"] > 0
++        assert selective50.summary(db)["early_exits"] == 1
++
++
++def test_never_goes_negative_or_adds_money(tmp_path):
++    store, _ = initialize(tmp_path)
++    with store.connect() as db:
++        tick(db, 1190)
++        db.execute("UPDATE selective50_account SET balance=2.5 WHERE id=1")
++        tick(db, 1490, start=1300, slug="next")            # under $3 left: no trade
++        assert trade(db, "next") is None
++        assert selective50.summary(db)["balance"] == 2.5
 diff --git a/btc-prophet/tests/test_unified_v321.py b/btc-prophet/tests/test_unified_v321.py
 index 5db6140..e6c49bc 100644
 --- a/btc-prophet/tests/test_unified_v321.py

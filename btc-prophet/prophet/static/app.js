@@ -243,6 +243,12 @@ async function scoreboard(){
     $('games-pnl').textContent=money(game.net);
     $('game-balance').textContent=money(game.balance)+' cash';
     vegas(game);
+    const sel=game.selective50;
+    if(sel){$('sel50-balance').textContent=money(sel.balance);$('sel50-trades').textContent=sel.trades;
+      $('sel50-wins').textContent=sel.wins;$('sel50-losses').textContent=sel.losses;$('sel50-net').textContent=money(sel.net);
+      $('sel50-note').textContent=sel.balance<sel.stake?'Stopped: less than $3 left. It never adds money or goes negative.':
+        sel.trades?`Win rate ${Math.round(100*sel.wins/sel.trades)}% · ${sel.early_exits} sold early${sel.open?' · 1 trade open':''}`:
+        (sel.open?'1 trade open.':'Paper only. Waiting for a round where all three signals agree.');}
     $('games-since').textContent=game.reset
       ? `Counting since ${new Date(game.counting_since*1000).toISOString().slice(0,16).replace('T',' ')} UTC · all-time ${game.all_time.played} games, ${game.all_time.wins}–${game.all_time.losses}, ${money(game.all_time.net)}`
       : 'Counting since the account started';
