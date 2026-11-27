@@ -6,8 +6,8 @@
  },
  {
   "path": "README.md",
-  "sha256": "91b453e070719e391c740c44a837ba985bf189aa04395a095a73fba4bc43d3ab",
-  "bytes": 22434
+  "sha256": "afd9526b45def33ee28e75d9a46bc92546a42c3f680b6e7b6f699c51c762eb66",
+  "bytes": 22885
  },
  {
   "path": "Start Prophet.command",
@@ -140,6 +140,11 @@
   "bytes": 15364
  },
  {
+  "path": "prophet/feed_check.py",
+  "sha256": "1e481326517ab81a759dd9fa9090eb668686fe450e7b8c5e4973169af9097fc7",
+  "bytes": 2820
+ },
+ {
   "path": "prophet/forecast_metrics.py",
   "sha256": "91c66278e28ed5fae013b6074ebdbc55b80098baf0d0a26b81f0997dd842e38d",
   "bytes": 1630
@@ -221,7 +226,7 @@
  },
  {
   "path": "prophet/remote.py",
-  "sha256": "bd435d5b00082abfc9dda6e36b02da9a5f429245d44eeebcafebe49b35860358",
+  "sha256": "dc3189b10f422a0e7a22e6905d5bba01d4aea29dea7b9501cc8ac81062eb968a",
   "bytes": 8680
  },
  {
@@ -266,8 +271,8 @@
  },
  {
   "path": "prophet/shadow_rules.py",
-  "sha256": "4ec5f8cad3568bea7e60f57ff2b2d2795a658e2143b06c1f062fe498e40edda0",
-  "bytes": 7969
+  "sha256": "a91d09c7a64f75abf663339dc4803eb9e1ad9e4e983dfb290b27b5bbe59c06c5",
+  "bytes": 9698
  },
  {
   "path": "prophet/smart.py",
@@ -366,8 +371,8 @@
  },
  {
   "path": "prophet/unified.py",
-  "sha256": "294a4e1b838af0ce312842b08f2ef42413a2c8d140e497a4b41ac48f1a8e5501",
-  "bytes": 21616
+  "sha256": "12666e02e2dcb7d7de928b112821935d06c518be5c43140bfebb9e86997cab9d",
+  "bytes": 21894
  },
  {
   "path": "prophet/updates.py",
@@ -381,8 +386,8 @@
  },
  {
   "path": "prophet/v2reporting.py",
-  "sha256": "8260dfa142e2f6c374582cf042769a0d76bdcc548ed611bb20ebec573d43df63",
-  "bytes": 86152
+  "sha256": "4c49afb8b22cd454aad9c2652eb2419e4f3aa400bfa0e3af0a5c4ea316f83431",
+  "bytes": 86974
  },
  {
   "path": "prophet/v2risk.py",
@@ -508,6 +513,11 @@
   "path": "tests/test_corrective_research.py",
   "sha256": "d37b71f45e1e9a68fd572666c6fe00a5bc5544af3d36029cd65a487890c6acbe",
   "bytes": 5058
+ },
+ {
+  "path": "tests/test_dev14.py",
+  "sha256": "822f405aee55883e8b5d7e9aec239d79e4b05a7a8e39a57a1485e1d2b31efc3e",
+  "bytes": 3694
  },
  {
   "path": "tests/test_exit_research.py",

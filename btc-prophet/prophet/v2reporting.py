@@ -183,6 +183,16 @@ def add_unified(sheets, db, *, quick):
         [names.get(r["rule"],r["rule"]),r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],
          utc(r["closed"]) if r["closed"] else None,r["proceeds"],r["pnl"],r["outcome"],r["details"]]
         for r in db.execute("SELECT * FROM shadow_rule_trades ORDER BY time DESC LIMIT ?",(limit,))])
+    from . import feed_check
+    fc = feed_check.summary(db)
+    sheets.table("Price Feed Check", ["Market","Start UTC","Official open","Bot open","Open difference $",
+        "Official close","Bot last reading","Last reading at (s)","Feed age (s)","Outcome","Bot direction matched"], [
+        ["Summary","Rounds "+str(fc.get("rounds",0)),"Median open gap $",fc.get("median_open_gap"),
+         "Worst open gap $",fc.get("worst_open_gap"),"Minute-4 direction right",fc.get("minute4_direction_right"),
+         "Median feed age (s)",fc.get("median_feed_age"),None]] + [
+        [r["slug"],utc(r["start"]),r["official_open"],r["bot_open"],r["open_difference"],r["official_close"],
+         r["bot_last"],r["last_elapsed"],r["feed_age"],r["outcome"],r["bot_direction_matches"]]
+        for r in feed_check.rows(db, limit)])
     sheets.table("Exit Shadow Comparison", ["Exit policy","Settled trades","Shadow exits","Wins","Net P&L",
         "Primary exit setting"], (
         [r["policy"],r["trades"],r["exits"],r["wins"],r["pnl"],unified.primary_exit()]

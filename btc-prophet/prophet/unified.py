@@ -5,7 +5,7 @@ import math
 
 import logging
 
-from . import selective50, shadow_rules
+from . import feed_check, selective50, shadow_rules
 from .analytics import streaks
 from .execution import execute, paper_buy
 
@@ -33,6 +33,7 @@ LARGE_MAX_DRAWDOWN = 250
 def initialize(db):
     selective50.initialize(db)
     shadow_rules.initialize(db)
+    feed_check.initialize(db)
     db.executescript("""
         CREATE TABLE IF NOT EXISTS unified_account (
             id INTEGER PRIMARY KEY CHECK(id=1), started REAL NOT NULL,
@@ -221,6 +222,10 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
         db.execute("INSERT OR IGNORE INTO unified_forecasts VALUES (?,?,?,?,?)", (slug,model,now,raw_up,up))
         db.execute("INSERT OR IGNORE INTO unified_minute_forecasts VALUES (?,?,?,?,?)",
                    (slug,model,minute,now,raw_up))
+    try:
+        feed_check.record(db,slug,now,start,details)
+    except Exception as exc:  # noqa: BLE001 - logging must never stop the bot
+        log.warning("Feed check skipped %s: %s", slug, exc)
     if mode != "SIMULATE":
         return
     try:
@@ -395,4 +400,4 @@ def summary(db, now):
                 wins=results.count("WIN"),losses=results.count("LOSS"),net=sum(pnl),
                 streaks=streaks(results,"WIN","LOSS"),position=dict(pos) if pos else None,
                 latest=dict(latest) if latest else None,recent=recent,
-                selective50=selective50.summary(db), selective1000=selective50.summary(db,"selective1000"), shadow_rules=shadow_rules.summary(db))
+                selective50=selective50.summary(db), selective1000=selective50.summary(db,"selective1000"), shadow_rules=shadow_rules.summary(db), feed_check=feed_check.summary(db))

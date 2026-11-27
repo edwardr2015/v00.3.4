@@ -10,6 +10,15 @@ orders and never touches the main $1,000 account or the Selective $50 account.
   agree_90s       From 90 s, buy the side the Reference Gap model and the market price agree on,
                   40-70c, 3% edge, hold to settlement (research rule 90s_gap_agreement_40_70).
 
+dev14 adds three more, from the 60-day simulation and Report 18 (the model was overconfident:
+it said 68% on average, the market said 58%, and 56% actually won):
+
+  reality_check       The main forecast pulled 70% of the way back toward the market price
+                      (blend = market + 0.3 x (model - market)). Buys only if the blended chance
+                      still beats the price by 3%, 30-70c, sells early like the main rule.
+  reality_check_hold  The same entry, but holds to the end.
+  gap_40_49           The main rule, but only buys at 40-49c (best research band in Report 18).
+
 The point is evidence: if one of these keeps beating the main account on fresh rounds, switching
 the main account to it is a decision for the owner, not something this module does.
 """
@@ -21,6 +30,7 @@ STARTING_CASH = 50.0
 STAKE = 3.0
 MAIN_EDGE = .10
 EXIT_MARGIN = .03
+BLEND = .30   # how much of the model's disagreement with the market to trust
 
 RULES = {
     "skip_minute_2": dict(label="Main rule, skips minute 2", band=(.40, .70), edge=MAIN_EDGE,
@@ -29,7 +39,19 @@ RULES = {
                         exit="probability", describe="Same as main · only buys at 40–55¢"),
     "agree_90s": dict(label="90-second agreement", band=(.40, .70), edge=.03, exit="hold",
                       describe="From 1:30 · model and market agree · 40–70¢ · holds to the end"),
+    "reality_check": dict(label="Reality check (model + market)", band=(.30, .70), edge=.03,
+                          exit="probability", blend=True,
+                          describe="Model pulled 70% toward market price · 30–70¢ · sells early"),
+    "reality_check_hold": dict(label="Reality check, holds", band=(.30, .70), edge=.03, exit="hold",
+                               blend=True, describe="Same reality check · holds to the end"),
+    "gap_40_49": dict(label="Main rule, pays 40–49¢ only", band=(.40, .4999), edge=MAIN_EDGE,
+                      exit="probability", describe="Same as main · only buys at 40–49¢"),
 }
+
+
+def blended(p, market):
+    """Trust only part of the model's disagreement with the market price."""
+    return market + BLEND * (p - market)
 
 
 def initialize(db):
@@ -74,6 +96,8 @@ def observe(db, slug, now, start, end, raw_up, up, book, terms, blocked):
         if trade:
             if trade["status"] == "OPEN" and cfg["exit"] == "probability" and up is not None:
                 held = up if trade["side"] == "UP" else 1 - up
+                if cfg.get("blend"):
+                    held = blended(held, midpoint if trade["side"] == "UP" else 1 - midpoint)
                 sale = execute(book, trade["side"], quantity=trade["quantity"], buying=False, **terms)
                 if (sale["quantity"] + 1e-9 >= trade["quantity"]
                         and sale["total"] >= held * trade["quantity"] + EXIT_MARGIN * trade["cost"]):
@@ -82,6 +106,8 @@ def observe(db, slug, now, start, end, raw_up, up, book, terms, blocked):
         wants = _wants(rule, elapsed, up, raw_up, midpoint)
         if not wants:
             continue
+        if cfg.get("blend"):
+            wants = [(side, blended(p, midpoint if side == "UP" else 1 - midpoint)) for side, p in wants]
         balance = _balance(db, rule, now)
         if balance < STAKE:
             continue                                   # out of money: stop, never borrow or top up
