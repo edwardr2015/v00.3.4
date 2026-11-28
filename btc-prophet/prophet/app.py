@@ -115,7 +115,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
             finally:
                 runtime.release()
 
-    app = FastAPI(title="AI BTC Prophet Trader", version="2.0.1", lifespan=lifespan)
+    app = FastAPI(title="AI BTC Prophet Trader", version="2.0.2", lifespan=lifespan)
     app.state.store = store
     app.state.collector = collector
     app.state.paper = paper
@@ -523,8 +523,8 @@ def create_app(db_path=None, collect=True, auth_required=True):
     @app.post("/api/remote/main-model/{value}")
     def main_model(value: str):
         """Owner switch: main account forecast = official settlement-average rule (off by default)."""
-        if value not in ("settlement", "settlement_live", "standard"):
-            raise HTTPException(404, "Use standard, settlement or settlement_live")
+        if value not in ("settlement", "settlement_live", "selective", "standard"):
+            raise HTTPException(404, "Use standard, settlement, settlement_live or selective")
         store.put("main_model", value)
         store.put("main_model_settlement", value != "standard")
         store.event("INFO", "Main account forecast set to " + value)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-btc-prophet"
-version = "2.0.1"
+version = "2.0.2"
 description = "Private Bitcoin research and paper-trading laboratory; real execution disabled"
 requires-python = ">=3.11"
 dependencies = ["fastapi==0.121.3", "uvicorn==0.38.0", "httpx==0.28.1", "openpyxl==3.1.5", "websockets==15.0.1"]

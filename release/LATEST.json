@@ -1,1 +1,1 @@
-{"build": 21, "file": "ai-btc-prophet-2.0.1.zip", "sha256": "078d7b19b867d61128f8b84ff856950e14c18fba60512098b4228552d03b507a", "notes": "2.0.1: last-minute locked closing seconds come from the live feeds"}
+{"build": 22, "file": "ai-btc-prophet-2.0.2.zip", "sha256": "d46deeb370299f6354355f6b400105de2ca3be8bcca20f65a5fcf83160298edf", "notes": "2.0.2: Selective-rule switch for the main account, keep Mac awake"}

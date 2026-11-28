@@ -126,6 +126,11 @@ The 90-second shadow records a call only when the Momentum score meets 65% and a
 - Updates never install on their own. On the phone page press **Check for update** (reads `release/LATEST.json` on GitHub), then **Install now** when ready. It pauses, backs up the database, installs, restarts and resumes paper trading.
 - Real-money trading stays locked.
 
+## 2.0.2
+- Main-account switch has a fourth choice, **selective**: the main $1,000 account takes exactly the Selective rule's trades at $5 and sells when its reversal exit fires (otherwise holds). Off by default.
+- The launcher keeps the Mac awake while the bot window is open.
+- 2.0.1: in the last minute, the already-locked part of the closing average comes from the live feeds.
+
 ## dev17
 - **Feed referee**: live WebSocket prices from Coinbase, Kraken, Bitstamp and Gemini (exchanges inside BRTI), read the same way (USD mid-price, one clock). Each second every feed is checked (connected, alive within 2 s, not frozen while others move, within 0.3% of the median, clock within 2 s). The live price is the median of the healthy feeds (needs 2+), plus a basis learned from official settlement values. Fewer than 2 healthy feeds: no live price, the bot keeps using Polymarket's (delayed) BRTI.
 - Proof: the "Feed Referee" report sheet and phone card show the time shift and dollar error of the live price against Polymarket's official opening/closing values for every round (target: 0 s and under $1; the old feed needs about +29 s).

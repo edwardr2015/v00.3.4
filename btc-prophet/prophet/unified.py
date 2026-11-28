@@ -225,6 +225,7 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
     db.execute("""INSERT OR IGNORE INTO unified_rounds VALUES (?,?,?,?,?,?,?,?)""",
                (slug,start,end,now,"WAITING",model,None,"{}"))
     order = db.execute("SELECT * FROM unified_trades WHERE slug=?", (slug,)).fetchone()
+    choice = fresh.main_model(db)   # owner switch: standard / settlement / settlement_live / selective
     up = None
     audit = {k: details.get(k) for k in ("reference_timestamp","book_timestamp","book_checked",
                                          "volatility","elapsed","reference_price","opening_price",
@@ -252,7 +253,6 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
             settle_up = None
         settle_up = settle_up or {}
         audit["settlement_up"], audit["settlement_live_up"] = settle_up.get("standard"), settle_up.get("live")
-        choice = fresh.main_model(db)
         pick = settle_up.get("live") if choice == "settlement_live" else settle_up.get("standard") if choice == "settlement" else None
         if pick is not None:
             # Owner switch (off by default): the main account uses the official-rule forecast.
@@ -288,6 +288,14 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
         if details.get("book_checked") and now - details["book_checked"] > EXIT_BOOK_MAX_AGE:
             return   # dev16: never sell (or record a shadow sale) on a book fetched more than 5 s ago
             # (book_timestamp is the exchange's last-trade time, not quote freshness, so it is not used)
+        if choice == "selective":
+            mirror = db.execute("SELECT status FROM selective50_trades WHERE slug=?", (slug,)).fetchone()
+            if mirror and mirror["status"] == "SOLD":       # the Selective rule's reversal exit fired
+                sale = execute(book,order["side"],quantity=order["quantity"],buying=False,**terms)
+                checked = commit_time()
+                if checked is not None and sale["quantity"]+1e-9 >= order["quantity"]:
+                    close(db,order,checked,sale["total"],"SOLD",dict(audit,fill=sale,exit="selective_reversal"))
+            return                                          # otherwise hold to the end, like the Selective rule
         held = up if order["side"]=="UP" else 1-up
         sale = execute(book,order["side"],quantity=order["quantity"],buying=False,**terms)
         if sale["quantity"]+1e-9 < order["quantity"]:
@@ -318,10 +326,22 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
     side = None
     stake = BASE_STAKE
     if not reason:
-        if premium and premium["gate"]["qualified"] and balance >= LARGE_STAKE:
+        if choice == "selective":
+            # Owner switch: the main account takes exactly the Selective rule's trades, at $5.
+            mirror = db.execute("SELECT side FROM selective50_trades WHERE slug=? AND status='OPEN'", (slug,)).fetchone()
+            reason = "SELECTIVE_RULE_WAITING"
+            if mirror and balance >= BASE_STAKE:
+                fill, why = paper_buy(book, mirror["side"], BASE_STAKE, **terms)
+                if fill and fill["total"] / fill["quantity"] <= .90:
+                    entry, side, reason = dict(fill=fill, ev=None), mirror["side"], None
+                else:
+                    reason = "SELECTIVE_" + (why or "PRICE_ABOVE_90C")
+        elif premium and premium["gate"]["qualified"] and balance >= LARGE_STAKE:
             entry, side, up = premium["candidate"], premium["side"], premium["up"]
             stake, model = LARGE_STAKE, "selective-90-v1"
-        if not entry and balance >= BASE_STAKE:
+        if choice == "selective":
+            pass
+        elif not entry and balance >= BASE_STAKE:
             choices = [(side,*candidate(book,side,BASE_STAKE,p,terms,.40,.70,MIN_EDGE))
                        for side,p in (("UP",up),("DOWN",1-up))]
             eligible = [(direction,result) for direction,result,_ in choices if result]
@@ -329,7 +349,7 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
                 side,entry = max(eligible,key=lambda item:item[1]["ev"])
             else:
                 reason = "/".join(f"{direction}:{why}" for direction,_,why in choices)
-        elif not entry:
+        elif not entry and choice != "selective":
             reason = "INSUFFICIENT_CASH"
     if entry and db.execute("SELECT 1 FROM unified_trades WHERE status='OPEN'").fetchone():
         entry, reason = None, "PRIOR_POSITION_OPEN"

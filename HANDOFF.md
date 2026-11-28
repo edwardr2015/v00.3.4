@@ -72,3 +72,7 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 
 ## 2.0.1 (build 21)
 - fresh.settlement_up(live=True): the already-locked part of the closing average (last minute) now comes from the live feed referee (consensus + basis), not the ~25-30 s late Polymarket BRTI; refuses to forecast if live seconds have gaps (<80% coverage).
+
+## 2.0.2 (build 22)
+- main_model=selective: main mirrors selective50 entries ($5, <=90c) and its reversal exit. Launcher runs caffeinate -ims -w $$.
+- fresh_sim.py (5,102 markets, BRTI history shifted -29 s): fresh-feed model error 0.1804 vs stale 0.2017 vs market 0.1576 at ~90 s; trading its edge: fresh -7.5c/$1 (62% wins) vs stale -11.7c/$1 (46%). Fresh data halves the gap but the market still forecasts better at minute resolution.

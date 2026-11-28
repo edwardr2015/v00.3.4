@@ -192,3 +192,29 @@ def test_last_minute_uses_live_feeds_for_the_locked_part(tmp_path):
         assert p_old < p_live                                       # delayed feed would understate it
         db.execute("DELETE FROM feed_ticks WHERE time>?", (end - 30,))   # gap in live data: refuse to guess
         assert fresh.settlement_up(db, now, start, end, 60000.0, 60100.0, .0005, live=True) == (None, None)
+
+
+def test_main_follows_selective_rule_when_switched_on(tmp_path):
+    from prophet import unified
+    store = Store(str(tmp_path / "p.sqlite3"))
+    app = create_app(store.path, collect=False, auth_required=False)
+    app.state.paper.recover_startup(1000)
+    store.put("main_model", "selective")
+    terms = dict(theta=.11, tick=.01, quantum=.01)
+    level = dict(bids=[dict(price=.60, quantity=5000)], asks=[dict(price=.62, quantity=5000)])
+    def obs(db, now, raw):
+        d = dict(window_start=1000, window_end=1300, book_checked=now, reference_timestamp=now,
+                 reference_price=100.2, opening_price=100.0, volatility=.0005, book_timestamp=now)
+        unified.observe(db, "r", now, "SIMULATE", "fixture", raw, None, d, level, terms, lambda: now)
+    with store.connect() as db:
+        obs(db, 1100, .8)                               # minute 1: Selective rule does not trade yet
+        assert db.execute("SELECT count(*) FROM unified_trades").fetchone()[0] == 0
+        for t in range(1180, 1200, 6):                  # minute 3: build price history, then all 3 agree on UP
+            obs(db, t, .8)
+        sel = db.execute("SELECT side FROM selective50_trades WHERE slug='r'").fetchone()
+        main = db.execute("SELECT side, cost FROM unified_trades WHERE slug='r'").fetchone()
+        assert sel is not None and main is not None     # main trades exactly when the Selective rule does
+        assert main["side"] == sel["side"] == "UP" and main["cost"] <= 5
+        obs(db, 1215, .3)                               # model flips: Selective rule's reversal exit ...
+        assert db.execute("SELECT status FROM selective50_trades WHERE slug='r'").fetchone()[0] == "SOLD"
+        assert db.execute("SELECT status FROM unified_trades WHERE slug='r'").fetchone()[0] == "SOLD"   # ... main follows

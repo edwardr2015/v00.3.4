@@ -132,6 +132,8 @@ fi
 # The phone's Install now / Restart buttons stop the app with a restart request.
 # This launcher then starts again, which opens the newly selected release.
 export PROPHET_SUPERVISED=1
+# Keep the Mac awake while this window is open (macOS caffeinate; stops when the bot stops).
+if command -v caffeinate >/dev/null 2>&1; then caffeinate -ims -w $$ & fi
 marker="$(dirname "$PROPHET_DB")/updates/restart-requested"
 status=0
 .venv/bin/python -m uvicorn prophet.app:app --host "$host" --port 8000 --workers 1 || status=$?
