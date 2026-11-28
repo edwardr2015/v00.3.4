@@ -77,6 +77,8 @@ def create_app(db_path=None, collect=True, auth_required=True):
     referee = Referee(store)
     from .live import LiveTrader
     live_trader = LiveTrader(store)
+    from .watchdog import Watchdog
+    dog = Watchdog(store, paper)
     export_lock = asyncio.Lock()
     quick_export_lock = asyncio.Lock()
 
@@ -103,6 +105,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
                 hourly.start()
                 referee.start()
                 live_trader.start()
+                dog.start()
             yield
         finally:
             await runtime.close(release=False)
@@ -111,6 +114,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
                 await hourly.close()
                 await referee.close()
                 await live_trader.close()
+                await dog.close()
                 await corrective_research.close()
                 await alerts.close()
                 await learning.close()
@@ -119,7 +123,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
             finally:
                 runtime.release()
 
-    app = FastAPI(title="AI BTC Prophet Trader", version="2.1.0", lifespan=lifespan)
+    app = FastAPI(title="AI BTC Prophet Trader", version="2.1.1", lifespan=lifespan)
     app.state.store = store
     app.state.collector = collector
     app.state.paper = paper
@@ -855,6 +859,8 @@ def create_app(db_path=None, collect=True, auth_required=True):
             store.put("emergency", False)
         else:
             raise HTTPException(404, "Unknown control")
+        from . import watchdog
+        watchdog.remember(store, action)
         store.event("INFO", "User control: " + action)
         return dict(ok=True, action=action)
 

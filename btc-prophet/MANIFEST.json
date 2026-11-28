@@ -6,8 +6,8 @@
  },
  {
   "path": "README.md",
-  "sha256": "56e48c8138973a79b54e31c6ee2109cc8d2c88826b58a4ebee6e7eb843a1c4ea",
-  "bytes": 26012
+  "sha256": "102d27c726dc5c750c1c6ad59446ffb93966940e8ebb3195f01dee47f2a54ffa",
+  "bytes": 26241
  },
  {
   "path": "Start Prophet.command",
@@ -81,8 +81,8 @@
  },
  {
   "path": "prophet/app.py",
-  "sha256": "a6b71f11f84eecfa3769f62c0cb1653fe12cff6b859a3ddf38e2601f52a30aca",
-  "bytes": 51258
+  "sha256": "2ff070b8c679f822b88adf9bbb2f6c6b74b6d14cb9bc8a1b614bc52c28ece22d",
+  "bytes": 51460
  },
  {
   "path": "prophet/audit.py",
@@ -251,7 +251,7 @@
  },
  {
   "path": "prophet/remote.py",
-  "sha256": "163c748c8d73845e832264815569a54f8a68c0c21dbb7d1d8ef7f4886ab43726",
+  "sha256": "b57f45bfa3d4c8c74d7d6770c484cccb023fdc93ed826cd71f16a6b68be3bf00",
   "bytes": 8895
  },
  {
@@ -425,8 +425,13 @@
   "bytes": 10138
  },
  {
+  "path": "prophet/watchdog.py",
+  "sha256": "f358b36750535391dc5b98ed3393a4364847bb20027b4c99afa1cf03ee20d20b",
+  "bytes": 2151
+ },
+ {
   "path": "pyproject.toml",
-  "sha256": "a6a54e885699534e060df8ae234ad03381138f297aa683caabc55cfcc19178d2",
+  "sha256": "b9ce953211a78cb4c9706ddd292286486fd53dd7bf40978d2bff42617c51f98d",
   "bytes": 897
  },
  {
@@ -596,8 +601,8 @@
  },
  {
   "path": "tests/test_live.py",
-  "sha256": "6e613910b31f87e5f3d7386ea5898d9257a7aa4bf2c5c5378a525612f0578de8",
-  "bytes": 7928
+  "sha256": "59fcfe0b842a438bcc4da497f8936b01b52825ef825dfa1c431b156b210ac99a",
+  "bytes": 9187
  },
  {
   "path": "tests/test_model_paper.py",

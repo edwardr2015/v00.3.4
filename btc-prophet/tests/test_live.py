@@ -175,3 +175,25 @@ def test_mode_switch_only_local_and_live_needs_confirmation(tmp_path):
         assert c.get("/api/live").json()["mode"] == "LIVE"
         c.post("/api/control/emergency", headers=H)                # emergency stop turns real trading off
         assert c.get("/api/live").json()["mode"] == "OFF"
+
+
+def test_watchdog_resumes_paper_after_disconnect_only_if_owner_chose_running(tmp_path):
+    from prophet import watchdog
+    store = Store(str(tmp_path / "p.sqlite3"))
+    app = create_app(store.path, collect=False, auth_required=False)
+    paper = app.state.paper
+    now = time.time()
+    fresh = dict(ok=True, checked=now)
+    store.put("health_reference", fresh); store.put("health_market", fresh)
+    paper.mode("OFF")
+    assert watchdog.check(store, paper, now) is None                 # owner never chose running
+    watchdog.remember(store, "resume")
+    store.put("health_market", dict(ok=False, checked=now))
+    assert watchdog.check(store, paper, now) == "WAITING_FOR_CONNECTION"
+    store.put("health_market", fresh)
+    assert watchdog.check(store, paper, now) == "RESUMED" and store.get("mode") == "SIMULATE"
+    paper.mode("OFF"); watchdog.remember(store, "pause")
+    assert watchdog.check(store, paper, now) is None                 # owner paused: stays paused
+    watchdog.remember(store, "resume"); store.put("emergency", True)
+    assert watchdog.check(store, paper, now) is None                 # emergency stop: never auto-resume
+    assert live.mode(store) == "OFF"                                 # and it never touches real money

@@ -81,3 +81,6 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 - prophet/live.py LiveTrader (owner asked to go live: $50, $3/trade). Follows selective50 paper decisions; IOC limit orders, sent once, never retried; error -> OFF. Reversal exit (SELL_LONG/SELL_SHORT IOC at bid-1 tick). Modes in data/timing/live-mode, local-only endpoint, LIVE needs X-Prophet-Confirm: real-money and a confirmed short-price convention (data/timing/live-convention.json from scripts/live_test.py --buy).
 - NOT YET VERIFIED against the real exchange: how BUY_SHORT price is read (DOWN price vs UP price). live_test.py previews both; for marketable IOC orders both fill at market, only the protection limit differs.
 - Audit: connection checks per feed, real-money check.
+
+## 2.1.1 (build 24)
+- prophet/watchdog.py: remembers owner Start/Resume vs Pause/Stop/Emergency (store owner_mode); every 30 s resumes SIMULATE when reference+book are fresh. Owner reported having to press Resume after disconnects; live trader depends on selective50 paper signals, which need SIMULATE.
