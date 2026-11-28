@@ -126,6 +126,10 @@ The 90-second shadow records a call only when the Momentum score meets 65% and a
 - Updates never install on their own. On the phone page press **Check for update** (reads `release/LATEST.json` on GitHub), then **Install now** when ready. It pauses, backs up the database, installs, restarts and resumes paper trading.
 - Real-money trading stays locked.
 
+## 2.5.0: win sound fixed, lean dashboard
+- Win sound: browsers only allow sound after one click or tap on the page. Click "🔊 Enable sound" (or anywhere) once per tab; every win after that plays. The phone page (/remote) now also plays it, for main-account, Selective and real-money wins, with a "Test sound" button.
+- Lean mode hides the 12 retired research panels on the dashboard (they return with full-research).
+
 ## 2.4.0: decision report
 - Quick report = decision report: **Start Here** (one page: version, paper and real-money status, real-money cash and P&L, main account, audit result and every FAIL, live-feed accuracy, what the brain thinks, account ranking), **Real Money Trades**, then Main scoreboard and trades, Selective accounts, test accounts, live-feed proof, System Audit, Brain, Exit comparison.
 - Research report (new download): the former quick report with the retired research models. Full audit unchanged (now also has Real Money Trades).

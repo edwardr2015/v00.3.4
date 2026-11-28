@@ -436,10 +436,9 @@ async function songStatus(){
 songStatus();setInterval(songStatus,60000);
 function closeWin(){
   clearTimeout(overlayTimer);
-  const audio=$('win-audio');audio.pause();audio.removeAttribute('src');audio.load();
+  WinSound.stop();
   $('win-overlay').hidden=true;
 }
-$('win-audio').addEventListener('ended',closeWin);       // played once: close the screen
 function showWin(text){
   if(!$('win-video-on').checked)return;
   $('win-text').textContent=text;$('win-note').textContent='';
@@ -450,16 +449,15 @@ function showWin(text){
     $('win-note').textContent='Add your song as win-sound.mp3 in the data folder to hear it here.';
     overlayTimer=setTimeout(closeWin,6000);return;
   }
-  const audio=$('win-audio');
-  audio.src='/api/win-sound?v='+Date.now();audio.currentTime=0;   // always the current file
-  audio.play().then(()=>{
-    overlayTimer=setTimeout(closeWin,seconds>0?seconds*1000:15*60*1000);
-  }).catch(()=>{
-    $('win-note').textContent='Safari blocked the sound. Click Test once after opening the dashboard to allow it.';
-    overlayTimer=setTimeout(closeWin,8000);
+  WinSound.play(seconds>0?seconds:0).then(closeWin,()=>{
+    $('win-note').textContent='Sound is off in this tab: click "Enable sound" (or anywhere on the page) once to allow it.';
   });
+  overlayTimer=setTimeout(closeWin,seconds>0?seconds*1000:15*60*1000);
 }
 $('win-close').onclick=closeWin;
+function soundLabel(on){$('win-sound-enable').textContent=on?'🔊 Sound on':'🔊 Enable sound';}
+WinSound.onChange(soundLabel);
+$('win-sound-enable').onclick=()=>WinSound.unlock();
 $('win-overlay').onclick=e=>{if(e.target===$('win-overlay'))closeWin();};
 $('win-video-test').onclick=()=>{const was=$('win-video-on').checked;$('win-video-on').checked=true;showWin('Test celebration');$('win-video-on').checked=was;};
 const SKIP_WORDS={PRICE_OUTSIDE_BAND:'price outside 40–70¢',EDGE_TOO_SMALL:'expected profit too small',
@@ -551,3 +549,6 @@ function showResult(last,celebrate){
   el.className='wheel-result '+(won?'win':'loss');
   if(won&&celebrate)showWin(`${money(last.pnl)} · win streak ${$('vegas-streak').textContent}`);
 }
+
+// 2.5: in lean mode the retired research panels are hidden (they return when research is switched back on).
+(async()=>{try{const st=await getJSON('/api/state');if(st.lean)document.querySelectorAll('.research-only').forEach(el=>el.hidden=true);}catch(e){}})();

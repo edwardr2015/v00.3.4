@@ -98,3 +98,7 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 ## 2.4.0 (build 27)
 - write_quick_workbook = decision report (Start Here, Real Money Trades, DECISION_SHEETS via _Only filter). Old quick = write_research_workbook, /api/export/research.xlsx. add_live also in full workbook.
 - Report sections wrapped in _section/_safe_init: read-only DB from older version no longer crashes (found on live17 DB: brain.initialize on read-only).
+
+## 2.5.0 (build 28)
+- static/winsound.js: Web Audio unlock on first gesture/"Enable sound", decoded once, plays on win (autoplay policy was blocking <audio>.play from timers). Dashboard + /remote (main, selective50, live wins). Browser-tested: scripts/browser_check_sound.js (node playwright).
+- research-only panels hidden when /api/state lean=true; asset ?v=2.5.0 cache bust.

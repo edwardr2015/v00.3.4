@@ -103,3 +103,22 @@ async function brainView(){
   }catch(e){}
 }
 brainView();setInterval(brainView,30000);
+// 2.5 win sound on this page: main account, Selective account and real-money wins.
+const seen={};
+function celebrate(text){
+  const b=$('win-banner');b.textContent='🎰 WIN! '+text;b.hidden=false;setTimeout(()=>{b.hidden=true;},15000);
+  WinSound.play(30).catch(()=>{b.textContent+=' (tap "Enable win sound" to hear it)';});
+}
+function checkWin(key,count,text){if(count==null)return;if(seen[key]!=null&&count>seen[key])celebrate(text);seen[key]=count;}
+WinSound.onChange(on=>{$('r-sound').textContent=on?'🔊 Win sound on':'🔊 Enable win sound';});
+$('r-sound').onclick=()=>WinSound.unlock();
+$('r-sound-test').onclick=async()=>{await WinSound.unlock();celebrate('test');};
+async function winWatch(){
+  try{
+    const g=await api('/api/unified');
+    checkWin('main',g.all_time&&g.all_time.wins,'main account '+money(g.last_settled&&g.last_settled.pnl));
+    if(g.selective50)checkWin('sel',g.selective50.wins,'Selective $50');
+  }catch(e){}
+  try{const l=await api('/api/live');checkWin('live',l.wins,'REAL MONEY · '+money(l.pnl)+' total');}catch(e){}
+}
+winWatch();setInterval(winWatch,5000);

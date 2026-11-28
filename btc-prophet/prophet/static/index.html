@@ -4,10 +4,10 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#0b101b">
   <title>AI BTC Prophet · Research Terminal</title>
-  <link rel="stylesheet" href="/static/style.css?v=0.3.23">
+  <link rel="stylesheet" href="/static/style.css?v=2.5.0">
   <script defer src="/static/vendor/lightweight-charts.js"></script>
-  <script defer src="/static/decision.js?v=0.3.23"></script><script defer src="/static/app.js?v=0.3.23"></script>
-  <script defer src="/static/v2.js?v=0.3.23"></script>
+  <script defer src="/static/decision.js?v=2.5.0"></script><script defer src="/static/winsound.js?v=2.5.0"></script><script defer src="/static/app.js?v=2.5.0"></script>
+  <script defer src="/static/v2.js?v=2.5.0"></script>
 </head>
 <body>
 <aside class="rail"><a class="brand-icon" href="/" aria-label="Prophet home">₿</a><span class="rail-active" title="Research dashboard">◫</span><span class="rail-bottom">0.3.23</span></aside>
@@ -33,7 +33,7 @@
           <small>Colour = what the market did (green UP, red DOWN) · ▲▼ = what the bot bought · ✓ won · ✗ lost · S = skipped</small></div>
         <div class="vegas-controls"><label><input type="checkbox" id="win-video-on" checked> Play win song</label>
           <select id="win-length" aria-label="Song length"><option value="15">15 s</option><option value="30" selected>30 s</option><option value="0">Whole song</option></select>
-          <button type="button" class="button subtle" id="win-video-test">Test</button> <span id="win-sound-state"></span></div>
+          <button type="button" class="button subtle" id="win-sound-enable">🔊 Enable sound</button> <button type="button" class="button subtle" id="win-video-test">Test</button> <span id="win-sound-state"></span></div>
       </div>
     </section>
     <div id="win-overlay" class="win-overlay" hidden role="dialog" aria-label="Win celebration">
@@ -47,7 +47,7 @@
     <section class="panel game-card" id="shadow-card"><div class="panel-heading"><div><h2>Test accounts · which fix makes more?</h2><p>Paper only · never below $0 · never topped up · the main account is not changed</p></div></div>
       <div class="table-scroll"><table class="model-table"><thead><tr><th>Account</th><th>Rule</th><th>Trades</th><th>Won–Lost</th><th>Net P&amp;L</th><th>Balance</th></tr></thead><tbody id="shadow-rows"><tr><td colspan="6">Loading…</td></tr></tbody></table></div>
       <p class="games-since" id="shadow-note">Give these a few days. A fix is only worth switching to if it keeps beating the main account on fresh rounds.</p></section>
-    <section class="panel game-card" id="models-card"><div class="panel-heading"><div><h2>All models &amp; learning</h2><p id="models-sub">Every model's paper account · $1,000 start each · does it learn?</p></div><strong id="exit-badge">—</strong></div>
+    <section class="research-only panel game-card" id="models-card"><div class="panel-heading"><div><h2>All models &amp; learning</h2><p id="models-sub">Every model's paper account · $1,000 start each · does it learn?</p></div><strong id="exit-badge">—</strong></div>
       <p class="games-since" id="learning-summary">Loading learning record…</p>
       <div class="table-scroll"><table class="model-table"><thead><tr><th>Model</th><th>Learning</th><th>Trades</th><th>Won–Lost</th><th>Win rate</th><th>Net P&amp;L</th></tr></thead><tbody id="model-rows"><tr><td colspan="6">Loading…</td></tr></tbody></table></div></section>
     <section class="panel game-card"><div class="panel-heading"><div><h2>Paper scoreboard</h2><p>Since 0.3.21 · Starting balance $1,000</p></div><strong id="game-balance">—</strong></div>
@@ -65,12 +65,12 @@
 </div>
 <dialog id="research-results-dialog" aria-labelledby="research-results-title">
   <form class="research-results-heading" method="dialog">
-    <h2 id="research-results-title">Research Results</h2>
+    <h2 id="research-results-title" class="research-only">Research Results</h2>
     <button class="button" aria-label="Close research results" autofocus>Close</button>
   </form>
-  <section class="panel events-panel"><h2>Forward research</h2><p id="corrective-comparison">Waiting for verified outcomes.</p><p id="corrective-vote">Waiting for a synchronized model panel.</p></section>
-  <section class="panel events-panel"><h2>Challenger vs. baseline</h2><p id="challenger-match">Waiting for matched verified forecasts.</p><p id="large-progress">Waiting for $100 shadow evidence.</p></section>
-  <section class="panel events-panel" aria-labelledby="picks-title">
+  <section class="research-only panel events-panel"><h2>Forward research</h2><p id="corrective-comparison">Waiting for verified outcomes.</p><p id="corrective-vote">Waiting for a synchronized model panel.</p></section>
+  <section class="research-only panel events-panel"><h2>Challenger vs. baseline</h2><p id="challenger-match">Waiting for matched verified forecasts.</p><p id="large-progress">Waiting for $100 shadow evidence.</p></section>
+  <section class="research-only panel events-panel" aria-labelledby="picks-title">
       <h2 id="picks-title">Last 25 directional predictions</h2>
       <p id="ai-results">No settled benchmark trades</p>
       <p id="selective-90-results">90-second shadow · waiting for verified results</p>
@@ -81,13 +81,13 @@
       <p>Independent $1,000 comparison accounts. Equity requires a current executable quote.</p>
       <div class="model-cards" id="competition-cards"></div>
     </section>
-    <section class="panel events-panel" aria-labelledby="autonomous-title">
+    <section class="research-only panel events-panel" aria-labelledby="autonomous-title">
       <div class="panel-heading"><div><h2 id="autonomous-title">Autonomous paper accounts</h2>
       <p>All models hold to official settlement. Reference Gap + Market Agreement waits for both signals to favor the same side and at least 3% estimated return after costs. $3 virtual stake per entry.</p></div></div>
       <div class="table-scroll"><table><thead><tr><th>Model</th><th>Latest decision</th><th>UP estimate</th><th>Open / closed</th><th>Wins / losses</th><th>Skips</th><th>Cash</th><th>Realized P&amp;L</th></tr></thead>
       <tbody id="autonomous-accounts"></tbody></table></div>
     </section>
-    <section class="panel events-panel">
+    <section class="research-only panel events-panel">
       <div class="panel-heading"><h2>$100 pooled consensus</h2><span class="tiny-tag">PAPER SHADOW</span></div>
       <p>One simulated entry when all 10 forecast sources agree. Held to official settlement.</p>
       <p id="pooled-consensus-result">Waiting for an observed round.</p>
@@ -98,15 +98,15 @@
         <tbody id="pooled-comparison"></tbody>
       </table></div>
     </section>
-    <section class="panel events-panel"><div class="panel-heading"><div><div class="eyebrow">SIMULATION RESEARCH LAB</div><h2>Compare AI Models</h2><p>9 forecast participants × 6 checkpoints × 3 stakes = up to 162 fixed-time accounts.</p></div><button id="compare-models" class="button">Compare AI Models</button></div><p id="lab-warning" class="future-note">No historical profitability claims without causal execution data.</p><p class="future-note">Fixed entry at 15, 30, 45, 60, 75 or 90 seconds after the open. Each model picks its side independently and holds until official settlement. LightGBM at +45 seconds remains a separate comparison.</p><div id="model-catalog" class="account-grid"></div><details id="leaderboard-panel"><summary>Forward shadow leaderboard · independent virtual accounts</summary><p>Hundreds of configurations share the same market observations. Ranks are exploratory, not independent evidence.</p><div class="table-scroll leaderboard-scroll"><table><thead><tr><th>Model / version</th><th>Entry</th><th>Exit</th><th>Stake</th><th>Net P&amp;L</th><th>Win rate</th><th>Drawdown</th><th>Trades / skips</th><th>Coverage</th></tr></thead><tbody id="leaderboard"></tbody></table></div></details><details><summary>Promote / roll back archived comparison</summary><p>Requires fresh verified forward evidence. The model-selection rules remain fixed during the experiment. The bot can switch automatically between positions. No funds are added. These controls affect archived comparison configuration and pause paper decisions.</p><p><select id="promotion-config" aria-label="Exact candidate configuration"></select></p><p><label>Reason <input id="promotion-reason" minlength="10" maxlength="500" placeholder="Why this exact configuration?"></label></p><button id="promote-primary" class="button">Promote archived configuration</button> <select id="primary-history-select" aria-label="Previously active configuration"></select><button id="rollback-primary" class="button">Roll back validated configuration</button><p id="promotion-status" role="status"></p></details></section>
+    <section class="research-only panel events-panel"><div class="panel-heading"><div><div class="eyebrow">SIMULATION RESEARCH LAB</div><h2>Compare AI Models</h2><p>9 forecast participants × 6 checkpoints × 3 stakes = up to 162 fixed-time accounts.</p></div><button id="compare-models" class="button">Compare AI Models</button></div><p id="lab-warning" class="future-note">No historical profitability claims without causal execution data.</p><p class="future-note">Fixed entry at 15, 30, 45, 60, 75 or 90 seconds after the open. Each model picks its side independently and holds until official settlement. LightGBM at +45 seconds remains a separate comparison.</p><div id="model-catalog" class="account-grid"></div><details id="leaderboard-panel"><summary>Forward shadow leaderboard · independent virtual accounts</summary><p>Hundreds of configurations share the same market observations. Ranks are exploratory, not independent evidence.</p><div class="table-scroll leaderboard-scroll"><table><thead><tr><th>Model / version</th><th>Entry</th><th>Exit</th><th>Stake</th><th>Net P&amp;L</th><th>Win rate</th><th>Drawdown</th><th>Trades / skips</th><th>Coverage</th></tr></thead><tbody id="leaderboard"></tbody></table></div></details><details><summary>Promote / roll back archived comparison</summary><p>Requires fresh verified forward evidence. The model-selection rules remain fixed during the experiment. The bot can switch automatically between positions. No funds are added. These controls affect archived comparison configuration and pause paper decisions.</p><p><select id="promotion-config" aria-label="Exact candidate configuration"></select></p><p><label>Reason <input id="promotion-reason" minlength="10" maxlength="500" placeholder="Why this exact configuration?"></label></p><button id="promote-primary" class="button">Promote archived configuration</button> <select id="primary-history-select" aria-label="Previously active configuration"></select><button id="rollback-primary" class="button">Roll back validated configuration</button><p id="promotion-status" role="status"></p></details></section>
     <section class="panel events-panel" id="research-panel" hidden><div class="panel-heading"><div><div class="eyebrow">OFFLINE LEARNING LAB</div><h2>Historical learning dataset</h2><p>Retrospective direction estimates · no historical fills or P&amp;L · active model unchanged</p></div><span class="tiny-tag">RESEARCH ONLY</span></div><div class="account-grid" id="research-counts"></div><div class="future-note" id="research-summary"></div></section>
-    <section class="panel events-panel"><div class="panel-heading"><div><h2>Paper trading ledger</h2><p>Observed prices · simulated fills · final position settles at the official outcome</p>
+    <section class="research-only panel events-panel"><div class="panel-heading"><div><h2>Paper trading ledger</h2><p>Observed prices · simulated fills · final position settles at the official outcome</p>
     <p>$3 hold vs flip and extra-tick results are included in Excel.</p></div></div><div id="paper-summary" class="future-note"></div><details><summary>Historical data audit · earlier display-price results withdrawn</summary><p id="backtest-summary"></p><div class="table-scroll"><table><thead><tr><th>Scenario</th><th>$1 P&amp;L</th><th>$2 P&amp;L</th><th>$3 P&amp;L</th><th>Combined</th></tr></thead><tbody id="backtest-rows"></tbody></table></div></details><div class="table-scroll"><table id="orders-table"><thead><tr><th>UTC entry</th><th>Strategy</th><th>Side</th><th>Contracts</th><th>Total cost</th><th>Status</th><th>Net P&amp;L</th></tr></thead><tbody id="orders"></tbody></table></div><details><summary>Risk shutdowns and recent skipped opportunities</summary><div id="risk-events"></div></details></section><details class="panel events-panel"><summary>Collector activity <span>Connection errors and control history</span></summary><div id="events"></div></details>
     <div class="round-timing"><progress id="round-progress" max="300" value="0" aria-label="Five minute progress"></progress><span id="next-market">Next market unavailable</span><span id="next-evaluation">Next evaluation unavailable</span><span id="next-checkpoint">Next shadow checkpoint: unavailable</span><span id="quote-pair" hidden>Bid/ask: UNAVAILABLE</span></div>
-<section class="panel"><div class="panel-heading"><h2>Archived adaptive paper accounts</h2></div><div class="account-grid" id="accounts"></div><p id="account-detail" hidden></p><p id="adaptive-status" hidden></p></section><section class="panel"><div class="panel-heading"><h2>Connection details</h2></div><div id="connections"></div></section>
+<section class="research-only panel"><div class="panel-heading"><h2>Archived adaptive paper accounts</h2></div><div class="account-grid" id="accounts"></div><p id="account-detail" hidden></p><p id="adaptive-status" hidden></p></section><section class="panel"><div class="panel-heading"><h2>Connection details</h2></div><div id="connections"></div></section>
     <section class="panel events-panel"><div class="panel-heading"><div><div class="eyebrow">VERIFIED SETTLEMENTS ONLY</div><h2>Last 50 Bitcoin rounds</h2><p id="market-history-summary">INSUFFICIENT DATA</p></div><button id="analyze-trends" class="button">Analyze Trends</button></div><div id="market-tiles" class="history-board"></div><p id="directional-streaks" class="future-note"></p><div id="trend-result" class="future-note" role="status"></div><h2>Archived primary trade history</h2><p id="trade-history-summary">No settled trades.</p><div id="trade-tiles" class="history-board"></div><p id="trade-streaks" class="future-note"></p></section>
-    <section class="panel events-panel"><div class="panel-heading"><div><div class="eyebrow">ARCHIVED STRATEGY MONITOR</div><h2 id="active-model">UNAVAILABLE</h2><p id="strategy-detail"></p></div><button id="strategy-history-button" class="button">Strategy Change History</button></div><p id="strategy-reason" class="future-note"></p><div id="strategy-history" hidden></div></section>
-    <details class="panel events-panel" id="skip-details"><summary>Why accounts skipped</summary><div id="skip-diagnostics">Open to check the latest results.</div></details>
+    <section class="research-only panel events-panel"><div class="panel-heading"><div><div class="eyebrow">ARCHIVED STRATEGY MONITOR</div><h2 id="active-model">UNAVAILABLE</h2><p id="strategy-detail"></p></div><button id="strategy-history-button" class="button">Strategy Change History</button></div><p id="strategy-reason" class="future-note"></p><div id="strategy-history" hidden></div></section>
+    <details class="research-only panel events-panel" id="skip-details"><summary>Why accounts skipped</summary><div id="skip-diagnostics">Open to check the latest results.</div></details>
 </dialog>
 <dialog id="settings-dialog"><form method="dialog"><div class="panel-heading"><h2>Research settings</h2><button class="button" aria-label="Close settings">✕</button></div><p>Paper simulation · Real-money trading locked</p><span id="sms-status" hidden></span>
 <h3>Feeds</h3><p>Prophet retries automatically. Paper entries wait for fresh market data.</p><div id="feed-diagnostics"></div><details class="settings-group"><summary>Advanced diagnostics</summary><button type="button" class="button" id="collector-pause">Pause collection</button><button type="button" class="button" id="collector-resume">Resume collection</button><button type="button" class="button" id="diagnose">Diagnose</button><button type="button" class="button" id="repair-feed">Reconnect feed</button><button type="button" class="button" id="alternate-repair">Alternative solution</button><p id="diagnostic-result" role="status"></p></details>

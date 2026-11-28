@@ -6,10 +6,12 @@ body.remote{max-width:520px;margin:0 auto;padding:16px;}
 .remote .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.remote .grid .button{width:100%;min-height:48px;font-size:1rem}
 .remote .big{font-size:1.8rem;font-weight:700}.remote .pnl-up{color:#2ecc71}.remote .pnl-down{color:#ff5c5c}
 .remote #message{min-height:1.4em}.remote small{opacity:.7}
-</style><script defer src="/static/remote.js"></script></head>
+</style><script defer src="/static/winsound.js"></script><script defer src="/static/remote.js"></script></head>
 <body class="remote"><div class="eyebrow">₿ AI BTC PROPHET · REMOTE · PAPER ONLY</div><h1>Phone control</h1>
+<div id="win-banner" class="card" hidden style="text-align:center;font-size:1.4rem;font-weight:700"></div>
 <section class="card"><h2>Bot</h2><div class="big" id="r-mode">…</div><small id="r-updated"></small>
-<div class="grid" style="margin-top:10px"><button class="button" id="r-pause">Pause</button><button class="button primary" id="r-resume">Resume</button></div></section>
+<div class="grid" style="margin-top:10px"><button class="button" id="r-pause">Pause</button><button class="button primary" id="r-resume">Resume</button>
+<button class="button" id="r-sound">🔊 Enable win sound</button><button class="button" id="r-sound-test">Test sound</button></div></section>
 <section class="card"><h2>Main $1,000 account</h2>
 <div class="row"><span>Cash</span><b id="r-cash">—</b></div><div class="row"><span>Since reset</span><b id="r-games">—</b></div>
 <div class="row"><span>Net since reset</span><b id="r-net">—</b></div><div class="row"><span>All time</span><b id="r-all">—</b></div>

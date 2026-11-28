@@ -126,7 +126,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
             finally:
                 runtime.release()
 
-    app = FastAPI(title="AI BTC Prophet Trader", version="2.4.0", lifespan=lifespan)
+    app = FastAPI(title="AI BTC Prophet Trader", version="2.5.0", lifespan=lifespan)
     app.state.store = store
     app.state.collector = collector
     app.state.paper = paper
@@ -723,6 +723,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
             emergency=emergency,
             mode=mode,
             live_locked=True,
+            lean=os.getenv("PROPHET_LEAN") == "1",
             prediction=summary["prediction"],
             primary_prediction=summary["adaptive_decision"],
             primary_signal=primary_signal(market["slug"] if active else None, now, mode,

@@ -6,8 +6,8 @@
  },
  {
   "path": "README.md",
-  "sha256": "39f6ad085178faebc8597bc6d91bace239e0fd478d3d778023db1ede0505ea57",
-  "bytes": 28126
+  "sha256": "b17c2ea897c6139a723a7bcbec56d75e486d82fa49b4d009e2c0ff0a4fd90d88",
+  "bytes": 28547
  },
  {
   "path": "Start Prophet.command",
@@ -81,8 +81,8 @@
  },
  {
   "path": "prophet/app.py",
-  "sha256": "85e971b0a79f23f6c7537767f362d31bdc7e3ce364887cd2fa42c5708537f849",
-  "bytes": 52168
+  "sha256": "c7fbe4ad6b2d0106d176cb17760cf1b57199665470ffebc75d5fa1676ed6f0e8",
+  "bytes": 52219
  },
  {
   "path": "prophet/audit.py",
@@ -256,7 +256,7 @@
  },
  {
   "path": "prophet/remote.py",
-  "sha256": "daf25944ba1c9ccb67fde21b5d2d8d418396cd57abb67bf88c3d34680c93896b",
+  "sha256": "4524c35e6fd63ea07ef63447d48e2980e0047d36f88e3b685b4f5ac5ef8d4902",
   "bytes": 8895
  },
  {
@@ -311,8 +311,8 @@
  },
  {
   "path": "prophet/static/app.js",
-  "sha256": "2417a420f02e48af0973815478366884f76ec2874f7772fcbe22d921b5c8c427",
-  "bytes": 37378
+  "sha256": "60fab5ca83770cb3d4d1b3f2f095c21324ffa7e2a5bcf06987f1cd6bfdbd3c77",
+  "bytes": 37519
  },
  {
   "path": "prophet/static/decision.js",
@@ -331,8 +331,8 @@
  },
  {
   "path": "prophet/static/index.html",
-  "sha256": "89a1a899852599e725abd803790d4d3cdf06abf32e54ff1d7e68f6e6ebac2d6d",
-  "bytes": 21531
+  "sha256": "e5a821cfffa92b9d9e5a319bf645c6489ec5b1698fe294764072c9e75124b286",
+  "bytes": 21853
  },
  {
   "path": "prophet/static/login.html",
@@ -346,13 +346,13 @@
  },
  {
   "path": "prophet/static/remote.html",
-  "sha256": "2154a42540c600e02eba81f61e463cbc8bc05fbcf4d43cc42dab02bc781e2b41",
-  "bytes": 4151
+  "sha256": "93bbe87a73bf1f0e7a7cf2b53e17a92df73c6e3eadd5aafda566a9da34f25651",
+  "bytes": 4434
  },
  {
   "path": "prophet/static/remote.js",
-  "sha256": "f8af04bca5ff4d514fdc8c6b5a6640f6c263ff5ad69185c922059ad22dd723ed",
-  "bytes": 7115
+  "sha256": "5e6acc31a1bccfb74fd664a67437a55a63a4994f2a771942cf4f331757877f64",
+  "bytes": 8215
  },
  {
   "path": "prophet/static/sounds/jackpot.mp3",
@@ -378,6 +378,11 @@
   "path": "prophet/static/vendor/lightweight-charts.js",
   "sha256": "c7dda807d662a95b3d257119ed315cec669e3bdf5aaece75c480a39307f23540",
   "bytes": 163684
+ },
+ {
+  "path": "prophet/static/winsound.js",
+  "sha256": "191fc0612da14e074e210b719478d2c4a6d288f63ebd128a35ddfa91888478a8",
+  "bytes": 2356
  },
  {
   "path": "prophet/store.py",
@@ -436,7 +441,7 @@
  },
  {
   "path": "pyproject.toml",
-  "sha256": "2479918cc915979dc537d4f686ec643197158d8e035d8033558b23dedf495321",
+  "sha256": "2e116f7851f6b2699c83ec8cdbe542fa0b5099fbe73a2c7d4ef3b8b343047913",
   "bytes": 897
  },
  {
@@ -448,6 +453,11 @@
   "path": "scripts/backup.py",
   "sha256": "7f3a36c3994d25148a0d5173ed95291e095133cb27c55feebf6d5281bb77c482",
   "bytes": 499
+ },
+ {
+  "path": "scripts/browser_check_sound.js",
+  "sha256": "b48a5c56b16ff41bfb258d6bab196a8eb99d1dde39f1144153825b4f1207d35a",
+  "bytes": 1781
  },
  {
   "path": "scripts/browser_smoke.py",
