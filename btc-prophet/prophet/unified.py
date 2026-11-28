@@ -5,7 +5,7 @@ import math
 
 import logging
 
-from . import feed_check, fresh, selective50, shadow_rules
+from . import brain, feed_check, fresh, selective50, shadow_rules
 from .analytics import streaks
 from .execution import execute, paper_buy
 
@@ -35,6 +35,7 @@ def initialize(db):
     shadow_rules.initialize(db)
     feed_check.initialize(db)
     fresh.initialize(db)
+    brain.initialize(db)
     db.executescript("""
         CREATE TABLE IF NOT EXISTS unified_account (
             id INTEGER PRIMARY KEY CHECK(id=1), started REAL NOT NULL,
@@ -258,6 +259,11 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
             # Owner switch (off by default): the main account uses the official-rule forecast.
             up = pick
             audit["main_forecast"] = choice
+        try:
+            brain.record(db, slug, now, start, dict(market=midpoint, main=up, settlement=settle_up.get("standard"),
+                                                    settlement_live=settle_up.get("live")))
+        except Exception as exc:  # noqa: BLE001 - the brain must never stop the bot
+            log.warning("Brain record skipped %s: %s", slug, exc)
     try:
         feed_check.record(db,slug,now,start,details)
     except Exception as exc:  # noqa: BLE001 - logging must never stop the bot

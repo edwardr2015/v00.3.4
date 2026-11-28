@@ -96,3 +96,10 @@ async function liveStatus(){
   }catch(e){}
 }
 liveStatus();setInterval(liveStatus,5000);
+async function brainView(){
+  try{
+    const b=await api('/api/brain');
+    $('br-lines').replaceChildren(...b.summary.map(t=>{const d=document.createElement('p');d.textContent=t;return d;}));
+  }catch(e){}
+}
+brainView();setInterval(brainView,30000);

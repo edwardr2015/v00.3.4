@@ -233,6 +233,13 @@ def add_unified(sheets, db, *, quick):
     sheets.table("System Audit", ["Status","Group","Check","Detail"], [
         ["Totals", "", f"PASS {report['totals']['PASS']} · WARN {report['totals']['WARN']} · FAIL {report['totals']['FAIL']}", ""]] + [
         [c["status"], c["group"], c["name"], c["detail"]] for c in report["checks"]])
+    from . import brain
+    think = brain.thinking(db)
+    sheets.table("Brain", ["What the bot thinks","Trades","Per $1","95% range low","95% range high","Net $"],
+        [[line,None,None,None,None,None] for line in think["summary"]] + [[None]*6] + [
+        [b["name"],b["trades"],b["per_dollar"],b["low"],b["high"],b["net"]] for b in think["leaderboard"]] + [[None]*6] + [
+        [f"Minute {m}: score (lower=better)", e["rounds"], json.dumps({k: round(v, 4) for k, v in e["brier"].items()}),
+         "trust in models", json.dumps(e["trust"]), None] for m, e in sorted(think["minutes"].items())])
     sheets.table("Exit Shadow Comparison", ["Exit policy","Settled trades","Shadow exits","Wins","Net P&L",
         "Primary exit setting"], (
         [r["policy"],r["trades"],r["exits"],r["wins"],r["pnl"],unified.primary_exit()]

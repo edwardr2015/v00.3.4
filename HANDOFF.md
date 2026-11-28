@@ -84,3 +84,7 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 
 ## 2.1.1 (build 24)
 - prophet/watchdog.py: remembers owner Start/Resume vs Pause/Stop/Emergency (store owner_mode); every 30 s resumes SIMULATE when reference+book are fresh. Owner reported having to press Resume after disconnects; live trader depends on selective50 paper signals, which need SIMULATE.
+
+## 2.2.0 (build 25)
+- prophet/brain.py: brain_thoughts (one row per round-minute: market/main/settlement/settlement_live), per-minute Brier + learned trust (market + w*(model-market)), account leaderboard with 95% range, plain-English summary; /api/brain, phone card, "Brain" sheet. Recommends only.
+- Neural stays off: torch>=2.5 has no macOS x86_64 wheels (owner iMac is Intel).

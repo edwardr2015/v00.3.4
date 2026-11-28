@@ -126,6 +126,11 @@ The 90-second shadow records a call only when the Momentum score meets 65% and a
 - Updates never install on their own. On the phone page press **Check for update** (reads `release/LATEST.json` on GitHub), then **Install now** when ready. It pauses, backs up the database, installs, restarts and resumes paper trading.
 - Real-money trading stays locked.
 
+## 2.2.0: the brain (full loop)
+- Every minute of every round it records what each voice thinks (market, main model, official rule on the delayed and the live feed), grades each one when the round settles, learns per minute how much to trust the models versus the market, ranks every account by real results, and explains it in plain words: phone page "What the bot thinks", report sheet "Brain", `/api/brain`.
+- It recommends; it never switches real money by itself.
+- Neural (LSTM) stays off: PyTorch no longer ships for Intel Macs, and in testing it added nothing over the simple formula.
+
 ## 2.1.1
 - Watchdog: after a disconnect or restart, paper trading resumes by itself when the connection is back, if the owner's last choice was Start/Resume (never after Pause, Stop or Emergency). Never changes real-money mode.
 
