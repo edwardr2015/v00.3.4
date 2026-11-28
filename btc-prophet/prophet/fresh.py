@@ -135,10 +135,22 @@ def observe(db, slug, now, details, book, terms, mode):
         db.execute("INSERT OR IGNORE INTO fresh_forecasts VALUES (?,?,?,?,?,?,?,?,?)",
                    (slug, int((now - start) // 30), now, end - now, details["reference_price"],
                     details["opening_price"], details["volatility"], info["fixed_average"], mid))
+    live_p = None
+    try:
+        from . import feeds
+        live = feeds.live_brti(db, now)
+    except Exception:  # noqa: BLE001 - no feed tables yet
+        live = None
+    if live:
+        live_p, live_info = settlement_up(db, now, start, end, details.get("opening_price"), live, details.get("volatility"))
+        if live_info:
+            live_info["live_reference"] = live
     if mode == "SIMULATE":
         _settlement_account(db, slug, now, start, end, p, info, book, terms)
+        if live_p is not None:
+            _settlement_account(db, slug, now, start, end, live_p, live_info, book, terms, rule="settlement_live")
         _limit_account(db, slug, now, start, end, book, terms)
-    return p
+    return dict(standard=p, live=live_p)
 
 
 def _balance(db, rule, now):
@@ -149,10 +161,9 @@ def _balance(db, rule, now):
     return row[0]
 
 
-def _settlement_account(db, slug, now, start, end, p, info, book, terms):
+def _settlement_account(db, slug, now, start, end, p, info, book, terms, rule="settlement_model"):
     """Taker account using the official-rule forecast: 3% edge after fees, 30-70c, hold to the end."""
     from .execution import paper_buy
-    rule = "settlement_model"
     if p is None or db.execute("SELECT 1 FROM fresh_trades WHERE rule=? AND slug=?", (rule, slug)).fetchone():
         return
     if not 30 <= now - start <= 270:
@@ -278,6 +289,7 @@ def lag_summary(db):
 def accounts(db):
     out = []
     names = {"settlement_model": ("Settlement model (official rule)", "Official 60-second average rule · learned volatility · 30–70¢ · holds"),
+             "settlement_live": ("Settlement model + live feeds", "Same official rule · live Coinbase/Kraken/Bitstamp/Gemini price instead of the delayed feed"),
              "limit_down_55": ("Limit order: DOWN near 55¢", "UP at 40–50¢ → rest a DOWN bid · only fills if traded through · holds")}
     for rule, (name, describe) in names.items():
         acct = db.execute("SELECT * FROM fresh_accounts WHERE rule=?", (rule,)).fetchone()
@@ -293,6 +305,14 @@ def accounts(db):
     return out
 
 
+def main_model(db):
+    """'standard' (default), 'settlement' or 'settlement_live' - chosen by the owner."""
+    row = db.execute("SELECT payload FROM state WHERE key='main_model'").fetchone()
+    if row:
+        return json.loads(row[0])
+    row = db.execute("SELECT payload FROM state WHERE key='main_model_settlement'").fetchone()   # dev16 key
+    return "settlement" if row and json.loads(row[0]) is True else "standard"
+
+
 def main_uses_settlement(db):
-    row = db.execute("SELECT payload FROM state WHERE key='main_model_settlement'").fetchone()
-    return bool(row and json.loads(row[0]) is True)
+    return main_model(db) != "standard"

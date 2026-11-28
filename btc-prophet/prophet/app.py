@@ -73,6 +73,8 @@ def create_app(db_path=None, collect=True, auth_required=True):
     updater = remote.Updater(store, paper)
     from .hourly import Hourly
     hourly = Hourly(store, collector)
+    from .feeds import Referee
+    referee = Referee(store)
     export_lock = asyncio.Lock()
     quick_export_lock = asyncio.Lock()
 
@@ -97,12 +99,14 @@ def create_app(db_path=None, collect=True, auth_required=True):
                 corrective_research.start()
                 updater.start()
                 hourly.start()
+                referee.start()
             yield
         finally:
             await runtime.close(release=False)
             try:
                 await updater.close()
                 await hourly.close()
+                await referee.close()
                 await corrective_research.close()
                 await alerts.close()
                 await learning.close()
@@ -111,7 +115,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
             finally:
                 runtime.release()
 
-    app = FastAPI(title="AI BTC Prophet Trader", version="0.3.23", lifespan=lifespan)
+    app = FastAPI(title="AI BTC Prophet Trader", version="2.0.0", lifespan=lifespan)
     app.state.store = store
     app.state.collector = collector
     app.state.paper = paper
@@ -519,9 +523,10 @@ def create_app(db_path=None, collect=True, auth_required=True):
     @app.post("/api/remote/main-model/{value}")
     def main_model(value: str):
         """Owner switch: main account forecast = official settlement-average rule (off by default)."""
-        if value not in ("settlement", "standard"):
-            raise HTTPException(404, "Use settlement or standard")
-        store.put("main_model_settlement", value == "settlement")
+        if value not in ("settlement", "settlement_live", "standard"):
+            raise HTTPException(404, "Use standard, settlement or settlement_live")
+        store.put("main_model", value)
+        store.put("main_model_settlement", value != "standard")
         store.event("INFO", "Main account forecast set to " + value)
         return dict(main_model=value)
 
@@ -540,6 +545,20 @@ def create_app(db_path=None, collect=True, auth_required=True):
                     writer.writerow(list(row))
         return Response(buffer.getvalue(), media_type="application/gzip",
                         headers={"Content-Disposition": "attachment; filename=BTC-Prophet-Recorder.csv.gz"})
+
+    @app.get("/api/audit")
+    def system_audit():
+        from . import audit, feeds, fresh, hourly, shadow_rules, selective50
+        with store.connect() as db:
+            for module in (feeds, fresh, hourly):
+                module.initialize(db)
+            return audit.run(db, states=referee.states)
+
+    @app.get("/api/feeds")
+    def feed_referee():
+        from . import feeds
+        with store.connect() as db:
+            return feeds.summary(db, referee.states)
 
     @app.post("/api/remote/restart")
     def remote_restart():

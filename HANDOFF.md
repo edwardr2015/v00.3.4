@@ -64,3 +64,8 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 - book_timestamp = exchange last-trade time (transactTime), NOT quote freshness. Earlier claim "exits on 30 s old prices" was wrong. Exit guard uses book_checked (fetch time) > 5 s.
 - New: prophet/fresh.py (recorder, lag check, settlement_model account with learned vol scale, limit_down_55 maker sim), prophet/hourly.py (1h fade test), main-model switch /api/remote/main-model/{settlement|standard} (off), /api/export/recorder.csv.gz, report sheets Feed Lag Check / Fresh Data Accounts / 1-Hour Fade Test, exit_comparison uses real SOLD P&L.
 - Horizon research: 5m 1/32 rules profitable out-of-sample, 15m 9/43, 1h 11/41; only 1h "fade 20c+ move at minute 45" held (+17.7% -> +17.0%, n=142, ~15% chance luck). Tests: 241 passed.
+
+## 2.0.0 (build 20) = dev17 + system audit
+- prophet/feeds.py: feed referee (Coinbase/Kraken/Bitstamp/Gemini WebSockets, median of healthy feeds, basis from official values, move-based lag check). Live cloud test: new feed shift +2/-6 s vs old Polymarket BRTI +25 s on the same rounds.
+- prophet/audit.py: /api/audit + "System Audit" sheet + phone card (safety, reconciliation of every paper account, feed health, live-vs-official, stuck positions, calibration, profit with 95% range, errors).
+- Main switch: standard (default) / settlement / settlement_live. websockets==15.0.1 added to dependencies; launcher checks it.

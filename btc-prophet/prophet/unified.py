@@ -250,11 +250,14 @@ def observe(db, slug, now, mode, model, raw_up, reason, details, book, terms, co
             db.execute("RELEASE fresh_observe")
             log.warning("dev16 fresh-data observation skipped %s: %s", slug, exc)
             settle_up = None
-        audit["settlement_up"] = settle_up
-        if settle_up is not None and fresh.main_uses_settlement(db):
+        settle_up = settle_up or {}
+        audit["settlement_up"], audit["settlement_live_up"] = settle_up.get("standard"), settle_up.get("live")
+        choice = fresh.main_model(db)
+        pick = settle_up.get("live") if choice == "settlement_live" else settle_up.get("standard") if choice == "settlement" else None
+        if pick is not None:
             # Owner switch (off by default): the main account uses the official-rule forecast.
-            up = settle_up
-            audit["main_forecast"] = "settlement-average"
+            up = pick
+            audit["main_forecast"] = choice
     try:
         feed_check.record(db,slug,now,start,details)
     except Exception as exc:  # noqa: BLE001 - logging must never stop the bot
@@ -442,4 +445,4 @@ def summary(db, now):
                 wins=results.count("WIN"),losses=results.count("LOSS"),net=sum(pnl),
                 streaks=streaks(results,"WIN","LOSS"),position=dict(pos) if pos else None,
                 latest=dict(latest) if latest else None,recent=recent,
-                selective50=selective50.summary(db), selective1000=selective50.summary(db,"selective1000"), shadow_rules=shadow_rules.summary(db), feed_check=feed_check.summary(db), fresh_accounts=fresh.accounts(db)+_hourly_accounts(db), freshness=fresh.lag_summary(db), main_settlement=fresh.main_uses_settlement(db))
+                selective50=selective50.summary(db), selective1000=selective50.summary(db,"selective1000"), shadow_rules=shadow_rules.summary(db), feed_check=feed_check.summary(db), fresh_accounts=fresh.accounts(db)+_hourly_accounts(db), freshness=fresh.lag_summary(db), main_settlement=fresh.main_uses_settlement(db), main_model=fresh.main_model(db))

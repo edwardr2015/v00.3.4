@@ -71,7 +71,7 @@ import tomllib
 expected = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
 try:
     ready = version("ai-btc-prophet") == expected and all(
-        find_spec(module) for module in ("fastapi", "uvicorn", "httpx", "openpyxl")
+        find_spec(module) for module in ("fastapi", "uvicorn", "httpx", "openpyxl", "websockets")
     )
 except PackageNotFoundError:
     ready = False

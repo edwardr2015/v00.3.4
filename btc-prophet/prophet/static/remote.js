@@ -35,8 +35,8 @@ async function state(){
     const f=g.freshness||{};
     $('f-lag').textContent=f.rounds?`${f.typical_shift>0?'+':''}${f.typical_shift}s typical shift · ${f.exact_at_zero}/${f.rounds} rounds exact at 0`:'Waiting for settled rounds';
     $('f-spot').textContent=f.brti_minus_spot==null?'—':`$${f.brti_minus_spot.toFixed(2)} avg gap · BRTI age ${(f.reference_age||0).toFixed(1)}s`;
-    $('f-main').textContent=g.main_settlement?'Official rule (switch ON)':'Standard (switch off)';
-    mainSettlement=!!g.main_settlement;$('f-toggle').textContent=mainSettlement?'Main: back to standard':'Main: use official rule';
+    $('f-main').textContent={standard:'Standard (switch off)',settlement:'Official rule (ON)',settlement_live:'Official rule + live feeds (ON)'}[g.main_model]||'Standard';
+    mainSettlement=!!g.main_settlement;$('f-toggle').textContent=mainSettlement?'Main: back to standard':'Main: official rule + live feeds';
     if(rows.length)$('r-accounts').replaceChildren(...rows);
   }catch(e){}
 }
@@ -56,4 +56,30 @@ $('u-check').onclick=async()=>{say('Checking GitHub…');try{showUpdate(await ap
 $('u-install').onclick=()=>{if(confirm('Back up the database, install the update and restart?'))act('/api/remote/install');};
 $('u-restart').onclick=()=>{if(confirm('Restart the bot now? Pause first.'))act('/api/remote/restart');};
 state();updates();setInterval(state,5000);setInterval(updates,15000);
-$('f-toggle').onclick=()=>{if(confirm(mainSettlement?'Switch the main account back to the standard forecast?':'Switch the main $1,000 paper account to the official-rule forecast?'))act('/api/remote/main-model/'+(mainSettlement?'standard':'settlement'));};
+$('f-toggle').onclick=()=>{if(confirm(mainSettlement?'Switch the main account back to the standard forecast?':'Switch the main $1,000 paper account to the official rule with the live exchange price?'))act('/api/remote/main-model/'+(mainSettlement?'standard':'settlement_live'));};
+async function feedRef(){
+  try{
+    const f=await api('/api/feeds');
+    $('fr-live').textContent=f.live_brti?money(f.live_brti):'No live price (using delayed feed)';
+    $('fr-healthy').textContent=`${f.healthy} of 4`;
+    $('fr-check').textContent=f.rounds?`${f.typical_shift>0?'+':''}${f.typical_shift}s shift · $${(f.typical_error||0).toFixed(2)} error · ${f.rounds} rounds`:'Waiting for settled rounds';
+    const rows=Object.entries(f.feeds).map(([n,x])=>{const d=document.createElement('div');d.className='row';
+      const a=document.createElement('span');a.textContent=n;const b=document.createElement('b');
+      const parts=[x.status];if(x.mid)parts.push(money(x.mid));if(x.latency!=null)parts.push(x.latency.toFixed(2)+'s');
+      if(x.uptime!=null)parts.push(Math.round(100*x.uptime)+'% up');b.textContent=parts.join(' · ');
+      if(x.status!=='OK')b.classList.add('pnl-down');d.append(a,b);return d;});
+    $('fr-feeds').replaceChildren(...rows);
+  }catch(e){}
+}
+feedRef();setInterval(feedRef,3000);
+async function systemAudit(){
+  try{
+    const a=await api('/api/audit');
+    $('au-total').textContent=`${a.totals.PASS} pass · ${a.totals.WARN} warn · ${a.totals.FAIL} fail`;
+    const rows=a.checks.filter(c=>c.status!=='PASS'||c.group==='profit').map(c=>{const d=document.createElement('div');d.className='row';
+      const n=document.createElement('span');n.textContent=c.status+' · '+c.name;const v=document.createElement('b');v.textContent=c.detail;
+      if(c.status==='FAIL')v.classList.add('pnl-down');if(c.status==='PASS')v.classList.add('pnl-up');d.append(n,v);return d;});
+    $('au-list').replaceChildren(...rows);
+  }catch(e){}
+}
+systemAudit();setInterval(systemAudit,30000);

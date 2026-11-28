@@ -218,6 +218,21 @@ def add_unified(sheets, db, *, quick):
         ["Summary",h["describe"],"Balance",h["balance"],"Trades",h["trades"],"Wins",h["wins"],"Net "+str(h["net"])]] + [
         [r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],r["outcome"],r["pnl"],r["details"]]
         for r in db.execute("SELECT * FROM hourly_trades ORDER BY time DESC LIMIT ?",(limit,))])
+    from . import feeds
+    feeds.initialize(db)
+    fs = feeds.summary(db)
+    sheets.table("Feed Referee", ["Market","End UTC","Official open","Live open (60s avg)","Official close",
+        "Live close (60s avg)","Best time shift (s)","Error $ (after basis)","Per-feed gaps"], [
+        ["Summary","Rounds "+str(fs["rounds"]),"Typical shift (s)",fs["typical_shift"],"Typical error $",fs["typical_error"],
+         "Basis $",fs["basis"],json.dumps({n:dict(error_vs_official=f["error_vs_official"],rounds=f["rounds"]) for n,f in fs["feeds"].items()})]] + [
+        [r["slug"],utc(r["end"]),r["official_open"],r["consensus_open"],r["official_close"],r["consensus_close"],
+         r["best_shift"],r["error_at_zero"],r["per_feed"]]
+        for r in db.execute("SELECT * FROM feed_round_checks WHERE best_shift IS NOT NULL ORDER BY end DESC LIMIT ?",(limit,))])
+    from . import audit as system_audit
+    report = system_audit.run(db)
+    sheets.table("System Audit", ["Status","Group","Check","Detail"], [
+        ["Totals", "", f"PASS {report['totals']['PASS']} · WARN {report['totals']['WARN']} · FAIL {report['totals']['FAIL']}", ""]] + [
+        [c["status"], c["group"], c["name"], c["detail"]] for c in report["checks"]])
     sheets.table("Exit Shadow Comparison", ["Exit policy","Settled trades","Shadow exits","Wins","Net P&L",
         "Primary exit setting"], (
         [r["policy"],r["trades"],r["exits"],r["wins"],r["pnl"],unified.primary_exit()]
