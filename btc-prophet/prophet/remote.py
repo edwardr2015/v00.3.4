@@ -24,8 +24,8 @@ import httpx
 from . import updates
 from .operations import journal
 
-BUILD = 25
-RELEASE_NAME = "ai-btc-prophet-2.2.0"
+BUILD = 26
+RELEASE_NAME = "ai-btc-prophet-2.3.0"
 DEFAULT_FEED = ("https://raw.githubusercontent.com/edwardr2015/v00.3.4/"
                 "claude/btc-prophet-completion-9ym8j7/release/LATEST.json")
 CHECK_EVERY = int(os.getenv("PROPHET_UPDATE_EVERY", "120"))

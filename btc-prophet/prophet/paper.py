@@ -417,13 +417,20 @@ class PaperEngine:
         while True:
             try:
                 self.tick()
-                if self.smart:
-                    self.smart.tick()
             except asyncio.CancelledError:
                 raise
             except Exception as exc:
                 self.halt("CRITICAL_SYSTEM_ERROR")
                 self.store.event("ERROR", "Paper engine stopped: " + str(exc))
+            if self.smart:
+                # 2.3: research runs on its own. An error in a research model is logged and skipped;
+                # it can never halt the paper engine (and with it the live trader) again.
+                try:
+                    self.smart.tick()
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:  # noqa: BLE001
+                    self.store.event("WARNING", "Research step skipped (trading unaffected): " + str(exc)[:200])
             self.store.put("next_evaluation",time.time()+2)
             await asyncio.sleep(2)
 

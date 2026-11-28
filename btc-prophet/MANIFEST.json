@@ -6,13 +6,13 @@
  },
  {
   "path": "README.md",
-  "sha256": "b24ebdc52760f5b7513d85b060ee631dc97cb18fb32c11ceaed5c056322e9ed3",
-  "bytes": 26834
+  "sha256": "05705177438b141f835e22cd414c4fbea7569b9708c32975180939fc32858036",
+  "bytes": 27492
  },
  {
   "path": "Start Prophet.command",
-  "sha256": "8e24ce4a0197061ed404694ee9763f68c0d859f52478b6a7f42abe5266c6e1d4",
-  "bytes": 6390
+  "sha256": "515f48f9d08f01997f4fa9a158a12b6d7a69f9056f7507529eb98ee398a942aa",
+  "bytes": 6734
  },
  {
   "path": "docs/0.3.22-corrective-research.md",
@@ -81,8 +81,8 @@
  },
  {
   "path": "prophet/app.py",
-  "sha256": "1f92cc1a223c6f452a620d80575df12d802eaeeedf876bc18e9a5a05910736b5",
-  "bytes": 51612
+  "sha256": "13d2bde912383b4180c8a5ee1ba0c900bd8ce6ee3e673bf76f8541637f58a934",
+  "bytes": 51807
  },
  {
   "path": "prophet/audit.py",
@@ -111,8 +111,8 @@
  },
  {
   "path": "prophet/collector.py",
-  "sha256": "32f2e5c51b50cc56e30267f77e64731079236d4c23a31ee84b8b6bd73c61caa8",
-  "bytes": 15198
+  "sha256": "09b6d7495e72867886b6e9b8bbe3daa1672fe18c208014b189ce5ceeb5c72ad1",
+  "bytes": 15383
  },
  {
   "path": "prophet/competition.py",
@@ -201,8 +201,8 @@
  },
  {
   "path": "prophet/learning.py",
-  "sha256": "15182e2608cae8d6629166f6e2ee9a6cfe8333b27d2ed83be52b76ae05404cc2",
-  "bytes": 12948
+  "sha256": "4887c2cfab6d61e42833009b0d51f7215242a300f5956c584ce4e078ca4f6325",
+  "bytes": 12974
  },
  {
   "path": "prophet/live.py",
@@ -231,8 +231,8 @@
  },
  {
   "path": "prophet/paper.py",
-  "sha256": "ff60b2b2e58ffc8de1a480fddbd6a7736ac586f9e0f53eec97afef0c42b5d3f7",
-  "bytes": 19764
+  "sha256": "c9752591cbd37c1c74018dfebf78a621f77532d4437e1b18b5b40fa38b0561cc",
+  "bytes": 20215
  },
  {
   "path": "prophet/pattern_odds.py",
@@ -256,7 +256,7 @@
  },
  {
   "path": "prophet/remote.py",
-  "sha256": "6d586aa6fd75d52aaee90c3069a52daa19cfc9985109fc76ca68db1653c0fa94",
+  "sha256": "d9af2acd079485c6037742882fa2d89c61a59c6d8f2823a11e459403fe270555",
   "bytes": 8895
  },
  {
@@ -436,7 +436,7 @@
  },
  {
   "path": "pyproject.toml",
-  "sha256": "600b2077710b4d754edfe1490723ba07ebdb9906f05ac522fa426a850165ce99",
+  "sha256": "15e78a15d14ae3310e97c750795d895a0d4f66b1d1b3109d3897407e7cbaee74",
   "bytes": 897
  },
  {
@@ -453,6 +453,11 @@
   "path": "scripts/browser_smoke.py",
   "sha256": "3b27ec2ccbf3fcbbb304eda2b244e405b6173c999fda45c62dd363e2304d9e7c",
   "bytes": 22350
+ },
+ {
+  "path": "scripts/compact.py",
+  "sha256": "c1b81bef85a73d67c9f5340b4971c53d575aac14b2fcf9ba0cf9a06cb2f4b328",
+  "bytes": 4094
  },
  {
   "path": "scripts/fetch_depth_sample.py",
@@ -558,6 +563,11 @@
   "path": "tests/test_causal_depth.py",
   "sha256": "2f8f0c330716c47e28f9f5961e64ff1dfbee8d6b039ea2ed1019a15ada91eadd",
   "bytes": 2920
+ },
+ {
+  "path": "tests/test_compact.py",
+  "sha256": "03e48d470708dea31c2ec9f2ad0f533821193f85cbadf3558917e4e0dab919fd",
+  "bytes": 3228
  },
  {
   "path": "tests/test_competition_repair.py",

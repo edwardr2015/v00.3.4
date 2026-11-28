@@ -126,6 +126,12 @@ The 90-second shadow records a call only when the Momentum score meets 65% and a
 - Updates never install on their own. On the phone page press **Check for update** (reads `release/LATEST.json` on GitHub), then **Install now** when ready. It pauses, backs up the database, installs, restarts and resumes paper trading.
 - Real-money trading stays locked.
 
+## 2.3.0: lean and compact
+- An error in a research model can no longer halt the paper engine (and with it the live trader).
+- Lean mode is the default: the research models that never beat the simple formula (10 ML models, pooled $100 tests, corrective research shadows) stop running. Create an empty file `full-research` next to the database to bring them back.
+- Full order books are no longer archived on every change (never read back; they were most of the database).
+- `scripts/compact.py`: with the bot stopped, backs up and shrinks the database (removes the old book archive and old research seconds; keeps every trade, result, forecast and report).
+
 ## 2.2.0: the brain (full loop)
 - Every minute of every round it records what each voice thinks (market, main model, official rule on the delayed and the live feed), grades each one when the round settles, learns per minute how much to trust the models versus the market, ranks every account by real results, and explains it in plain words: phone page "What the bot thinks", report sheet "Brain", `/api/brain`.
 - It recommends; it never switches real money by itself.

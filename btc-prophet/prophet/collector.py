@@ -171,7 +171,9 @@ class Collector:
         if prior.get("slug") == book["slug"] and book["timestamp"] < prior["timestamp"]:
             raise ValueError("Order-book response regressed to an older timestamp")
         if book != prior:
-            self.store.put("book", book, archive=True)
+            # 2.3: the full book is no longer archived on every change (never read back; it was most
+            # of the database). The recorder keeps the top 5 levels of every observation instead.
+            self.store.put("book", book)
 
     def seed_recent_history(self, market):
         """Candidates only: final identity and settlement checks still apply."""

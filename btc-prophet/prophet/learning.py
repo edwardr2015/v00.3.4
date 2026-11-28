@@ -188,7 +188,7 @@ class Learning:
         for kind in os.getenv(
             "PROPHET_RESEARCH_MODELS", "ensemble,random_forest,gradient_boosting,xgboost,lightgbm"
         ).split(","):
-            if not kind.strip():
+            if not kind.strip() or kind.strip() == "none":
                 continue
             try:
                 registry.train(kind.strip(), rows, now=now)

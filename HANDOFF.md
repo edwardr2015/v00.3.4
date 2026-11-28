@@ -88,3 +88,9 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 ## 2.2.0 (build 25)
 - prophet/brain.py: brain_thoughts (one row per round-minute: market/main/settlement/settlement_live), per-minute Brier + learned trust (market + w*(model-market)), account leaderboard with 95% range, plain-English summary; /api/brain, phone card, "Brain" sheet. Recommends only.
 - Neural stays off: torch>=2.5 has no macOS x86_64 wheels (owner iMac is Intel).
+
+## 2.3.0 (build 26)
+- paper.py loop: smart.tick() (research: lab, model_paper, exits, observer) isolated; its exceptions log a WARNING instead of halt(CRITICAL_SYSTEM_ERROR). Likely cause of owner's manual Resume after "disconnects".
+- Lean default (PROPHET_LEAN=1, PROPHET_RESEARCH_MODELS=none unless data/timing/full-research exists): paper.smart=None, corrective research off, no research libs install.
+- collector: book no longer archived (observations source=book was never read; likely most of the 637 MB).
+- scripts/compact.py: needs prophet.lock free, backs up (needs 1.3x free disk), deletes observations source=book, recorder>21d, candles>30d, feed_ticks>14d, VACUUM + wal_checkpoint.

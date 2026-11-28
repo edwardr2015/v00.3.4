@@ -84,7 +84,7 @@ fi
 export PROPHET_DB="${PROPHET_DB:-$PWD/data/timing/prophet.sqlite3}"
 export PROPHET_HISTORY_DB="${PROPHET_HISTORY_DB:-$PWD/data/timing/history.sqlite3}"
 export PROPHET_FRESH_RESEARCH="${PROPHET_FRESH_RESEARCH:-1}"
-if [ "${PROPHET_ENABLE_RESEARCH:-1}" = "1" ]; then
+if [ "${PROPHET_ENABLE_RESEARCH:-1}" = "1" ] && [ -f "$(dirname "$PROPHET_DB")/full-research" ]; then
   if ! .venv/bin/python -c 'import sklearn, xgboost, lightgbm' >/dev/null 2>&1; then
     echo "Installing optional research libraries."
     if ! .venv/bin/python -m pip install '.[research]'; then
@@ -99,6 +99,11 @@ if [ "${PROPHET_ENABLE_RESEARCH:-1}" = "1" ]; then
   fi
 fi
 export PROPHET_RESEARCH_MODELS="${PROPHET_RESEARCH_MODELS:-ensemble,random_forest,gradient_boosting,lightgbm,xgboost}"
+# Lean mode (default since 2.3): research models that never beat the simple formula are off.
+# To bring them back, create an empty file named full-research next to the database.
+if [ ! -f "$(dirname "$PROPHET_DB")/full-research" ]; then
+  export PROPHET_LEAN=1 PROPHET_RESEARCH_MODELS=none
+fi
 if [ "${PROPHET_ENABLE_NEURAL:-0}" = "1" ]; then
   if ! .venv/bin/python -c 'import torch' >/dev/null 2>&1; then
     echo "Installing the optional neural model package. This can take a few minutes."

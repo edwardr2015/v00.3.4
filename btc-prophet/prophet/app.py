@@ -66,7 +66,9 @@ def create_app(db_path=None, collect=True, auth_required=True):
     auth = Auth(store)
     lab = Lab(store, paper)
     agreement = AgreementResearch(store, lab)
-    paper.smart = agreement
+    lean = os.getenv("PROPHET_LEAN") == "1"
+    # Lean mode (2.3 default): the research models that never beat the simple formula stop running.
+    paper.smart = None if lean else agreement
     runtime = Runtime(store, collector, paper)
     alerts = Alerts(store)
     corrective_research = corrective.Research(store,paper)
@@ -100,7 +102,8 @@ def create_app(db_path=None, collect=True, auth_required=True):
                 await paper.start()
                 await learning.start()
                 await alerts.start()
-                corrective_research.start()
+                if not lean:
+                    corrective_research.start()
                 updater.start()
                 hourly.start()
                 referee.start()
@@ -123,7 +126,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
             finally:
                 runtime.release()
 
-    app = FastAPI(title="AI BTC Prophet Trader", version="2.2.0", lifespan=lifespan)
+    app = FastAPI(title="AI BTC Prophet Trader", version="2.3.0", lifespan=lifespan)
     app.state.store = store
     app.state.collector = collector
     app.state.paper = paper
