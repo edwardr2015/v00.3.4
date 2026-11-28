@@ -76,3 +76,8 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 ## 2.0.2 (build 22)
 - main_model=selective: main mirrors selective50 entries ($5, <=90c) and its reversal exit. Launcher runs caffeinate -ims -w $$.
 - fresh_sim.py (5,102 markets, BRTI history shifted -29 s): fresh-feed model error 0.1804 vs stale 0.2017 vs market 0.1576 at ~90 s; trading its edge: fresh -7.5c/$1 (62% wins) vs stale -11.7c/$1 (46%). Fresh data halves the gap but the market still forecasts better at minute resolution.
+
+## 2.1.0 (build 23)
+- prophet/live.py LiveTrader (owner asked to go live: $50, $3/trade). Follows selective50 paper decisions; IOC limit orders, sent once, never retried; error -> OFF. Reversal exit (SELL_LONG/SELL_SHORT IOC at bid-1 tick). Modes in data/timing/live-mode, local-only endpoint, LIVE needs X-Prophet-Confirm: real-money and a confirmed short-price convention (data/timing/live-convention.json from scripts/live_test.py --buy).
+- NOT YET VERIFIED against the real exchange: how BUY_SHORT price is read (DOWN price vs UP price). live_test.py previews both; for marketable IOC orders both fill at market, only the protection limit differs.
+- Audit: connection checks per feed, real-money check.

@@ -160,7 +160,7 @@ def test_system_audit_reconciles_and_flags(tmp_path):
     with TestClient(app) as c:
         a = c.get("/api/audit").json()
     names = {x["name"]: x for x in a["checks"]}
-    assert names["Real money locked"]["status"] == "PASS"
+    assert names["Paper engine stays paper"]["status"] == "PASS"
     assert names["No negative balances"]["status"] == "PASS"
     assert names["Main $1,000 reconciles"]["status"] == "PASS"
     with store.connect() as db:                       # break the books on purpose: audit must catch it

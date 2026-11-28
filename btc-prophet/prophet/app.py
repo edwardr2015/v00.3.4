@@ -75,6 +75,8 @@ def create_app(db_path=None, collect=True, auth_required=True):
     hourly = Hourly(store, collector)
     from .feeds import Referee
     referee = Referee(store)
+    from .live import LiveTrader
+    live_trader = LiveTrader(store)
     export_lock = asyncio.Lock()
     quick_export_lock = asyncio.Lock()
 
@@ -100,6 +102,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
                 updater.start()
                 hourly.start()
                 referee.start()
+                live_trader.start()
             yield
         finally:
             await runtime.close(release=False)
@@ -107,6 +110,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
                 await updater.close()
                 await hourly.close()
                 await referee.close()
+                await live_trader.close()
                 await corrective_research.close()
                 await alerts.close()
                 await learning.close()
@@ -115,7 +119,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
             finally:
                 runtime.release()
 
-    app = FastAPI(title="AI BTC Prophet Trader", version="2.0.2", lifespan=lifespan)
+    app = FastAPI(title="AI BTC Prophet Trader", version="2.1.0", lifespan=lifespan)
     app.state.store = store
     app.state.collector = collector
     app.state.paper = paper
@@ -554,6 +558,29 @@ def create_app(db_path=None, collect=True, auth_required=True):
                 module.initialize(db)
             return audit.run(db, states=referee.states)
 
+    @app.get("/api/live")
+    def live_status():
+        from . import live
+        return live.status(store)
+
+    @app.post("/api/live/mode/{value}")
+    def live_mode(value: str, request: Request):
+        """Real-money switch. Only from this computer; LIVE needs the confirmation header."""
+        from . import live
+        client = request.client.host if request.client else ""
+        try:
+            local = ip_address(client).is_loopback
+        except ValueError:
+            local = client == "testclient"
+        if not local:
+            raise HTTPException(403, "The real-money switch only works on the Mac running the bot.")
+        if value.lower() == "live" and request.headers.get("x-prophet-confirm") != "real-money":
+            raise HTTPException(428, "Add the header X-Prophet-Confirm: real-money to turn on real trading.")
+        try:
+            return dict(mode=live.set_mode(store, value, "owner request"))
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
+
     @app.get("/api/feeds")
     def feed_referee():
         from . import feeds
@@ -808,6 +835,8 @@ def create_app(db_path=None, collect=True, auth_required=True):
                 paper._state(db,"collection_paused",not enabled)
             collector.enabled = enabled
         elif action == "emergency":
+            from . import live
+            live.set_mode(store, "OFF", "emergency stop")
             store.put("paused_mode",None)
             store.put("collection_paused",False)
             store.put("emergency", True)

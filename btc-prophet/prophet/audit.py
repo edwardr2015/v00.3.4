@@ -91,8 +91,8 @@ def run(db, now=None, states=None):
     def mode():
         m = db.execute("SELECT payload FROM state WHERE key='mode'").fetchone()
         value = json.loads(m[0]) if m else "OFF"
-        return _check("Real money locked", "safety", "PASS" if value in ("OFF", "LEARN", "SIMULATE") else "FAIL",
-                      f"mode {value}; LIVE cannot be selected", mode=value)
+        return _check("Paper engine stays paper", "safety", "PASS" if value in ("OFF", "LEARN", "SIMULATE") else "FAIL",
+                      f"paper mode {value}; real orders only come from the separate live trader", mode=value)
     safe(mode)
 
     def negatives():
@@ -149,6 +149,24 @@ def run(db, now=None, states=None):
                       shift=shift, error=err, rounds=len(rows))
     safe(live_vs_official)
 
+    def connections():
+        out = []
+        for name, label in (("reference", "Polymarket BRTI price"), ("market", "Polymarket order book"), ("spot", "Exchange spot price")):
+            row = db.execute("SELECT payload FROM state WHERE key=?", ("health_" + name,)).fetchone()
+            h = json.loads(row[0]) if row else {}
+            last = h.get("last_success") or (h.get("checked") if h.get("ok") else None)
+            age = now - last if last else None
+            status = "PASS" if h.get("ok") and age is not None and age < 15 else "WARN" if age is not None and age < 120 else "FAIL"
+            why = h.get("error") or ""
+            hint = (" — the Mac may have slept or lost internet" if age and age > 120 else
+                    " — Polymarket is limiting requests; it retries by itself" if "429" in str(why) else "")
+            out.append(_check(f"{label} connected", "data", status,
+                              f"last good update {('%.0fs ago' % age) if age is not None else 'never'}, "
+                              f"{h.get('failures', 0)} failures in a row{(' · ' + str(why)[:120]) if why else ''}{hint}",
+                              age=age, failures=h.get("failures", 0)))
+        return out
+    safe(connections)
+
     def delayed_feed():
         if not _table(db, "fresh_lag_checks"):
             return _check("Polymarket BRTI feed delay", "data", "WARN", "no checks yet")
@@ -194,6 +212,20 @@ def run(db, now=None, states=None):
     if _table(db, "fresh_trades"):
         for (rule,) in db.execute("SELECT DISTINCT rule FROM fresh_trades").fetchall():
             safe(lambda r=rule: _profit(db, f"Test account {r}", "fresh_trades", "quantity*price+fee", "pnl", r))
+
+    # ---------- real money
+    def real_money():
+        from . import live
+        if not _table(db, "live_orders"):
+            return _check("Real-money trading", "safety", "PASS", "off")
+        rows = db.execute("SELECT state, exit_state FROM live_orders WHERE mode='LIVE'").fetchall()
+        errors = sum(1 for r in rows if r["state"] == "ERROR" or r["exit_state"] == "ERROR")
+        l = live.ledger(db, now)
+        status = "FAIL" if errors or l["cash"] < 0 else "PASS"
+        return _check("Real-money trading", "safety", status,
+                      f"{l['trades']} settled real trades, P&L ${l['pnl']:+.2f}, bot cash ${l['cash']:.2f} of $50, "
+                      f"{l['open']} open, {errors} order errors", **l)
+    safe(real_money)
 
     # ---------- errors
     def errors():

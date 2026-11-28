@@ -83,3 +83,16 @@ async function systemAudit(){
   }catch(e){}
 }
 systemAudit();setInterval(systemAudit,30000);
+async function liveStatus(){
+  try{
+    const l=await api('/api/live');
+    $('lv-mode').textContent={OFF:'Real trading OFF',PREVIEW:'Preview (no orders sent)',LIVE:'REAL TRADING ON'}[l.mode];
+    $('lv-cash').textContent=money(l.cash);
+    $('lv-trades').textContent=`${l.trades} · ${l.wins}W ${l.losses}L · ${money(l.pnl)}`;tone($('lv-trades'),l.pnl);
+    const rows=(l.recent||[]).slice(0,6).map(r=>{const d=document.createElement('div');d.className='row';
+      const a=document.createElement('span');a.textContent=r.slug.slice(-5)+' '+r.side;const b=document.createElement('b');
+      b.textContent=r.state+(r.exit_state?' · exit '+r.exit_state:'')+(r.pnl!=null?' · '+money(r.pnl):'');d.append(a,b);return d;});
+    $('lv-recent').replaceChildren(...rows);
+  }catch(e){}
+}
+liveStatus();setInterval(liveStatus,5000);

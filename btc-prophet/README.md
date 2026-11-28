@@ -126,6 +126,11 @@ The 90-second shadow records a call only when the Momentum score meets 65% and a
 - Updates never install on their own. On the phone page press **Check for update** (reads `release/LATEST.json` on GitHub), then **Install now** when ready. It pauses, backs up the database, installs, restarts and resumes paper trading.
 - Real-money trading stays locked.
 
+## 2.1.0: real money (owner's choice)
+- Live trader follows the Selective rule with real orders: $50 bankroll tracked by the bot, $3 per trade, never below $0, one position at a time, 40 trades/day max, stops for the day at -$10, reversal exit like the paper rule, otherwise holds to the end. Orders are sent once and never retried; any order error switches real trading OFF.
+- Modes OFF (default) / PREVIEW (exchange checks each order, nothing sent) / LIVE. Changing the mode only works on the Mac. Emergency stop also turns it OFF.
+- Setup: `scripts/setup_live.py` (keys, typed locally, file permission 600), `scripts/live_test.py` (preview, then a ~$1 test).
+
 ## 2.0.2
 - Main-account switch has a fourth choice, **selective**: the main $1,000 account takes exactly the Selective rule's trades at $5 and sells when its reversal exit fires (otherwise holds). Off by default.
 - The launcher keeps the Mac awake while the bot window is open.

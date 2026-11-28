@@ -6,8 +6,8 @@
  },
  {
   "path": "README.md",
-  "sha256": "c4e8c817bcdf76970ed6fa8dcb3e12c9c1d566e085d69f68055bf1b4fd94d5bb",
-  "bytes": 25349
+  "sha256": "56e48c8138973a79b54e31c6ee2109cc8d2c88826b58a4ebee6e7eb843a1c4ea",
+  "bytes": 26012
  },
  {
   "path": "Start Prophet.command",
@@ -81,13 +81,13 @@
  },
  {
   "path": "prophet/app.py",
-  "sha256": "1ba6ee5cab8b1432c063d7e72ca2df933c7b8abddbced41e9327b4cff997d40f",
-  "bytes": 49995
+  "sha256": "a6b71f11f84eecfa3769f62c0cb1653fe12cff6b859a3ddf38e2601f52a30aca",
+  "bytes": 51258
  },
  {
   "path": "prophet/audit.py",
-  "sha256": "9e2f111488c111b3764ce0e8d8e72c7319b8e65536e767af581a81084ce1932e",
-  "bytes": 11945
+  "sha256": "cc84be9d7a0f095db2f9d9ac6ab2cb2eebe70ec09df232b4ccdfb40238e98fa5",
+  "bytes": 13991
  },
  {
   "path": "prophet/auth.py",
@@ -200,6 +200,11 @@
   "bytes": 12948
  },
  {
+  "path": "prophet/live.py",
+  "sha256": "af49620d8f4dc18bfd5b241a31329a34099ef31ab7f60d24e178dc02c818512b",
+  "bytes": 16994
+ },
+ {
   "path": "prophet/model_paper.py",
   "sha256": "92ac8f4f652ae70ac6ab57949aa282be9de39e294da8833d580d17cb8a935704",
   "bytes": 25440
@@ -246,7 +251,7 @@
  },
  {
   "path": "prophet/remote.py",
-  "sha256": "d7cad168e9595d9c14b7cfd46bd925a935ae609373fc69bb6cd4b8defb8b7523",
+  "sha256": "163c748c8d73845e832264815569a54f8a68c0c21dbb7d1d8ef7f4886ab43726",
   "bytes": 8895
  },
  {
@@ -336,13 +341,13 @@
  },
  {
   "path": "prophet/static/remote.html",
-  "sha256": "18d4fb718d5e487f259eb55fb8b88ac3791b773814ad60b10a9461a716d1fc11",
-  "bytes": 3675
+  "sha256": "5809019859a1b3c536bbd77d1f575081c607b4fbbbcbde426067fc75c122e3c5",
+  "bytes": 4040
  },
  {
   "path": "prophet/static/remote.js",
-  "sha256": "eec5dd3523d4e3e9eeb00d824ef616418502fb10e9c839bf02c8298ed74c8189",
-  "bytes": 6039
+  "sha256": "8d856791d9d044c9bd0703eba50f0fe20cb81f5e8d72f585d9c3778bc5c5ec7a",
+  "bytes": 6864
  },
  {
   "path": "prophet/static/sounds/jackpot.mp3",
@@ -421,8 +426,8 @@
  },
  {
   "path": "pyproject.toml",
-  "sha256": "e9ea82dd28b5ca2f67ab5319b3ad3e8bc203d33ad60cf0ac81c2112c7dff2126",
-  "bytes": 873
+  "sha256": "a6a54e885699534e060df8ae234ad03381138f297aa683caabc55cfcc19178d2",
+  "bytes": 897
  },
  {
   "path": "scripts/backfill_verified.py",
@@ -455,6 +460,11 @@
   "bytes": 2780
  },
  {
+  "path": "scripts/live_test.py",
+  "sha256": "8f7db9287f05784832b8e223a094db0f1ef6c8ea47641b60ac29d63963ea25f1",
+  "bytes": 4074
+ },
+ {
   "path": "scripts/package_release.py",
   "sha256": "5f96900eb7e22e54de7a26aff840226de695d0e5d14a3c7f7e0170cf2d591b52",
   "bytes": 4142
@@ -483,6 +493,11 @@
   "path": "scripts/setup_auth.py",
   "sha256": "2b98ad55aa63bd41a11f43103722db25ab95095a0e5249684ff73c49b1c8c367",
   "bytes": 587
+ },
+ {
+  "path": "scripts/setup_live.py",
+  "sha256": "0b91f5b981e1c4d8d9f2cedfbae878f921f5e130db2a743a4f02dc88def3324d",
+  "bytes": 1678
  },
  {
   "path": "scripts/setup_sms.py",
@@ -551,8 +566,8 @@
  },
  {
   "path": "tests/test_dev17.py",
-  "sha256": "bef079f1f7c17a10004ac49498de45e541cdefdf4501041d3a8222d2ea9bf718",
-  "bytes": 11895
+  "sha256": "164fb3b6806a190304f1a53f1829fbbe545c8307f6698c3d6e47956911001e4f",
+  "bytes": 11902
  },
  {
   "path": "tests/test_exit_research.py",
@@ -578,6 +593,11 @@
   "path": "tests/test_learning_smart.py",
   "sha256": "846daf001f22d1d1c73907dec4e83b86099fc0cef7bb4328db27bbd7214b0551",
   "bytes": 6270
+ },
+ {
+  "path": "tests/test_live.py",
+  "sha256": "6e613910b31f87e5f3d7386ea5898d9257a7aa4bf2c5c5378a525612f0578de8",
+  "bytes": 7928
  },
  {
   "path": "tests/test_model_paper.py",
