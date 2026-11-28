@@ -175,3 +175,20 @@ def test_profit_check_only_calls_proven_with_100_trades_and_positive_range():
     assert lo > 0
     lo, hi = audit._range([1, -1] * 60)
     assert lo < 0 < hi
+
+
+def test_last_minute_uses_live_feeds_for_the_locked_part(tmp_path):
+    store = Store(str(tmp_path / "p.sqlite3"))
+    create_app(store.path, collect=False, auth_required=False)
+    with store.connect() as db:
+        feeds.initialize(db)
+        start, end, now = 50000, 50300, 50290                 # 10 s left: 50 of 60 closing seconds are locked
+        for t in range(end - 60, now + 1):                     # live: price well ABOVE the 60000 opening
+            db.execute("INSERT INTO feed_ticks VALUES (?,?,?,?)", (t, 60100.0, 4, "{}"))
+            db.execute("INSERT INTO candles VALUES ('BRTI',?,?,?,?,?,1)", (t, 59900.0, 59900, 59900, 59900))  # delayed: below
+        p_live, info = fresh.settlement_up(db, now, start, end, 60000.0, 60100.0, .0005, live=True)
+        p_old, _ = fresh.settlement_up(db, now, start, end, 60000.0, 60100.0, .0005, live=False)
+        assert info["fixed_average"] == 60100.0 and p_live > .95   # live locked part says UP
+        assert p_old < p_live                                       # delayed feed would understate it
+        db.execute("DELETE FROM feed_ticks WHERE time>?", (end - 30,))   # gap in live data: refuse to guess
+        assert fresh.settlement_up(db, now, start, end, 60000.0, 60100.0, .0005, live=True) == (None, None)

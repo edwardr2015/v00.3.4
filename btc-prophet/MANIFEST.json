@@ -81,7 +81,7 @@
  },
  {
   "path": "prophet/app.py",
-  "sha256": "29343fe9955297b598e2bf711c0c4fd00558c2c0ee16997d06265788deca7963",
+  "sha256": "72e7708b686a1fc821aee07b9fca70d922d2144ae0eaf41c2053146a7754e864",
   "bytes": 49971
  },
  {
@@ -161,8 +161,8 @@
  },
  {
   "path": "prophet/fresh.py",
-  "sha256": "1a862e20c18298120e9285b0a5de7fbf8d5eceb68add75a4c3a7bf9934c29100",
-  "bytes": 17618
+  "sha256": "85bc5322f0d44b2c194625cdcb6bec93b031403707c07d8e6ddf345b41db113d",
+  "bytes": 18418
  },
  {
   "path": "prophet/history.py",
@@ -246,7 +246,7 @@
  },
  {
   "path": "prophet/remote.py",
-  "sha256": "20de653495e08aed2e950f9e8a553eec19ff66de9a67b66a82c62cb5e38460bf",
+  "sha256": "6fdf7e8031815d22006e0782421ac290d529467c39419894006bbe0365dd35bb",
   "bytes": 8895
  },
  {
@@ -421,7 +421,7 @@
  },
  {
   "path": "pyproject.toml",
-  "sha256": "2893ded71e2e5d0b3ac8a6f7def2cb8442940a4d94a89cd4c2f313f4186a0ec1",
+  "sha256": "94f738ebf0639ca5eacaa18d5ccded9236fec7f2a39b4ea65b8f3f842b2c516a",
   "bytes": 873
  },
  {
@@ -551,8 +551,8 @@
  },
  {
   "path": "tests/test_dev17.py",
-  "sha256": "e7343cc1a6713b8ff2b5403762eae9ac4b01bd49d5ccd1e3c2ace76b3b84680f",
-  "bytes": 8787
+  "sha256": "63ceab3c5691e96a8cf7fcf5f7b0a1353428e1caa9f856dcb95986bb115d1eea",
+  "bytes": 10072
  },
  {
   "path": "tests/test_exit_research.py",

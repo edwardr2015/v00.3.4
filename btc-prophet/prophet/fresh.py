@@ -104,14 +104,29 @@ def scale(db):
     return best
 
 
-def settlement_up(db, now, start, end, opening, reference, vol):
-    """Official-rule probability of UP right now, or None."""
+def _live_seconds(db, start, stop):
+    """Live BRTI estimate per second (consensus + basis) from the feed referee, as {time: price}."""
+    from . import feeds
+    b = feeds.basis(db)
+    return {t: c + b for t, c in db.execute(
+        "SELECT time, consensus FROM feed_ticks WHERE time>=? AND time<? AND consensus IS NOT NULL", (start, stop))}
+
+
+def settlement_up(db, now, start, end, opening, reference, vol, live=False):
+    """Official-rule probability of UP right now, or None.
+
+    In the last minute part of the closing average is already locked in. With live=True that locked
+    part is taken from the live exchange feeds; otherwise from Polymarket's (about 25-30 s late) BRTI."""
     if not (opening and reference and vol):
         return None, None
     left = end - now
     fixed = None
     if left <= settlement_model.WINDOW:
-        fixed, _ = _average(_brti(db, end - settlement_model.WINDOW, now + 1), end - settlement_model.WINDOW, now + 1)
+        lo, hi = end - settlement_model.WINDOW, now + 1
+        seconds = _live_seconds(db, lo, hi) if live else _brti(db, lo, hi)
+        fixed, n = _average(seconds, lo, hi)
+        if live and n < .8 * (hi - lo):     # live feeds had gaps in this minute: do not guess
+            return None, None
     s = scale(db)
     p = settlement_model.probability(reference, opening, vol, left, [fixed] if fixed else (), vol_scale=s)
     return p, dict(scale=s, seconds_left=left, fixed_average=fixed)
@@ -142,7 +157,8 @@ def observe(db, slug, now, details, book, terms, mode):
     except Exception:  # noqa: BLE001 - no feed tables yet
         live = None
     if live:
-        live_p, live_info = settlement_up(db, now, start, end, details.get("opening_price"), live, details.get("volatility"))
+        live_p, live_info = settlement_up(db, now, start, end, details.get("opening_price"), live,
+                                          details.get("volatility"), live=True)
         if live_info:
             live_info["live_reference"] = live
     if mode == "SIMULATE":

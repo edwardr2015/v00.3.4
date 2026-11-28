@@ -115,7 +115,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
             finally:
                 runtime.release()
 
-    app = FastAPI(title="AI BTC Prophet Trader", version="2.0.0", lifespan=lifespan)
+    app = FastAPI(title="AI BTC Prophet Trader", version="2.0.1", lifespan=lifespan)
     app.state.store = store
     app.state.collector = collector
     app.state.paper = paper

@@ -69,3 +69,6 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 - prophet/feeds.py: feed referee (Coinbase/Kraken/Bitstamp/Gemini WebSockets, median of healthy feeds, basis from official values, move-based lag check). Live cloud test: new feed shift +2/-6 s vs old Polymarket BRTI +25 s on the same rounds.
 - prophet/audit.py: /api/audit + "System Audit" sheet + phone card (safety, reconciliation of every paper account, feed health, live-vs-official, stuck positions, calibration, profit with 95% range, errors).
 - Main switch: standard (default) / settlement / settlement_live. websockets==15.0.1 added to dependencies; launcher checks it.
+
+## 2.0.1 (build 21)
+- fresh.settlement_up(live=True): the already-locked part of the closing average (last minute) now comes from the live feed referee (consensus + basis), not the ~25-30 s late Polymarket BRTI; refuses to forecast if live seconds have gaps (<80% coverage).

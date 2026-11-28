@@ -1,1 +1,1 @@
-{"build": 20, "file": "ai-btc-prophet-2.0.0.zip", "sha256": "1538c01f51cea87d1d182174acbd97cf6f64bc80318a3421cef77cff5f08cd2a", "notes": "Version 2.0: live exchange feed referee, system audit, everything from dev13-dev17"}
+{"build": 21, "file": "ai-btc-prophet-2.0.1.zip", "sha256": "078d7b19b867d61128f8b84ff856950e14c18fba60512098b4228552d03b507a", "notes": "2.0.1: last-minute locked closing seconds come from the live feeds"}
