@@ -74,3 +74,25 @@ def test_compact_refuses_while_bot_runs(tmp_path, monkeypatch):
         assert not list(tmp_path.glob("backup-before-compact-*"))
     finally:
         fcntl.flock(held, fcntl.LOCK_UN)
+
+
+def test_quick_report_is_a_decision_report(tmp_path):
+    from openpyxl import load_workbook
+    from prophet.v2reporting import write_quick_workbook, write_research_workbook
+    app = create_app(str(tmp_path / "p.sqlite3"), collect=False, auth_required=False)
+    app.state.paper.recover_startup(time.time())
+    out = tmp_path / "quick.xlsx"
+    write_quick_workbook(app.state.store.path, out)
+    wb = load_workbook(out, read_only=True, data_only=True)
+    names = wb.sheetnames
+    assert names[:2] == ["Start Here", "Real Money Trades"]
+    for needed in ("Brain", "System Audit", "Unified Trades", "Selective $50 Account", "Feed Referee", "Fresh Data Accounts"):
+        assert needed in names
+    for retired in ("Entry Pricing Audit", "Recent Pooled Research", "Unified Observations", "Price Feed Check", "Recent Model Trades"):
+        assert retired not in names
+    items = {r[0]: r[1] for r in wb["Start Here"].iter_rows(values_only=True)}
+    assert items["Real-money trading"] == "OFF" and "Version" in items
+    wb.close()
+    research = tmp_path / "research.xlsx"
+    write_research_workbook(app.state.store.path, research)
+    assert "Entry Pricing Audit" in load_workbook(research, read_only=True).sheetnames

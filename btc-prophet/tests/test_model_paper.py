@@ -457,7 +457,7 @@ def test_selective_90_shadow_uses_only_completed_bars_and_settles(tmp_path):
         info=client.get("/api/selective-forecast").json()
         assert info["observed"]==1 and info["right"]==1 and info["settled_fills"]==1
         assert info["net_pnl"]==pytest.approx(latest["quantity"]-latest["cost"])
-        r=client.get("/api/export/quick.xlsx")
+        r=client.get("/api/export/research.xlsx")
     assert r.is_success
     with io.BytesIO(r.content) as stream:
         workbook=load_workbook(stream,read_only=True)

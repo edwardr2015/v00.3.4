@@ -39,8 +39,8 @@ EXPORT_TIMEOUT = 600
 QUICK_EXPORT_TIMEOUT = 30
 
 
-async def build_excel(database, destination, *, quick=False):
-    options = ["quick"] if quick else []
+async def build_excel(database, destination, *, quick=False, kind=None):
+    options = [kind] if kind else (["quick"] if quick else [])
     process = await asyncio.create_subprocess_exec(
         sys.executable, "-m", "prophet.v2reporting", str(Path(database).resolve()), str(destination), *options,
         env={**os.environ, "TMPDIR": str(destination.parent)},
@@ -126,7 +126,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
             finally:
                 runtime.release()
 
-    app = FastAPI(title="AI BTC Prophet Trader", version="2.3.0", lifespan=lifespan)
+    app = FastAPI(title="AI BTC Prophet Trader", version="2.4.0", lifespan=lifespan)
     app.state.store = store
     app.state.collector = collector
     app.state.paper = paper
@@ -1087,7 +1087,7 @@ def create_app(db_path=None, collect=True, auth_required=True):
     def export_page():
         return FileResponse(STATIC / "excel.html")
 
-    async def send_report(*, quick):
+    async def send_report(*, quick, kind=None):
         lock = quick_export_lock if quick else export_lock
         if lock.locked():
             raise HTTPException(409, "An Excel report is already being prepared. Try again when it finishes.")
@@ -1098,12 +1098,15 @@ def create_app(db_path=None, collect=True, auth_required=True):
             try:
                 path = Path(folder.name) / "report.xlsx"
                 options = {"quick": True} if quick else {}
+                if kind:
+                    options = {"quick": True, "kind": kind}
                 if await build_excel(store.path, path, **options) != 0:
                     raise HTTPException(500, "Excel export failed. Check the Prophet Terminal for the error and try again.")
                 response = FileResponse(
                     path,
                     media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    filename="BTC-Prophet-Quick-Report.xlsx" if quick else "BTC-Prophet-Paper-Report.xlsx",
+                    filename=("BTC-Prophet-Research-Report.xlsx" if kind == "research" else
+                              "BTC-Prophet-Quick-Report.xlsx" if quick else "BTC-Prophet-Paper-Report.xlsx"),
                     headers={"Cache-Control": "no-store", "Accept-Ranges": "none"},
                     background=BackgroundTask(folder.cleanup),
                 )
@@ -1126,6 +1129,10 @@ def create_app(db_path=None, collect=True, auth_required=True):
     @app.get("/api/export/quick.xlsx")
     async def quick_export():
         return await send_report(quick=True)
+
+    @app.get("/api/export/research.xlsx")
+    async def research_export():
+        return await send_report(quick=True, kind="research")
 
     @app.post("/api/mode/{value}")
     def mode(value: str):

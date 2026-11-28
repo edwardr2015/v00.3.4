@@ -94,3 +94,7 @@ The baseline is v0.3.23, at commit `a764353` on this branch.
 - Lean default (PROPHET_LEAN=1, PROPHET_RESEARCH_MODELS=none unless data/timing/full-research exists): paper.smart=None, corrective research off, no research libs install.
 - collector: book no longer archived (observations source=book was never read; likely most of the 637 MB).
 - scripts/compact.py: needs prophet.lock free, backs up (needs 1.3x free disk), deletes observations source=book, recorder>21d, candles>30d, feed_ticks>14d, VACUUM + wal_checkpoint.
+
+## 2.4.0 (build 27)
+- write_quick_workbook = decision report (Start Here, Real Money Trades, DECISION_SHEETS via _Only filter). Old quick = write_research_workbook, /api/export/research.xlsx. add_live also in full workbook.
+- Report sections wrapped in _section/_safe_init: read-only DB from older version no longer crashes (found on live17 DB: brain.initialize on read-only).

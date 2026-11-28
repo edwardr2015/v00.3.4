@@ -690,7 +690,10 @@ def test_quick_excel_is_bounded_and_keeps_full_audit_available(tmp_path):
         assert "BTC-Prophet-Quick-Report.xlsx" in quick.headers["content-disposition"]
         full = client.get("/api/export.xlsx")
         assert full.is_success
-    workbook = load_workbook(io.BytesIO(quick.content), read_only=True)
+        research = client.get("/api/export/research.xlsx")     # 2.4: legacy ledgers live in the research report
+        assert research.is_success and "BTC-Prophet-Research-Report.xlsx" in research.headers["content-disposition"]
+    assert "Start Here" in load_workbook(io.BytesIO(quick.content), read_only=True).sheetnames
+    workbook = load_workbook(io.BytesIO(research.content), read_only=True)
     ledger = list(workbook["Recent Paper Trades"].iter_rows(max_col=8, values_only=True))[1:]
     assert len(ledger) == 500
     assert ledger[0][1] == "synthetic-509" and ledger[0][-1] is None

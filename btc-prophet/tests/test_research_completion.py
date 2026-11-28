@@ -3,7 +3,7 @@ from openpyxl import load_workbook
 
 from prophet import forecast_metrics, late_exit_research
 from prophet.app import create_app
-from prophet.v2reporting import write_quick_workbook
+from prophet.v2reporting import write_research_workbook as write_quick_workbook
 
 
 def test_late_exit_uses_new_full_bid_and_retains_hold_on_no_sale(tmp_path):

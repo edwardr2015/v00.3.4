@@ -126,6 +126,11 @@ The 90-second shadow records a call only when the Momentum score meets 65% and a
 - Updates never install on their own. On the phone page press **Check for update** (reads `release/LATEST.json` on GitHub), then **Install now** when ready. It pauses, backs up the database, installs, restarts and resumes paper trading.
 - Real-money trading stays locked.
 
+## 2.4.0: decision report
+- Quick report = decision report: **Start Here** (one page: version, paper and real-money status, real-money cash and P&L, main account, audit result and every FAIL, live-feed accuracy, what the brain thinks, account ranking), **Real Money Trades**, then Main scoreboard and trades, Selective accounts, test accounts, live-feed proof, System Audit, Brain, Exit comparison.
+- Research report (new download): the former quick report with the retired research models. Full audit unchanged (now also has Real Money Trades).
+- Reports never write to the database and skip sections whose data does not exist yet.
+
 ## 2.3.0: lean and compact
 - An error in a research model can no longer halt the paper engine (and with it the live trader).
 - Lean mode is the default: the research models that never beat the simple formula (10 ML models, pooled $100 tests, corrective research shadows) stop running. Create an empty file `full-research` next to the database to bring them back.

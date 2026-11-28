@@ -102,7 +102,14 @@ def leaderboard(db):
 
 def thinking(db):
     """Plain-English summary of what the bot has learned."""
-    initialize(db)
+    import sqlite3
+    try:
+        initialize(db)
+    except sqlite3.OperationalError:         # read-only report on an older database
+        pass
+    if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='brain_thoughts'").fetchone():
+        return dict(time=time.time(), summary=["Brain not started yet: it begins with the first observed round."],
+                    minutes={}, leaderboard=leaderboard(db))
     sc = scores(db)
     board = leaderboard(db)
     lines = []

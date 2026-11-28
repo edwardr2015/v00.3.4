@@ -11,11 +11,12 @@
   <main class="panel">
     <h1>Excel export</h1>
     <p id="export-status" role="status">Preparing the quick report. You can keep using the dashboard.</p>
-    <p>The quick report includes up to 500 recent records per sheet. Use the full audit for complete history and model evidence.</p>
+    <p>The quick report is the decision report: a Start Here summary, real-money trades, the brain, the audit, the accounts and the live-feed proof. The research report has the retired research models; the full audit has everything.</p>
     <button id="export-quick" class="button" type="button">Quick report</button>
     <button id="export-full" class="button" type="button">Full audit workbook</button>
     <button id="export-retry" class="button" type="button" hidden>Try again</button>
-    <noscript><p><a href="/api/export/quick.xlsx">Quick report</a> · <a href="/api/export.xlsx">Full audit workbook</a></p></noscript>
+    <p><a class="button" href="/api/export/research.xlsx">Research report</a></p>
+    <noscript><p><a href="/api/export/quick.xlsx">Quick report</a> · <a href="/api/export/research.xlsx">Research report</a> · <a href="/api/export.xlsx">Full audit workbook</a></p></noscript>
   </main>
 </body>
 </html>

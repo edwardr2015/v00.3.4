@@ -1,1 +1,1 @@
-{"build": 26, "file": "ai-btc-prophet-2.3.0.zip", "sha256": "2eef93d1c3bc168c61862f8bce2b6b65e010a7d9e06514e039e9fa48b982a37a", "notes": "2.3.0: research errors never halt trading, lean mode, no book archive, compact tool"}
+{"build": 27, "file": "ai-btc-prophet-2.4.0.zip", "sha256": "5c1306cda80653eb907ab69bbce64f512101e9fb0a51314754ae72b74c312113", "notes": "2.4.0: decision report (Start Here, Real Money Trades), research report download, read-only safe reports"}

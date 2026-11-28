@@ -6,8 +6,8 @@
  },
  {
   "path": "README.md",
-  "sha256": "05705177438b141f835e22cd414c4fbea7569b9708c32975180939fc32858036",
-  "bytes": 27492
+  "sha256": "39f6ad085178faebc8597bc6d91bace239e0fd478d3d778023db1ede0505ea57",
+  "bytes": 28126
  },
  {
   "path": "Start Prophet.command",
@@ -81,8 +81,8 @@
  },
  {
   "path": "prophet/app.py",
-  "sha256": "13d2bde912383b4180c8a5ee1ba0c900bd8ce6ee3e673bf76f8541637f58a934",
-  "bytes": 51807
+  "sha256": "85e971b0a79f23f6c7537767f362d31bdc7e3ce364887cd2fa42c5708537f849",
+  "bytes": 52168
  },
  {
   "path": "prophet/audit.py",
@@ -106,8 +106,8 @@
  },
  {
   "path": "prophet/brain.py",
-  "sha256": "439808ffd646728c6a870bdfa262a9dced02cfa9d5f0f54c6a4e433762fc6e31",
-  "bytes": 6358
+  "sha256": "eb0f3e7677881792bbccc9b64da4648c3dd2f133b2ebc58a431bbe1d63259945",
+  "bytes": 6774
  },
  {
   "path": "prophet/collector.py",
@@ -256,7 +256,7 @@
  },
  {
   "path": "prophet/remote.py",
-  "sha256": "d9af2acd079485c6037742882fa2d89c61a59c6d8f2823a11e459403fe270555",
+  "sha256": "daf25944ba1c9ccb67fde21b5d2d8d418396cd57abb67bf88c3d34680c93896b",
   "bytes": 8895
  },
  {
@@ -321,8 +321,8 @@
  },
  {
   "path": "prophet/static/excel.html",
-  "sha256": "c4bf386af80774332fabc3abc4f363dbd36974241835549f0a67d3e6494b51ab",
-  "bytes": 1018
+  "sha256": "18a9fd59232247ebb17a7c02b0c432e5fa4d5b74059e57f75e9db390d4cd20c6",
+  "bytes": 1263
  },
  {
   "path": "prophet/static/excel.js",
@@ -416,8 +416,8 @@
  },
  {
   "path": "prophet/v2reporting.py",
-  "sha256": "d42ade4d8c2cc6ab6acae2874af876d35f6f4dd5420555194943634957015119",
-  "bytes": 90929
+  "sha256": "caaa9ee3d7ed5fda556cc70ae66263a0a10bd247f87aeb0ad3ee75bd6e020e67",
+  "bytes": 96513
  },
  {
   "path": "prophet/v2risk.py",
@@ -436,7 +436,7 @@
  },
  {
   "path": "pyproject.toml",
-  "sha256": "15e78a15d14ae3310e97c750795d895a0d4f66b1d1b3109d3897407e7cbaee74",
+  "sha256": "2479918cc915979dc537d4f686ec643197158d8e035d8033558b23dedf495321",
   "bytes": 897
  },
  {
@@ -566,8 +566,8 @@
  },
  {
   "path": "tests/test_compact.py",
-  "sha256": "03e48d470708dea31c2ec9f2ad0f533821193f85cbadf3558917e4e0dab919fd",
-  "bytes": 3228
+  "sha256": "5485049382e0dc755fad90347cab32ba37cb2b2bd3c0cdc82a5e2cd7511e1f1d",
+  "bytes": 4457
  },
  {
   "path": "tests/test_competition_repair.py",
@@ -626,8 +626,8 @@
  },
  {
   "path": "tests/test_model_paper.py",
-  "sha256": "bc6f7904bd1879be57070fa480e34aea2502851a322cfd53d6c4613aa4391aa5",
-  "bytes": 24203
+  "sha256": "65e43ed541227ac3d2578261cc28dab161c2227a1bd7501024e061c1f2fb7ddd",
+  "bytes": 24206
  },
  {
   "path": "tests/test_neural_reliability.py",
@@ -666,8 +666,8 @@
  },
  {
   "path": "tests/test_research_completion.py",
-  "sha256": "7a12dabc2cb2134f19d27534593ef0cf81c117c79cade8817a75b0632c5c7e41",
-  "bytes": 3467
+  "sha256": "a35d17c9c48c60b9b05f538a5432a5193a270fe9244517d993026f65f6e97e93",
+  "bytes": 3494
  },
  {
   "path": "tests/test_research_policies.py",
@@ -716,8 +716,8 @@
  },
  {
   "path": "tests/test_v2.py",
-  "sha256": "d852af5011966419a8f714c7a3481efaef661da9cfd4fa16f8ebd95d4003e831",
-  "bytes": 28857
+  "sha256": "179c16f6003d1643217f0142419273831b459634fef89be071d943bab1ab7b05",
+  "bytes": 29185
  },
  {
   "path": "tests/test_viability_tracking.py",

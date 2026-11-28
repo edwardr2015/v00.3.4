@@ -122,6 +122,24 @@ def workbook(store, paper=None):
     return output.getvalue()
 
 
+def _safe_init(fn, db):
+    """Reports open the database read-only: create missing tables only in memory-free fashion.
+    If a table does not exist yet (older database), the section is simply skipped."""
+    try:
+        fn(db)
+    except sqlite3.OperationalError:
+        pass
+
+
+def _section(fn):
+    """Run one report section; a section whose data does not exist yet is skipped, never crashing."""
+    try:
+        fn()
+    except sqlite3.OperationalError as exc:
+        if "no such table" not in str(exc) and "readonly" not in str(exc):
+            raise
+
+
 def add_unified(sheets, db, *, quick):
     if not db.execute("SELECT 1 FROM sqlite_master WHERE name='unified_account'").fetchone():
         return
@@ -174,72 +192,86 @@ def add_unified(sheets, db, *, quick):
         [r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],utc(r["closed"]) if r["closed"] else None,
          r["proceeds"],r["pnl"],r["outcome"],r["details"]]
         for r in db.execute("SELECT * FROM selective1000_trades ORDER BY time DESC LIMIT ?",(limit,))])
-    from . import shadow_rules
-    names = {k: v["label"] for k, v in shadow_rules.RULES.items()}
-    sheets.table("Test Accounts", ["Account","Market","Entry UTC","Side","Quantity","Cost","Status","Exit UTC",
-        "Proceeds","Paper P&L","Official outcome","Evidence"], [
-        ["Summary: "+a["name"],a["describe"],"Balance",a["balance"],"Trades",a["trades"],"Wins",a["wins"],
-         "Losses",a["losses"],"Net",a["net"],"Sold early "+str(a["early_exits"])] for a in shadow_rules.summary(db)] + [
-        [names.get(r["rule"],r["rule"]),r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],
-         utc(r["closed"]) if r["closed"] else None,r["proceeds"],r["pnl"],r["outcome"],r["details"]]
-        for r in db.execute("SELECT * FROM shadow_rule_trades ORDER BY time DESC LIMIT ?",(limit,))])
-    from . import feed_check
-    fc = feed_check.summary(db)
-    sheets.table("Price Feed Check", ["Market","Start UTC","Official open","Bot open","Open difference $",
-        "Official close","Bot last reading","Last reading at (s)","Feed age (s)","Outcome","Bot direction matched"], [
-        ["Summary","Rounds "+str(fc.get("rounds",0)),"Median open gap $",fc.get("median_open_gap"),
-         "Worst open gap $",fc.get("worst_open_gap"),"Minute-4 direction right",fc.get("minute4_direction_right"),
-         "Median feed age (s)",fc.get("median_feed_age"),None]] + [
-        [r["slug"],utc(r["start"]),r["official_open"],r["bot_open"],r["open_difference"],r["official_close"],
-         r["bot_last"],r["last_elapsed"],r["feed_age"],r["outcome"],r["bot_direction_matches"]]
-        for r in feed_check.rows(db, limit)])
-    from . import fresh
-    lag = fresh.lag_summary(db)
-    sheets.table("Feed Lag Check", ["Market","End UTC","Official open","Our open (60s avg)","Official close",
-        "Our close (60s avg)","Best time shift (s)","Error at best shift $","Error at shift 0 $","Seconds saved"], [
-        ["Summary","Rounds "+str(lag.get("rounds",0)),"Typical shift (s)",lag.get("typical_shift"),
-         "Exact at 0 (<1c)",lag.get("exact_at_zero"),"BRTI minus spot $ (last hour)",lag.get("brti_minus_spot"),
-         "Reference age (s)",lag.get("reference_age")]] + [
-        [r["slug"],utc(r["end"]),r["official_open"],r["our_open"],r["official_close"],r["our_close"],
-         r["best_shift"],r["best_error"],r["zero_error"],r["seconds"]]
-        for r in db.execute("SELECT * FROM fresh_lag_checks ORDER BY end DESC LIMIT ?",(limit,))])
-    sheets.table("Fresh Data Accounts", ["Account","Market","Placed UTC","Filled UTC","Side","Price","Quantity",
-        "Fee","Status","Outcome","P&L","P&L without fee","Details"], [
-        ["Summary: "+a["name"],a["describe"],"Balance",a["balance"],"Trades",a["trades"],"Wins",a["wins"],
-         "Losses",a["losses"],a["net"],a["net_no_fee"],"Orders "+str(a["orders"])+" · cancelled "+str(a["cancelled"])]
-        for a in fresh.accounts(db)] + [
-        [r["rule"],r["slug"],utc(r["placed"]),utc(r["filled"]) if r["filled"] else None,r["side"],r["price"],
-         r["quantity"],r["fee"],r["status"],r["outcome"],r["pnl"],r["pnl_no_fee"],r["details"]]
-        for r in db.execute("SELECT * FROM fresh_trades ORDER BY placed DESC LIMIT ?",(limit,))])
-    from . import hourly
-    hourly.initialize(db)
-    h = hourly.accounts(db)[0]
-    sheets.table("1-Hour Fade Test", ["Market","Entry UTC","Side","Quantity","Cost","Status","Outcome","P&L","Details"], [
-        ["Summary",h["describe"],"Balance",h["balance"],"Trades",h["trades"],"Wins",h["wins"],"Net "+str(h["net"])]] + [
-        [r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],r["outcome"],r["pnl"],r["details"]]
-        for r in db.execute("SELECT * FROM hourly_trades ORDER BY time DESC LIMIT ?",(limit,))])
-    from . import feeds
-    feeds.initialize(db)
-    fs = feeds.summary(db)
-    sheets.table("Feed Referee", ["Market","End UTC","Official open","Live open (60s avg)","Official close",
-        "Live close (60s avg)","Best time shift (s)","Error $ (after basis)","Per-feed gaps"], [
-        ["Summary","Rounds "+str(fs["rounds"]),"Typical shift (s)",fs["typical_shift"],"Typical error $",fs["typical_error"],
-         "Basis $",fs["basis"],json.dumps({n:dict(error_vs_official=f["error_vs_official"],rounds=f["rounds"]) for n,f in fs["feeds"].items()})]] + [
-        [r["slug"],utc(r["end"]),r["official_open"],r["consensus_open"],r["official_close"],r["consensus_close"],
-         r["best_shift"],r["error_at_zero"],r["per_feed"]]
-        for r in db.execute("SELECT * FROM feed_round_checks WHERE best_shift IS NOT NULL ORDER BY end DESC LIMIT ?",(limit,))])
-    from . import audit as system_audit
-    report = system_audit.run(db)
-    sheets.table("System Audit", ["Status","Group","Check","Detail"], [
-        ["Totals", "", f"PASS {report['totals']['PASS']} · WARN {report['totals']['WARN']} · FAIL {report['totals']['FAIL']}", ""]] + [
-        [c["status"], c["group"], c["name"], c["detail"]] for c in report["checks"]])
-    from . import brain
-    think = brain.thinking(db)
-    sheets.table("Brain", ["What the bot thinks","Trades","Per $1","95% range low","95% range high","Net $"],
-        [[line,None,None,None,None,None] for line in think["summary"]] + [[None]*6] + [
-        [b["name"],b["trades"],b["per_dollar"],b["low"],b["high"],b["net"]] for b in think["leaderboard"]] + [[None]*6] + [
-        [f"Minute {m}: score (lower=better)", e["rounds"], json.dumps({k: round(v, 4) for k, v in e["brier"].items()}),
-         "trust in models", json.dumps(e["trust"]), None] for m, e in sorted(think["minutes"].items())])
+    def _part1():
+        from . import shadow_rules
+        names = {k: v["label"] for k, v in shadow_rules.RULES.items()}
+        sheets.table("Test Accounts", ["Account","Market","Entry UTC","Side","Quantity","Cost","Status","Exit UTC",
+            "Proceeds","Paper P&L","Official outcome","Evidence"], [
+            ["Summary: "+a["name"],a["describe"],"Balance",a["balance"],"Trades",a["trades"],"Wins",a["wins"],
+             "Losses",a["losses"],"Net",a["net"],"Sold early "+str(a["early_exits"])] for a in shadow_rules.summary(db)] + [
+            [names.get(r["rule"],r["rule"]),r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],
+             utc(r["closed"]) if r["closed"] else None,r["proceeds"],r["pnl"],r["outcome"],r["details"]]
+            for r in db.execute("SELECT * FROM shadow_rule_trades ORDER BY time DESC LIMIT ?",(limit,))])
+    _section(_part1)
+    def _part2():
+        from . import feed_check
+        fc = feed_check.summary(db)
+        sheets.table("Price Feed Check", ["Market","Start UTC","Official open","Bot open","Open difference $",
+            "Official close","Bot last reading","Last reading at (s)","Feed age (s)","Outcome","Bot direction matched"], [
+            ["Summary","Rounds "+str(fc.get("rounds",0)),"Median open gap $",fc.get("median_open_gap"),
+             "Worst open gap $",fc.get("worst_open_gap"),"Minute-4 direction right",fc.get("minute4_direction_right"),
+             "Median feed age (s)",fc.get("median_feed_age"),None]] + [
+            [r["slug"],utc(r["start"]),r["official_open"],r["bot_open"],r["open_difference"],r["official_close"],
+             r["bot_last"],r["last_elapsed"],r["feed_age"],r["outcome"],r["bot_direction_matches"]]
+            for r in feed_check.rows(db, limit)])
+    _section(_part2)
+    def _part3():
+        from . import fresh
+        lag = fresh.lag_summary(db)
+        sheets.table("Feed Lag Check", ["Market","End UTC","Official open","Our open (60s avg)","Official close",
+            "Our close (60s avg)","Best time shift (s)","Error at best shift $","Error at shift 0 $","Seconds saved"], [
+            ["Summary","Rounds "+str(lag.get("rounds",0)),"Typical shift (s)",lag.get("typical_shift"),
+             "Exact at 0 (<1c)",lag.get("exact_at_zero"),"BRTI minus spot $ (last hour)",lag.get("brti_minus_spot"),
+             "Reference age (s)",lag.get("reference_age")]] + [
+            [r["slug"],utc(r["end"]),r["official_open"],r["our_open"],r["official_close"],r["our_close"],
+             r["best_shift"],r["best_error"],r["zero_error"],r["seconds"]]
+            for r in db.execute("SELECT * FROM fresh_lag_checks ORDER BY end DESC LIMIT ?",(limit,))])
+        sheets.table("Fresh Data Accounts", ["Account","Market","Placed UTC","Filled UTC","Side","Price","Quantity",
+            "Fee","Status","Outcome","P&L","P&L without fee","Details"], [
+            ["Summary: "+a["name"],a["describe"],"Balance",a["balance"],"Trades",a["trades"],"Wins",a["wins"],
+             "Losses",a["losses"],a["net"],a["net_no_fee"],"Orders "+str(a["orders"])+" · cancelled "+str(a["cancelled"])]
+            for a in fresh.accounts(db)] + [
+            [r["rule"],r["slug"],utc(r["placed"]),utc(r["filled"]) if r["filled"] else None,r["side"],r["price"],
+             r["quantity"],r["fee"],r["status"],r["outcome"],r["pnl"],r["pnl_no_fee"],r["details"]]
+            for r in db.execute("SELECT * FROM fresh_trades ORDER BY placed DESC LIMIT ?",(limit,))])
+    _section(_part3)
+    def _part4():
+        from . import hourly
+        _safe_init(hourly.initialize, db)
+        h = hourly.accounts(db)[0]
+        sheets.table("1-Hour Fade Test", ["Market","Entry UTC","Side","Quantity","Cost","Status","Outcome","P&L","Details"], [
+            ["Summary",h["describe"],"Balance",h["balance"],"Trades",h["trades"],"Wins",h["wins"],"Net "+str(h["net"])]] + [
+            [r["slug"],utc(r["time"]),r["side"],r["quantity"],r["cost"],r["status"],r["outcome"],r["pnl"],r["details"]]
+            for r in db.execute("SELECT * FROM hourly_trades ORDER BY time DESC LIMIT ?",(limit,))])
+    _section(_part4)
+    def _part5():
+        from . import feeds
+        _safe_init(feeds.initialize, db)
+        fs = feeds.summary(db)
+        sheets.table("Feed Referee", ["Market","End UTC","Official open","Live open (60s avg)","Official close",
+            "Live close (60s avg)","Best time shift (s)","Error $ (after basis)","Per-feed gaps"], [
+            ["Summary","Rounds "+str(fs["rounds"]),"Typical shift (s)",fs["typical_shift"],"Typical error $",fs["typical_error"],
+             "Basis $",fs["basis"],json.dumps({n:dict(error_vs_official=f["error_vs_official"],rounds=f["rounds"]) for n,f in fs["feeds"].items()})]] + [
+            [r["slug"],utc(r["end"]),r["official_open"],r["consensus_open"],r["official_close"],r["consensus_close"],
+             r["best_shift"],r["error_at_zero"],r["per_feed"]]
+            for r in db.execute("SELECT * FROM feed_round_checks WHERE best_shift IS NOT NULL ORDER BY end DESC LIMIT ?",(limit,))])
+    _section(_part5)
+    def _part6():
+        from . import audit as system_audit
+        report = system_audit.run(db)
+        sheets.table("System Audit", ["Status","Group","Check","Detail"], [
+            ["Totals", "", f"PASS {report['totals']['PASS']} · WARN {report['totals']['WARN']} · FAIL {report['totals']['FAIL']}", ""]] + [
+            [c["status"], c["group"], c["name"], c["detail"]] for c in report["checks"]])
+    _section(_part6)
+    def _part7():
+        from . import brain
+        think = brain.thinking(db)
+        sheets.table("Brain", ["What the bot thinks","Trades","Per $1","95% range low","95% range high","Net $"],
+            [[line,None,None,None,None,None] for line in think["summary"]] + [[None]*6] + [
+            [b["name"],b["trades"],b["per_dollar"],b["low"],b["high"],b["net"]] for b in think["leaderboard"]] + [[None]*6] + [
+            [f"Minute {m}: score (lower=better)", e["rounds"], json.dumps({k: round(v, 4) for k, v in e["brier"].items()}),
+             "trust in models", json.dumps(e["trust"]), None] for m, e in sorted(think["minutes"].items())])
+    _section(_part7)
     sheets.table("Exit Shadow Comparison", ["Exit policy","Settled trades","Shadow exits","Wins","Net P&L",
         "Primary exit setting"], (
         [r["policy"],r["trades"],r["exits"],r["wins"],r["pnl"],unified.primary_exit()]
@@ -347,6 +379,7 @@ def write_workbook(database, output, *, include_account_equity=True):
     with closing(sqlite3.connect(uri, uri=True, timeout=10)) as db:
         db.row_factory = sqlite3.Row
         db.execute("BEGIN")
+        add_live(sheets,db)
         add_unified(sheets,db,quick=False)
         add_corrective(sheets,db,quick=False)
         if db.execute("SELECT 1 FROM sqlite_master WHERE name='model_paper_positions'").fetchone():
@@ -1329,8 +1362,8 @@ def write_workbook(database, output, *, include_account_equity=True):
 QUICK_LIMIT = 500
 
 
-def write_quick_workbook(database, output):
-    """Bound the export by ledger rows and leave the full audit in the existing report."""
+def write_research_workbook(database, output):
+    """2.4: the former quick report (research models, pooled tests, skips). Kept as its own download."""
     wb = Workbook(write_only=True)
     sheets = Sheets(wb)
     uri = Path(database).resolve().as_uri() + "?mode=ro"
@@ -1405,10 +1438,82 @@ def write_quick_workbook(database, output):
     wb.save(output)
 
 
+DECISION_SHEETS = ("Unified Scoreboard", "Unified Trades", "Selective $50 Account", "Selective $1000 at $50",
+                   "Fresh Data Accounts", "1-Hour Fade Test", "Test Accounts", "Feed Referee", "Feed Lag Check",
+                   "System Audit", "Brain", "Exit Shadow Comparison")
+
+
+class _Only:
+    """Pass through only the named sheets (the decision report skips research detail)."""
+    def __init__(self, sheets, names):
+        self.sheets, self.names = sheets, set(names)
+
+    def table(self, name, headers, rows):
+        if name in self.names:
+            return self.sheets.table(name, headers, rows)
+        return None
+
+
+def _table_exists(db, name):
+    return db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)).fetchone() is not None
+
+
+def add_live(sheets, db):
+    if not _table_exists(db, "live_orders"):
+        sheets.table("Real Money Trades", ["Market","Note"], [["—", "Real-money trading has not placed any order yet."]])
+        return
+    sheets.table("Real Money Trades", ["Market","UTC","Mode","Side","Limit price","Shares asked","State","Shares filled",
+        "Average price","Cost","Fees","Exit","Shares sold","Sale proceeds","Outcome","P&L"], (
+        [r["slug"],utc(r["time"]),r["mode"],r["side"],r["limit_price"],r["quantity"],r["state"],r["filled"],r["avg_price"],
+         r["cost"],r["fees"],r["exit_state"],r["exit_filled"],r["exit_proceeds"],r["outcome"],r["pnl"]]
+        for r in db.execute("SELECT * FROM live_orders ORDER BY time DESC")))
+
+
+def write_quick_workbook(database, output):
+    """2.4 decision report: one summary page, real money, then only the sheets used for decisions."""
+    from . import audit as system_audit, brain, feeds, live, remote
+    wb = Workbook(write_only=True)
+    sheets = Sheets(wb)
+    folder = Path(database).resolve().parent
+    uri = Path(database).resolve().as_uri() + "?mode=ro"
+    with closing(sqlite3.connect(uri, uri=True, timeout=10)) as db:
+        db.row_factory = sqlite3.Row
+        db.execute("BEGIN")
+        now = time.time()
+        try:
+            live_mode = (folder / "live-mode").read_text().strip().upper() or "OFF"
+        except OSError:
+            live_mode = "OFF"
+        ledger = live.ledger(db, now) if _table_exists(db, "live_orders") else dict(cash=live.BANKROLL, pnl=0, trades=0, wins=0, losses=0, open=0)
+        game = unified.summary(db, now) if _table_exists(db, "unified_account") else None
+        checks = system_audit.run(db, now)
+        think = brain.thinking(db) if _table_exists(db, "brain_thoughts") else dict(summary=["Brain not started yet."], leaderboard=[])
+        fs = feeds.summary(db) if _table_exists(db, "feed_round_checks") else {}
+        rows = [["Generated UTC", utc(now)], ["Version", remote.RELEASE_NAME],
+                ["Paper trading", get_state(db, "mode") or "OFF"], ["Real-money trading", live_mode],
+                ["Real money: bot cash of $50", ledger["cash"]],
+                ["Real money: settled trades", f"{ledger['trades']} ({ledger['wins']} wins, {ledger['losses']} losses), P&L ${ledger['pnl']:+.2f}"]]
+        if game:
+            rows += [["Main $1,000 paper: cash", game["balance"]],
+                     ["Main $1,000 paper: all time", f"{game['all_time']['played']} games, {game['all_time']['wins']} wins, net ${game['all_time']['net']:+.2f}"]]
+        rows += [["System audit", f"PASS {checks['totals']['PASS']} · WARN {checks['totals']['WARN']} · FAIL {checks['totals']['FAIL']}"]]
+        rows += [["Problem: " + c["name"], c["detail"]] for c in checks["checks"] if c["status"] == "FAIL"]
+        if fs.get("rounds"):
+            rows += [["Live price vs official results", f"typical shift {fs['typical_shift']:+d}s, error ${(fs['typical_error'] or 0):.2f} over {fs['rounds']} rounds"]]
+        rows += [["Brain", line] for line in think["summary"]]
+        rows += [["Account ranking " + str(i + 1), f"{b['name']}: {b['trades']} trades, {b['wins']} wins, {100 * b['per_dollar']:+.1f}¢ per $1, net ${b['net']:+.2f}"]
+                 for i, b in enumerate(think["leaderboard"][:8])]
+        rows += [["More detail", "Full audit and Research report are on the Excel export page."]]
+        sheets.table("Start Here", ["Item", "Value"], rows)
+        add_live(sheets, db)
+        add_unified(_Only(sheets, DECISION_SHEETS), db, quick=True)
+    wb.save(output)
+
+
 if __name__ == "__main__":
     try:
         os.nice(5)
     except (AttributeError, OSError):
         pass
-    writer = write_quick_workbook if sys.argv[3:] == ["quick"] else write_workbook
+    writer = {"quick": write_quick_workbook, "research": write_research_workbook}.get((sys.argv[3:] or [""])[0], write_workbook)
     writer(sys.argv[1], sys.argv[2])
